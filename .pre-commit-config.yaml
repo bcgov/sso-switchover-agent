@@ -8,6 +8,7 @@ repos:
       - id: check-json
       - id: check-vcs-permalinks
       - id: check-yaml
+        exclude: ^helm/
       - id: check-ast
       - id: end-of-file-fixer
       - id: trailing-whitespace
@@ -19,3 +20,8 @@ repos:
         files: "src/.*py$"
         entry: autopep8 --in-place --recursive src
         pass_filenames: false
+  - repo: https://github.com/jorisroovers/gitlint
+    rev: v0.17.0
+    hooks:
+      - id: gitlint
+default_stages: [commit]

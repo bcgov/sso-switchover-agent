@@ -1,0 +1,79 @@
+name: Create Image and publish App
+
+on:
+  push:
+    branches:
+      - main_hold
+      - dev_hold
+    paths:
+      - 'src/**'
+      - 'helm/**'
+      - '.github/workflows/publish-image.yml'
+
+env:
+  GITHUB_REGISTRY: ghcr.io
+  IMAGE_NAME: bcgov/sso-switchover-agent
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: hmarr/debug-action@v2
+      - uses: actions/checkout@v2
+
+      - name: Log in to the GitHub Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.GITHUB_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.GITHUB_REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Set env to sandbox
+        if: (github.ref == 'refs/heads/dev' && github.event_name == 'push')
+        run: |
+          cat >> $GITHUB_ENV <<EOF
+          OPENSHIFT_TOKEN=${{ secrets.SANDBOX_OPENSHIFT_TOKEN }}
+          OPENSHIFT_NAMESPACE=${{ secrets.SANDBOX_OPENSHIFT_NAMESPACE }}
+          EOF
+
+      - name: Set env to production
+        if: (github.ref == 'refs/heads/main' && github.event_name == 'push')
+        run: |
+          cat >> $GITHUB_ENV <<EOF
+          OPENSHIFT_TOKEN=${{ secrets.PROD_OPENSHIFT_TOKEN }}
+          OPENSHIFT_NAMESPACE=${{ secrets.PROD_OPENSHIFT_NAMESPACE }}
+          EOF
+
+      - name: Authenticate and set context
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
+          openshift_token: ${{ env.OPENSHIFT_TOKEN }}
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+          insecure_skip_tls_verify: true
+
+      - name: Deploy app with Helm chart
+        run: |
+          namespace=${{ env.OPENSHIFT_NAMESPACE }}
+          helm dep up
+          helm upgrade --install --atomic switch-agent . -n ${namespace} \
+          -f values.yaml -f "values-${namespace}.yaml"
+        working-directory: ./helm
