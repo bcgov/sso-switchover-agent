@@ -25,10 +25,21 @@ jobs:
           pip install -r requirements.txt
           asdf reshim
           pre-commit run --color=always --show-diff-on-failure --all-files
-      - name: Run tests
+      - name: Build Test Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: false
+          tags: switchover-test
+          file: Dockerfile-test
+          cache-from: type=local,src=/tmp/.buildx-cache-test
+          cache-to: type=local,dest=/tmp/.buildx-cache-test-new
+      - name: Move cache
         run: |
-          docker build -t switchover-test . -f Dockerfile-test
-          docker run switchover-test
+          rm -rf /tmp/.buildx-cache-test
+          mv /tmp/.buildx-cache-test-new /tmp/.buildx-cache-test
+      - name: Run tests
+        run: docker run switchover-test
 
   commitlint:
     runs-on: ubuntu-18.04
