@@ -7,14 +7,16 @@ readme = "README.md"
 packages = [{include = "sso_switchover_agent"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "3.8.6"
 fastapi = "^0.78.0"
 python-dotenv = "^0.20.0"
 asyncio = "^3.4.3"
+requests = "^2.28.0"
+uvicorn = "^0.17.6"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.6.0"
-uvicorn = "^0.17.6"
+python-hosts = "^1.0.3"
 
 [tool.autopep8]
 max_line_length = 120
