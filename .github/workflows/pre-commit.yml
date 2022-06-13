@@ -28,7 +28,7 @@ jobs:
       - name: Run tests
         run: |
           docker build -t switchover-test . -f Dockerfile-test
-          docker run switchover
+          docker run switchover-test
 
   commitlint:
     runs-on: ubuntu-18.04
