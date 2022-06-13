@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main_hold
-      - dev_hold
+      - dev
     paths:
       - 'src/**'
       - 'helm/**'
