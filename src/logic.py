@@ -9,7 +9,7 @@ from config import config
 logger = logging.getLogger(__name__)
 
 
-def handle_queues(queue: Queue):
+def handle_queues(queue: Queue, processes: list):
     while True:
         try:
             item = queue.get()
