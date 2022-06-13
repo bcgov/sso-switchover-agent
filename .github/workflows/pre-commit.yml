@@ -25,6 +25,15 @@ jobs:
           pip install -r requirements.txt
           asdf reshim
           pre-commit run --color=always --show-diff-on-failure --all-files
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-test-cache
+          key: ${{ runner.os }}-buildx-test-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-buildx-test-
       - name: Build Test Docker image
         uses: docker/build-push-action@v3
         with:
@@ -32,17 +41,17 @@ jobs:
           push: false
           tags: switchover-test
           file: Dockerfile-test
-          cache-from: type=local,src=/tmp/.buildx-cache-test
-          cache-to: type=local,dest=/tmp/.buildx-cache-test-new
+          cache-from: type=local,src=/tmp/.buildx-test-cache
+          cache-to: type=local,dest=/tmp/.buildx-test-cache-new
       - name: Move cache
         run: |
-          rm -rf /tmp/.buildx-cache-test
-          mv /tmp/.buildx-cache-test-new /tmp/.buildx-cache-test
+          rm -rf /tmp/.buildx-test-cache
+          mv /tmp/.buildx-test-cache-new /tmp/.buildx-test-cache
       - name: Run tests
         run: docker run switchover-test
 
   commitlint:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
         with:
