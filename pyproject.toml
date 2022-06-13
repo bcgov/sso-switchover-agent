@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "sso-switchover-agent"
+version = "0.1.0"
+description = ""
+authors = ["SSO Team"]
+readme = "README.md"
+packages = [{include = "sso_switchover_agent"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.78.0"
+python-dotenv = "^0.20.0"
+asyncio = "^3.4.3"
+
+[tool.poetry.dev-dependencies]
+autopep8 = "^1.6.0"
+uvicorn = "^0.17.6"
+
+[tool.autopep8]
+max_line_length = 120
+ignore = ["E501", "W6"]
+in-place = true
+recursive = true
+aggressive = 3
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
