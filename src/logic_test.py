@@ -34,7 +34,7 @@ def test_queues(queue: Queue, processes: list):
     while queue.qsize() > 0:
         last_item = queue.get()
 
-    queue.put("success" if last_item['result'] == config.get('passive_ip') else "failure")
+    queue.put("success_" if last_item['result'] == config.get('passive_ip') else "failure")
 
     for process in processes:
         if process._popen is not None:
