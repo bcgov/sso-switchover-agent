@@ -57,6 +57,7 @@ if __name__ == '__main__':
     logger.info("All terminated.")
 
     if test_mode and queue.qsize() > 0:
-        sys.exit(1 if queue.get() == 'failure' else 0)
+        sys.exit(1)
+        # sys.exit(1 if queue.get() == 'failure' else 0)
 
     sys.exit(0)
