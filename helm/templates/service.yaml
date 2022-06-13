@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "switchover-agent.fullname" . }}
+  labels:
+    {{- include "switchover-agent.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      protocol: TCP
+      name: http
+      targetPort: http
+  selector: {{ include "switchover-agent.selectorLabels" . | nindent 4 }}

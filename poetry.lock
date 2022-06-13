@@ -156,7 +156,7 @@ cli = ["click (>=5.0)"]
 name = "python-hosts"
 version = "1.0.3"
 description = "A hosts file manager library written in python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -249,7 +249,7 @@ standard = ["websockets (>=10.0)", "httptools (>=0.4.0)", "watchgod (>=0.6)", "p
 [metadata]
 lock-version = "1.1"
 python-versions = "3.8.6"
-content-hash = "62d07121650bd87d94ceebc14580819d8396dad13acf538e730fc94e37bcfd85"
+content-hash = "fcc091bce4d0f58ffa49e4140a2568b1769eae07d0cf251535acee957bdc5c25"
 
 [metadata.files]
 anyio = [
