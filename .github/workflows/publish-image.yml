@@ -66,6 +66,14 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
+  deploy-to-openshift:
+    needs: [build-and-push-image]
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v2
       - name: Set env to sandbox
         if: (github.ref == 'refs/heads/dev' && github.event_name == 'push')
         run: |
