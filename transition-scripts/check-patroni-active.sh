@@ -15,8 +15,8 @@ fi
 
 
 # Confirm that patroni pods are in a running state
-OUTPUT=$(kubectl -n  ${NAMESPACE} exec sso-patroni-0 -- curl -s http://localhost:8008/patroni)
-STATE=$(echo $OUTPUT | jq '.state')
+OUTPUT=$(kubectl -n  "$NAMESPACE" exec sso-patroni-0 -- curl -s http://localhost:8008/patroni)
+STATE=$(echo "$OUTPUT" | jq '.state')
 if [[ $STATE == '"running"' ]]; then
     echo "The $CLUSTER patroni pod is running"
 else
@@ -26,13 +26,13 @@ fi
 
 
 # Confirm that patroni $CLUSTER is in active state
-RESPONSE=$(kubectl -n ${NAMESPACE} exec sso-patroni-0 -- curl -s -w "%{http_code}" http://localhost:8008/config)
+RESPONSE=$(kubectl -n "$NAMESPACE" exec sso-patroni-0 -- curl -s -w "%{http_code}" http://localhost:8008/config)
 RESPONSE_CODE=${RESPONSE: -3}
-echo "The response code is "$RESPONSE_CODE
+echo "The response code is $RESPONSE_CODE"
 CLUSTERCONFIG=${RESPONSE:0:-3}
-STANDBY_CLUSTER_CONFIG_LENGTH=$(echo $CLUSTERCONFIG | jq .standby_cluster | jq length )
+STANDBY_CLUSTER_CONFIG_LENGTH=$(echo "$CLUSTERCONFIG" | jq .standby_cluster | jq length )
 
-echo "The length of the standby config json is: "$STANDBY_CLUSTER_CONFIG_LENGTH
+echo "The length of the standby config json is: $STANDBY_CLUSTER_CONFIG_LENGTH"
 
 if [[ $RESPONSE_CODE == 200 ]]; then
     echo "Patroni config response returned"
