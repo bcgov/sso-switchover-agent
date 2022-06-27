@@ -48,7 +48,7 @@ switch_kube_context() {
   namespace="$2"
 
   if [ "$(count_kube_contexts)" -lt 2 ]; then
-    echo "expects two contexts only; one in gold and one in golddr"
+    echo "expects two contexts at least; one in gold and one in golddr"
     exit 1
   fi
 
