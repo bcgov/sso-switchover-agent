@@ -28,8 +28,9 @@ fi
 namespace=$1
 
 pwd="$(dirname "$0")"
-source "$pwd/helpers.sh"
+source "$pwd/helpers/_all.sh"
 
+# Gold deployments
 switch_kube_context "gold" "$namespace"
 check_ocp_cluster "gold"
 
@@ -38,6 +39,10 @@ cleanup_namespace "$namespace"
 
 upgrade_helm_active "$namespace"
 
+wait_for_patroni_healthy "$namespace"
+wait_for_patroni_all_ready "$namespace"
+
+# Golddr deployments
 switch_kube_context "golddr" "$namespace"
 check_ocp_cluster "golddr"
 
@@ -45,3 +50,6 @@ uninstall_helm "$namespace"
 cleanup_namespace "$namespace"
 
 upgrade_helm_standby "$namespace"
+
+wait_for_patroni_healthy "$namespace"
+wait_for_patroni_all_ready "$namespace"
