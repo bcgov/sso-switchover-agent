@@ -3,6 +3,9 @@
 pwd="$(dirname "$0")"
 values="$pwd/values"
 
+KEYCLOAK_HELM_CHART_VERSION="v1.7.1"
+KEYCLOAK_HELM_DEPLOYMENT_NAME="sso-keycloak"
+
 get_kube_context() {
   kubectl config current-context
 }
@@ -222,7 +225,7 @@ upgrade_helm() {
   helm repo add sso-charts https://bcgov.github.io/sso-helm-charts
   helm repo update
 
-  helm upgrade --install sso-keycloak sso-charts/sso-keycloak -n "$namespace" --version v1.7.1 -f "$values/values.yaml" -f "$values/values-$current-$namespace-$cluster_mode.yaml" "${@:3}"
+  helm upgrade --install "$KEYCLOAK_HELM_DEPLOYMENT_NAME" sso-charts/sso-keycloak -n "$namespace" --version "$KEYCLOAK_HELM_CHART_VERSION" -f "$values/values.yaml" -f "$values/values-$current-$namespace-$cluster_mode.yaml" "${@:3}"
 }
 
 upgrade_helm_active() {
