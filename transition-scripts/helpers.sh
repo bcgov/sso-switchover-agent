@@ -37,6 +37,12 @@ get_current_cluster() {
   fi
 }
 
+get_ocp_plate() {
+  if [ "$#" -lt 1 ]; then exit 1; fi
+  namespace="$1"
+  echo "$namespace" | cut -d "-" -f 1
+}
+
 count_kube_contexts() {
   count=$(kubectl config get-contexts --no-headers | wc -l)
   echo "$count"
@@ -52,7 +58,8 @@ switch_kube_context() {
     exit 1
   fi
 
-  context_name=$(kubectl config get-contexts --no-headers -o name | grep "api-$cluster-devops-gov-bc-ca:6443/system:serviceaccount:$namespace" | head -n 1)
+  plate=$(get_ocp_plate "$namespace")
+  context_name=$(kubectl config get-contexts --no-headers -o name | grep "api-$cluster-devops-gov-bc-ca:6443/system:serviceaccount:$plate" | head -n 1)
   if [ -z "$context_name" ]; then
     echo "kubenetes context not found"
     exit 1
