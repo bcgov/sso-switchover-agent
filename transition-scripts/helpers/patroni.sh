@@ -26,12 +26,12 @@ wait_for_patroni_healthy() {
   count=0
   wait_patroni_up() {
     patroni_health=$(check_patroni_health "$namespace")
-    echo "patroni health - $patroni_health"
+    info "checking patroni health - $patroni_health"
 
     if [ "$patroni_health" == "up" ]; then return 1; fi
 
     if [[ "$count" -gt 50 ]]; then
-      echo "The current context ($(get_kube_context)) patroni pod is not running"
+      warn "patroni pods are not healthy"
       exit 1
     fi
 

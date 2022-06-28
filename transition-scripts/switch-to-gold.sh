@@ -3,15 +3,16 @@ set -e
 
 usage() {
     cat <<EOF
-Set the target namespace of the Golddr cluster active, and the corresponding Gold cluster standby.
+Set the target namespace of the Gold cluster active, and the corresponding Golddr cluster standby.
+This workflow is designed to run in the recovery stage of the Gold cluster's failover.
 
 Steps:
-    1. check if the patroni cluster in Golddr is running as 'standby mode'.
-    2. convert the patroni cluster in Golddr to an 'active mode'.
-    3. scale up the Keycloak deployment and update the DB endpoint to Golddr.
+    1. check if the patroni cluster in Gold is running as 'standby mode'.
+    2. convert the patroni cluster in Gold to an 'active mode'.
+    3. scale up the Keycloak deployment and update the DB endpoint to Gold.
     4. wait until all Keycloak pods are running and healthy.
-    5. delete the patroni PVC in Gold.
-    6. scale down the Keycloak deployment in Gold.
+    5. delete the patroni PVC in Golddr.
+    6. scale down the Keycloak deployment in Golddr.
 
 Usages:
     $0 <namespace>
@@ -40,9 +41,9 @@ namespace=$1
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
-# Golddr deployments
-switch_kube_context "golddr" "$namespace"
-check_ocp_cluster "golddr"
+# Gold deployments
+switch_kube_context "gold" "$namespace"
+check_ocp_cluster "gold"
 
 patroni_mode=$(check_patroni_cluster_mode "$namespace")
 if [ "$patroni_mode" != "standby" ]; then
@@ -70,9 +71,9 @@ wait_for_patroni_all_ready "$namespace"
 upgrade_helm_active "$namespace"
 wait_for_keycloak_all_ready "$namespace"
 
-# Gold deployments
-switch_kube_context "gold" "$namespace"
-check_ocp_cluster "gold"
+# Golddr deployments
+switch_kube_context "golddr" "$namespace"
+check_ocp_cluster "golddr"
 
 cluster_update=$(set_patroni_cluster_standby "$namespace")
 if [ "$cluster_update" != "success" ]; then

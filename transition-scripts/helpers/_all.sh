@@ -8,7 +8,7 @@ for f in "$pwd"/*; do
   [ -d "$f" ] && continue       # skip directories
   [ -L "${f%/}" ] && continue   # skip symlinks
 
-  echo "$f"
+  echo "loading helper: $f"
 
   # shellcheck disable=SC1090
   source "$f"
