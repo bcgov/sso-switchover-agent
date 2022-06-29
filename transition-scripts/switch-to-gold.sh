@@ -23,6 +23,9 @@ Available namespaces:
     - eb75ad-test
     - eb75ad-prod
 
+Pre-conditions:
+    - the patroni cluster in Golddr must be healthy and in active mode.
+
 Examples:
     $ $0 c6af30-dev
 
