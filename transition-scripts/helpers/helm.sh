@@ -14,8 +14,10 @@ upgrade_helm() {
   cluster_mode="$2" # active | standby
   current=$(get_current_cluster)
 
-  helm repo add sso-charts https://bcgov.github.io/sso-helm-charts
-  helm repo update
+  {
+    helm repo add sso-charts https://bcgov.github.io/sso-helm-charts
+    helm repo update
+  } &>/dev/null
 
   helm upgrade --install "$KEYCLOAK_HELM_DEPLOYMENT_NAME" sso-charts/sso-keycloak -n "$namespace" --version "$KEYCLOAK_HELM_CHART_VERSION" -f "$values/values.yaml" -f "$values/values-$current-$namespace-$cluster_mode.yaml" "${@:3}"
 }
@@ -24,13 +26,34 @@ upgrade_helm_active() {
   if [ "$#" -lt 1 ]; then exit 1; fi
 
   namespace="$1"
-  upgrade_helm "$namespace" "active"
+  maintenance="false"
+  while [[ "$2" =~ ^- && ! "$2" == "--" ]]; do
+    case $2 in
+    -m | --maintenance-on)
+      maintenance="true"
+      ;;
+    esac
+    shift
+  done
+
+  upgrade_helm "$namespace" "active" \
+    --set maintenancePage.enabled="$maintenance" \
+    --set maintenancePage.active="$maintenance"
 }
 
 upgrade_helm_standby() {
   if [ "$#" -lt 1 ]; then exit 1; fi
 
   namespace="$1"
+  maintenance="false"
+  while [[ "$2" =~ ^- && ! "$2" == "--" ]]; do
+    case $2 in
+    -m | --maintenance-on)
+      maintenance="true"
+      ;;
+    esac
+    shift
+  done
 
   current=$(get_current_cluster)
   target=$(get_target_cluster)
@@ -61,7 +84,9 @@ upgrade_helm_standby() {
     --set patroni.credentials.admin.password="$password_admin" \
     --set patroni.credentials.standby.password="$password_standby" \
     --set patroni.additionalCredentials[0].username="$username_appuser1" \
-    --set patroni.additionalCredentials[0].password="$password_appuser1"
+    --set patroni.additionalCredentials[0].password="$password_appuser1" \
+    --set maintenancePage.enabled="$maintenance" \
+    --set maintenancePage.active="$maintenance"
 }
 
 uninstall_helm() {
