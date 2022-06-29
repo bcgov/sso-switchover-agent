@@ -1,0 +1,28 @@
+name: Set the Gold deployment to active
+
+on:
+  workflow_dispatch:
+    inputs:
+      namespace:
+        description: "The target namespace"
+        required: true
+        options: ["c6af30-dev", "eb75ad-dev", "eb75ad-test", "eb75ad-prod"]
+
+jobs:
+  transition-scripts:
+    runs-on: ubuntu-18.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Login Openshift Gold & Golddr
+        uses: ./.github/actions/oc-login
+        with:
+          namespace: ${{ github.event.inputs.namespace }}
+
+      - name: Set patroni-dr to primary
+        id: dractivation
+        run: |
+          chmod +x ./switch-to-gold.sh
+          ./switch-to-gold.sh ${{ github.event.inputs.namespace }}
+        working-directory: transition-scripts
