@@ -27,7 +27,7 @@ Examples:
     $ $0 c6af30-dev
 
 Notes:
-    - active Keycloak pods must be re-created because Keycloak caches realms & clients' info in the memory.
+    - active Keycloak pods must be re-created because Keycloak caches realms & users' info in the memory.
 EOF
 }
 

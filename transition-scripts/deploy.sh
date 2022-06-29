@@ -30,6 +30,8 @@ namespace=$1
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
+# TODO: take an argument to just upgrade; no uninstallation, and no cleanup to ensure gold is running as active and golddr is running as standby
+
 # Gold deployments
 switch_kube_context "gold" "$namespace"
 check_ocp_cluster "gold"

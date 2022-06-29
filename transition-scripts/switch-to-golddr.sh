@@ -22,11 +22,18 @@ Available namespaces:
     - eb75ad-test
     - eb75ad-prod
 
+Pre-conditions:
+    - the patroni cluster in Gold must be healthy and in active mode.
+    - the patroni cluster in Golddr must be healthy and in standby mode.
+
 Examples:
     $ $0 c6af30-dev
 
 Notes:
-    - active Keycloak pods must be re-created because Keycloak caches realms & clients' info in the memory.
+    - active Keycloak pods must be re-created because Keycloak caches realms & users' info in the memory.
+
+Considerations:
+    - should we re-create Keycloak pods each time or clear the cache to fetch the new data.
 EOF
 }
 
@@ -43,6 +50,8 @@ source "$pwd/helpers/_all.sh"
 # Golddr deployments
 switch_kube_context "golddr" "$namespace"
 check_ocp_cluster "golddr"
+
+# TODO: run helm chart to put up the maintainance page
 
 patroni_mode=$(check_patroni_cluster_mode "$namespace")
 if [ "$patroni_mode" != "standby" ]; then
@@ -71,6 +80,7 @@ upgrade_helm_active "$namespace"
 wait_for_keycloak_all_ready "$namespace"
 
 # Gold deployments
+# TODO: what if gold is down so that we cannot set it as standby?
 switch_kube_context "gold" "$namespace"
 check_ocp_cluster "gold"
 
@@ -80,6 +90,7 @@ if [ "$cluster_update" != "success" ]; then
     exit 1
 fi
 
+# TODO: do another checks before checking pastroni health
 wait_for_patroni_healthy "$namespace"
 wait_for_patroni_all_ready "$namespace"
 
