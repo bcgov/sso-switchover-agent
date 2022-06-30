@@ -19,6 +19,11 @@ jobs:
         uses: ./.github/actions/oc-login
         with:
           namespace: ${{ github.event.inputs.namespace }}
+          oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
+          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
+          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+
 
       - name: Set patroni-dr to primary
         id: dractivation
