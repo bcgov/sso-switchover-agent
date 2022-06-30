@@ -44,6 +44,21 @@ namespace=$1
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
+# Golddr status check
+switch_kube_context "golddr" "$namespace"
+
+patroni_health=$(check_patroni_health "$namespace")
+if [ "$patroni_health" != "up" ]; then
+    warn "the patroni pods are not healthy in Golddr"
+    exit 1
+fi
+
+patroni_mode=$(check_patroni_cluster_mode "$namespace")
+if [ "$patroni_mode" != "active" ]; then
+    warn "the patroni pods are not in active mode in Golddr"
+    exit 1
+fi
+
 # Gold deployments
 switch_kube_context "gold" "$namespace"
 
