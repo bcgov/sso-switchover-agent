@@ -1,4 +1,4 @@
-name: Deploy Keycloak resources in Gold & Golddr
+name: Set the Gold deployment to active
 
 on:
   workflow_dispatch:
@@ -23,6 +23,6 @@ jobs:
       - name: Set patroni-dr to primary
         id: dractivation
         run: |
-          chmod +x ./switch-to-gold.sh
-          ./switch-to-gold.sh ${{ github.event.inputs.namespace }}
+          chmod +x ./deploy.sh
+          ./deploy.sh ${{ github.event.inputs.namespace }}
         working-directory: transition-scripts

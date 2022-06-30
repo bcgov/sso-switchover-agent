@@ -4,6 +4,8 @@
 ## Generic Functions ##
 #######################
 
+OC_SERVICE_ACCOUNT="oc-sso-deployer"
+
 get_kube_context() {
   kubectl config current-context
 }
@@ -59,8 +61,7 @@ switch_kube_context() {
     exit 1
   fi
 
-  plate=$(get_ocp_plate "$namespace")
-  context_name=$(kubectl config get-contexts --no-headers -o name | grep "api-$cluster-devops-gov-bc-ca:6443/system:serviceaccount:$plate" | head -n 1)
+  context_name=$(kubectl config get-contexts --no-headers -o name | grep "api-$cluster-devops-gov-bc-ca:6443/system:serviceaccount:.*:$OC_SERVICE_ACCOUNT" | head -n 1)
   if [ -z "$context_name" ]; then
     echo "kubenetes context not found"
     exit 1
