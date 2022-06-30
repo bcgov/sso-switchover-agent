@@ -4,15 +4,26 @@ inputs:
   namespace:
     description: "The namespace to run the scripts"
     required: true
-
+  oc-server-gold:
+    description: "The Gold API server url"
+    required: true
+  oc-token-gold:
+    description: "The Gold API server bearer token for authentication"
+    required: true
+  oc-server-golddr:
+    description: "The Golddr API server url"
+    required: true
+  oc-token-golddr:
+    description: "The Golddr API server bearer token for authentication"
+    required: true
 runs:
   using: composite
   steps:
     - name: Login Gold
       uses: redhat-actions/oc-login@v1
       with:
-        openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
-        openshift_token: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+        openshift_server_url: ${{ inputs.oc-server-gold }}
+        openshift_token: ${{ inputs.oc-token-gold }}
         namespace: ${{ inputs.namespace }}
         insecure_skip_tls_verify: true
       continue-on-error: true
@@ -20,8 +31,8 @@ runs:
     - name: Login Golddr
       uses: redhat-actions/oc-login@v1
       with:
-        openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
-        openshift_token: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+        openshift_server_url: ${{ inputs.oc-server-golddr }}
+        openshift_token: ${{ inputs.oc-token-golddr }}
         namespace: ${{ inputs.namespace }}
         insecure_skip_tls_verify: true
       continue-on-error: true
