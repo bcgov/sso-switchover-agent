@@ -84,7 +84,7 @@ jobs:
         uses: redhat-actions/oc-login@v1
         with:
           openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
-          openshift_token: ${{ env.OPENSHIFT_TOKEN_GOLDDR }}
+          openshift_token: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
           namespace: ${{ matrix.license }}-${{ matrix.env }}
           insecure_skip_tls_verify: true
 
