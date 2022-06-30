@@ -13,8 +13,7 @@ jobs:
     runs-on: ubuntu-18.04
     timeout-minutes: 60
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - name: Login Openshift Gold & Golddr
         uses: ./.github/actions/oc-login
         with:
@@ -25,8 +24,7 @@ jobs:
           oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
 
 
-      - name: Set patroni-dr to primary
-        id: dractivation
+      - name: Run transition script
         run: |
           chmod +x ./switch-to-golddr.sh
           ./switch-to-golddr.sh ${{ github.event.inputs.namespace }}
