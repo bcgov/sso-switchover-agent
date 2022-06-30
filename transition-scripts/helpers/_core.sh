@@ -67,6 +67,7 @@ switch_kube_context() {
   fi
 
   kubectl config use-context "$context_name"
+  check_ocp_cluster "$cluster"
 }
 
 kube_curl() {
@@ -78,7 +79,7 @@ kube_curl() {
   response=$(kubectl -n "$namespace" exec "$pod_name" -- curl -s -w "%{http_code}" "${@:3}")
   if [ "${#response}" -lt 3 ]; then
     echo "500" ""
-    return;
+    return
   fi
 
   status_code=${response: -3}

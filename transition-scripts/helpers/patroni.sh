@@ -77,6 +77,8 @@ set_patroni_cluster_active() {
     return
   fi
 
+  # let's wait for some time to restart patroni pods
+  sleep 30
   echo "success"
 }
 
@@ -100,6 +102,8 @@ set_patroni_cluster_standby() {
     return
   fi
 
+  # let's wait for some time to restart patroni pods
+  sleep 30
   echo "success"
 }
 
@@ -127,6 +131,75 @@ wait_for_patroni_all_ready() {
     # wait for 10mins
     if [[ "$count" -gt 120 ]]; then
       warn "patroni replicas is not ready"
+      exit 1
+    fi
+
+    count=$((count + 1))
+  }
+
+  while wait_ready; do sleep 5; done
+}
+
+get_patroni_xlog() {
+  if [ "$#" -lt 1 ]; then exit 1; fi
+
+  namespace="$1"
+  patroni_mode=$(check_patroni_cluster_mode "$namespace")
+  if [ "$patroni_mode" == "active" ]; then
+    leader=$(kubectl -n "$namespace" exec sso-patroni-0 -- patronictl list -f json | jq -r '.[] | select(.Role == "Leader") | .Member')
+
+    # get the leader pod's lasted xlog location in the active patroni cluster.
+    read -r status_code data < <(kube_curl "$namespace" "$leader" http://localhost:8008/patroni)
+    if [ "$status_code" -ne "200" ]; then exit 1; fi
+    xlog=$(echo "$data" | jq -r '.xlog.location')
+  else
+    # get any of the replicas' xlog received location in the standby patroni cluster.
+    read -r status_code data < <(kube_curl "$namespace" sso-patroni-0 http://localhost:8008/patroni)
+    if [ "$status_code" -ne "200" ]; then exit 1; fi
+    xlog=$(echo "$data" | jq -r '.xlog.received_location')
+  fi
+
+  echo "$xlog"
+}
+
+compare_patroni_xlog() {
+  if [ "$#" -lt 1 ]; then exit 1; fi
+
+  namespace="$1"
+
+  current=$(get_current_cluster)
+  target=$(get_target_cluster)
+
+  xlog1=$(get_patroni_xlog "$namespace")
+
+  switch_kube_context "$target" "$namespace" &>/dev/null
+
+  xlog2=$(get_patroni_xlog "$namespace")
+
+  switch_kube_context "$current" "$namespace" &>/dev/null
+
+  if [ "$xlog1" -eq "$xlog2" ]; then
+    echo "synced"
+  else
+    echo "not synced"
+  fi
+}
+
+wait_for_patroni_xlog_synced() {
+  if [ "$#" -lt 1 ]; then exit 1; fi
+
+  namespace="$1"
+
+  count=0
+  wait_ready() {
+    sync_status=$(compare_patroni_xlog "$namespace")
+    info "patroni xlog is $sync_status"
+
+    if [ "$sync_status" == "synced" ]; then return 1; fi
+
+    # wait for 5mins
+    if [[ "$count" -gt 60 ]]; then
+      warn "patroni xlog failed to be synced"
       exit 1
     fi
 

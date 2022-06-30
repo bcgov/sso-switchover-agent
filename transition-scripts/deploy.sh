@@ -26,18 +26,30 @@ if [ "$#" -lt 1 ]; then
 fi
 
 namespace=$1
+purge="false"
 
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
-# TODO: take an argument to just upgrade; no uninstallation, and no cleanup to ensure gold is running as active and golddr is running as standby
+while [[ "$2" =~ ^- && ! "$2" == "--" ]]; do
+    case $2 in
+    -p | --purge)
+        purge="true"
+        ;;
+    esac
+    shift
+done
 
 # Gold deployments
 switch_kube_context "gold" "$namespace"
 check_ocp_cluster "gold"
 
-uninstall_helm "$namespace"
-cleanup_namespace "$namespace"
+if [ "$purge" == "true" ]; then
+    uninstall_helm "$namespace"
+    cleanup_namespace "$namespace"
+else
+    set_patroni_cluster_active "$namespace"
+fi
 
 upgrade_helm_active "$namespace"
 
@@ -48,10 +60,15 @@ wait_for_patroni_all_ready "$namespace"
 switch_kube_context "golddr" "$namespace"
 check_ocp_cluster "golddr"
 
-uninstall_helm "$namespace"
-cleanup_namespace "$namespace"
+if [ "$purge" == "true" ]; then
+    uninstall_helm "$namespace"
+    cleanup_namespace "$namespace"
+else
+    set_patroni_cluster_standby "$namespace"
+fi
 
 upgrade_helm_standby "$namespace"
 
 wait_for_patroni_healthy "$namespace"
 wait_for_patroni_all_ready "$namespace"
+wait_for_patroni_xlog_synced "$namespace"

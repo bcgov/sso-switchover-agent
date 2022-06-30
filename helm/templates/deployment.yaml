@@ -36,6 +36,9 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+          envFrom:
+            - secretRef:
+                name: sso-switchover-agent
           livenessProbe:
             httpGet:
               path: /api/health

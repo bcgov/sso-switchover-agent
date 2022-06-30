@@ -49,9 +49,6 @@ source "$pwd/helpers/_all.sh"
 
 # Golddr deployments
 switch_kube_context "golddr" "$namespace"
-check_ocp_cluster "golddr"
-
-# TODO: run helm chart to put up the maintainance page
 
 patroni_mode=$(check_patroni_cluster_mode "$namespace")
 if [ "$patroni_mode" != "standby" ]; then
@@ -76,13 +73,15 @@ fi
 wait_for_patroni_healthy "$namespace"
 wait_for_patroni_all_ready "$namespace"
 
-upgrade_helm_active "$namespace"
+info "enabling maintenance page in $namespace"
+upgrade_helm_active "$namespace" --maintenance-on
 wait_for_keycloak_all_ready "$namespace"
 
+info "Keycloak pods are ready in $namespace"
+upgrade_helm_active "$namespace"
+
 # Gold deployments
-# TODO: what if gold is down so that we cannot set it as standby?
 switch_kube_context "gold" "$namespace"
-check_ocp_cluster "gold"
 
 cluster_update=$(set_patroni_cluster_standby "$namespace")
 if [ "$cluster_update" != "success" ]; then
@@ -90,8 +89,8 @@ if [ "$cluster_update" != "success" ]; then
     exit 1
 fi
 
-# TODO: do another checks before checking pastroni health
+upgrade_helm_standby "$namespace"
+
 wait_for_patroni_healthy "$namespace"
 wait_for_patroni_all_ready "$namespace"
-
-upgrade_helm_standby "$namespace"
+wait_for_patroni_xlog_synced "$namespace"

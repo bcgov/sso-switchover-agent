@@ -23,6 +23,9 @@ Available namespaces:
     - eb75ad-test
     - eb75ad-prod
 
+Pre-conditions:
+    - the patroni cluster in Golddr must be healthy and in active mode.
+
 Examples:
     $ $0 c6af30-dev
 
@@ -41,15 +44,35 @@ namespace=$1
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
+# Golddr status check
+switch_kube_context "golddr" "$namespace"
+
+patroni_health=$(check_patroni_health "$namespace")
+if [ "$patroni_health" != "up" ]; then
+    warn "the patroni pods are not healthy in Golddr"
+    exit 1
+fi
+
+patroni_mode=$(check_patroni_cluster_mode "$namespace")
+if [ "$patroni_mode" != "active" ]; then
+    warn "the patroni pods are not in active mode in Golddr"
+    exit 1
+fi
+
 # Gold deployments
 switch_kube_context "gold" "$namespace"
-check_ocp_cluster "gold"
 
 patroni_mode=$(check_patroni_cluster_mode "$namespace")
 if [ "$patroni_mode" != "standby" ]; then
-    error "the patroni pods are not running in standby mode ($patroni_mode)"
-    exit 1
+    info "the patroni pods are not running in standby mode ($patroni_mode)"
+    info "setting patroni mode to standby mode to sync up data with Golddr database"
+
+    set_patroni_cluster_standby "$namespace"
+    wait_for_patroni_healthy "$namespace"
+    wait_for_patroni_all_ready "$namespace"
 fi
+
+wait_for_patroni_xlog_synced "$namespace"
 
 info "starting to convert patroni cluster type to active in $namespace"
 
@@ -73,7 +96,6 @@ wait_for_keycloak_all_ready "$namespace"
 
 # Golddr deployments
 switch_kube_context "golddr" "$namespace"
-check_ocp_cluster "golddr"
 
 cluster_update=$(set_patroni_cluster_standby "$namespace")
 if [ "$cluster_update" != "success" ]; then
@@ -81,7 +103,8 @@ if [ "$cluster_update" != "success" ]; then
     exit 1
 fi
 
+upgrade_helm_standby "$namespace"
+
 wait_for_patroni_healthy "$namespace"
 wait_for_patroni_all_ready "$namespace"
-
-upgrade_helm_standby "$namespace"
+wait_for_patroni_xlog_synced "$namespace"
