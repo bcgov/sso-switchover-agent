@@ -1,4 +1,4 @@
-name: Set the Gold deployment to active
+name: Deploy Keycloak resources in Gold & Golddr
 
 on:
   workflow_dispatch:
