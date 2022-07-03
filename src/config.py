@@ -9,6 +9,6 @@ config = dict(
     gh_owner=os.environ.get("GH_OWNER", 'bcgov'),
     gh_repo=os.environ.get("GH_REPO", 'sso-switchover-agent'),
     gh_branch=os.environ.get("GH_BRANCH", 'main'),
-    gh_workflow_id=os.environ.get("GH_WORKFLOW_ID", ''),
+    gh_workflow_id=os.environ.get("GH_WORKFLOW_ID", 'switch-to-golddr.yml'),
     gh_token=os.environ.get("GH_TOKEN", ''),
 )
