@@ -74,7 +74,7 @@ wait_for_keycloak_healthy() {
 
     if [ "$status" == "up" ]; then return 1; fi
 
-    if [[ "$count" -gt 50 ]]; then
+    if [[ "$count" -gt 240 ]]; then
       warn "keycloak app is not healthy"
       exit 1
     fi
