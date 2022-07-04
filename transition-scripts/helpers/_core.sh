@@ -52,9 +52,8 @@ count_kube_contexts() {
 }
 
 switch_kube_context() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [ "$#" -lt 1 ]; then exit 1; fi
   cluster="$1"
-  namespace="$2"
 
   if [ "$(count_kube_contexts)" -lt 2 ]; then
     echo "expects two contexts at least; one in gold and one in golddr"
@@ -69,6 +68,30 @@ switch_kube_context() {
 
   kubectl config use-context "$context_name"
   check_ocp_cluster "$cluster"
+}
+
+ensure_kube_context() {
+  if [ "$#" -lt 1 ]; then exit 1; fi
+  cluster="$1"
+
+  current=$(get_current_cluster)
+
+  if [ "$(get_current_cluster)" != "$cluster" ]; then
+    switch_kube_context "$cluster"
+  fi
+}
+
+curl_http_code() {
+  response=$(curl -s -w "%{http_code}" "${@:1}")
+  if [ "${#response}" -lt 3 ]; then
+    echo "500" ""
+    return
+  fi
+
+  status_code=${response: -3}
+  data=${response:0:-3}
+
+  echo "$status_code" "$data"
 }
 
 kube_curl() {
@@ -122,4 +145,16 @@ count_ready_pods() {
   namespace="$1"
 
   kubectl -n "$namespace" get pods -o custom-columns=ready:status.containerStatuses[*].ready "${@:2}" | grep true -c
+}
+
+get_ocp_default_route_url() {
+  if [ "$#" -lt 3 ]; then exit 1; fi
+
+  cluster="$1"
+  namespace="$2"
+  routename="$3"
+
+  url="https://$routename-$namespace.apps.$cluster.devops.gov.bc.ca"
+
+  echo "$url"
 }
