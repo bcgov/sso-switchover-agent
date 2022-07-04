@@ -91,8 +91,12 @@ fi
 wait_for_patroni_healthy "$namespace"
 wait_for_patroni_all_ready "$namespace"
 
-upgrade_helm_active "$namespace"
+info "enabling maintenance page in $namespace"
+upgrade_helm_active "$namespace" --maintenance-on
 wait_for_keycloak_all_ready "$namespace"
+
+info "Keycloak pods are ready in $namespace"
+upgrade_helm_active "$namespace"
 
 # Golddr deployments
 switch_kube_context "golddr" "$namespace"

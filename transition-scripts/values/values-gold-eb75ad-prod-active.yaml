@@ -1,0 +1,31 @@
+replicaCount: 5
+
+service:
+  type: ClusterIP
+  port: 8443
+
+tls:
+  enabled: true
+
+persistentLog:
+  size: 15Gi
+
+resources:
+  limits:
+    cpu: 2
+    memory: 4Gi
+  requests:
+    cpu: 1250m
+    memory: 4Gi
+
+patroni:
+  replicaCount: 3
+
+  persistentVolume:
+    size: 30Gi
+
+  podDisruptionBudget:
+    enabled: true
+
+  transportServerClaim:
+    enabled: true
