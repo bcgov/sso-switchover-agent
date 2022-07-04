@@ -143,7 +143,7 @@ create_keycloak_realm() {
   if [ "$status_code" -ne "201" ]; then
     error "$status_code: failed to create a new realm"
     error "$data"
-    exit 1;
+    exit 1
   fi
 
   echo "success"
@@ -165,4 +165,58 @@ get_keycloak_realm() {
   fi
 
   echo "$data"
+}
+
+list_keycloak_realms() {
+  if [ "$#" -lt 2 ]; then exit 1; fi
+
+  cluster="$1"
+  namespace="$2"
+  ensure_kube_context "$cluster"
+
+  read -r status_code data < <(curl_keycloak_api $cluster $namespace -X GET \
+    "$(get_ocp_keycloak_url "$cluster" "$namespace")/auth/admin/realms")
+
+  if [ "$status_code" -ne "200" ]; then
+    return
+  fi
+
+  echo "$data"
+}
+
+delete_keycloak_realm() {
+  if [ "$#" -lt 3 ]; then exit 1; fi
+
+  cluster="$1"
+  namespace="$2"
+  realmname="$3"
+  ensure_kube_context "$cluster"
+
+  read -r status_code data < <(curl_keycloak_api $cluster $namespace -X DELETE \
+    "$(get_ocp_keycloak_url "$cluster" "$namespace")/auth/admin/realms/$realmname")
+
+  if [ "$status_code" -ne "204" ]; then
+    return
+  fi
+
+  echo "$data"
+}
+
+remove_all_realms() {
+  if [ "$#" -lt 2 ]; then exit 1; fi
+
+  cluster="$1"
+  namespace="$2"
+
+  realms=$(list_keycloak_realms "$cluster" "$namespace")
+  for row in $(echo "$realms" | jq -r '.[] | @base64'); do
+    getrealm() {
+      echo ${row} | base64 --decode | jq -r ${1}
+    }
+
+    name=$(getrealm '.realm')
+    if [ "$name" != "master" ]; then
+      delete_keycloak_realm "$cluster" "$namespace" "$name"
+    fi
+  done
 }
