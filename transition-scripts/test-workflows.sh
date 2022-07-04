@@ -7,8 +7,12 @@ Test Disaster Recovery GitHub Actions workflows as a whole and ensure the data i
 
 Steps:
     1. trigger 'deploy.yml' workflow.
-    2. trigger 'switch-to-golddr.yml' workflow.
-    3. trigger 'switch-to-gold.yml' workflow.
+    2. create a set of test Keycloak realms via Gold Keycloak API.
+    3. trigger 'switch-to-golddr.yml' workflow.
+    4. ensure test Keycloak realms created by Gold Keycloak are found in Golddr Keycloak.
+    5. create a set of test Keycloak realms via Golddr Keycloak API.
+    6. trigger 'switch-to-gold.yml' workflow.
+    7. ensure test Keycloak realms created by Golddr Keycloak are found in Gold Keycloak.
 
 Usages:
     $0 <gh_token> <namespace>
@@ -17,7 +21,7 @@ Available namespaces:
     - c6af30-dev
 
 Examples:
-    $ $0 ghp_xxxx c6af30-dev abcd
+    $ $0 ghp_xxxx c6af30-dev
 EOF
 }
 
@@ -48,6 +52,11 @@ while [ $i -ne 5 ]; do
     realms_gold+=("$TEST_REALM_PREFIX-$i")
 done
 
+while [ $i -ne 5 ]; do
+    i=$(($i + 1))
+    realms_golddr+=("$TEST_REALM_PREFIX-$i")
+done
+
 trigger_github_dispatcher "$gh_token" "deploy.yml" "$namespace" 300
 
 ensure_kube_context "gold"
@@ -73,17 +82,11 @@ for realm in "${realms_gold[@]}"; do
     fi
 done
 
-trigger_github_dispatcher "$gh_token" "switch-to-gold.yml" "$namespace" 30
-
-# create new Keycloak realms until Gold cluster is up
-j=0
-while [ $(check_keycloak_health "gold" "$namespace") != "up" ]; do
-    newrealm="$TEST_REALM_PREFIX-golddr-$j"
-    create_keycloak_realm "golddr" "$namespace" "$newrealm"
-    realms_golddr+=("$newrealm")
-    j=$(($j + 1))
-    sleep 5
+for realm in "${realms_golddr[@]}"; do
+    create_keycloak_realm "golddr" "$namespace" "$realm"
 done
+
+trigger_github_dispatcher "$gh_token" "switch-to-gold.yml" "$namespace" 900
 
 ensure_kube_context "gold"
 wait_for_keycloak_healthy "gold" "$namespace"

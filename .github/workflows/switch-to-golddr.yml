@@ -23,7 +23,6 @@ jobs:
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
           oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
 
-
       - name: Run transition script
         run: |
           chmod +x ./switch-to-golddr.sh

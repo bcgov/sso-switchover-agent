@@ -1,4 +1,4 @@
-name: Set the Gold deployment to active
+name: Run test workflows
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
       namespace:
         description: "The target namespace"
         required: true
-        options: ["c6af30-dev", "eb75ad-dev", "eb75ad-test", "eb75ad-prod"]
+        options: ["c6af30-dev"]
 
 jobs:
   transition-scripts:
@@ -25,6 +25,6 @@ jobs:
 
       - name: Run transition script
         run: |
-          chmod +x ./switch-to-gold.sh
-          ./switch-to-gold.sh ${{ github.event.inputs.namespace }}
+          chmod +x ./test-workflows.sh
+          ./test-workflows.sh ${{ secrets.GITHUB_TOKEN }} ${{ github.event.inputs.namespace }}
         working-directory: transition-scripts
