@@ -51,7 +51,7 @@ check_keycloak_health() {
   namespace="$2"
 
   read -r status_code data < <(curl_http_code \
-    $(get_ocp_keycloak_url "$cluster" "$namespace")/auth/realms/master/.well-known/openid-configuration)
+    "$(get_ocp_keycloak_url "$cluster" "$namespace")/auth/realms/master/.well-known/openid-configuration")
 
   if [ "$status_code" -ne "200" ] || [ "$data" == null ]; then
     echo "down"
@@ -119,7 +119,7 @@ curl_keycloak_api() {
   namespace="$2"
   ensure_kube_context "$cluster"
 
-  access_token=$(get_keycloak_admin_token "$cluster" $namespace)
+  access_token=$(get_keycloak_admin_token "$cluster" "$namespace")
 
   read -r status_code data < <(curl_http_code \
     -H "Authorization: Bearer $access_token" \
@@ -136,7 +136,7 @@ create_keycloak_realm() {
   realmname="$3"
   ensure_kube_context "$cluster"
 
-  read -r status_code data < <(curl_keycloak_api $cluster $namespace -X POST \
+  read -r status_code data < <(curl_keycloak_api "$cluster" "$namespace" -X POST \
     -d '{"realm":'\""$realmname\""'}' \
     "$(get_ocp_keycloak_url "$cluster" "$namespace")/auth/admin/realms")
 
@@ -157,7 +157,7 @@ get_keycloak_realm() {
   realmname="$3"
   ensure_kube_context "$cluster"
 
-  read -r status_code data < <(curl_keycloak_api $cluster $namespace -X GET \
+  read -r status_code data < <(curl_keycloak_api "$cluster" "$namespace" -X GET \
     "$(get_ocp_keycloak_url "$cluster" "$namespace")/auth/admin/realms/$realmname")
 
   if [ "$status_code" -ne "200" ]; then
@@ -174,7 +174,7 @@ list_keycloak_realms() {
   namespace="$2"
   ensure_kube_context "$cluster"
 
-  read -r status_code data < <(curl_keycloak_api $cluster $namespace -X GET \
+  read -r status_code data < <(curl_keycloak_api "$cluster" "$namespace" -X GET \
     "$(get_ocp_keycloak_url "$cluster" "$namespace")/auth/admin/realms")
 
   if [ "$status_code" -ne "200" ]; then
@@ -192,7 +192,7 @@ delete_keycloak_realm() {
   realmname="$3"
   ensure_kube_context "$cluster"
 
-  read -r status_code data < <(curl_keycloak_api $cluster $namespace -X DELETE \
+  read -r status_code data < <(curl_keycloak_api "$cluster" "$namespace" -X DELETE \
     "$(get_ocp_keycloak_url "$cluster" "$namespace")/auth/admin/realms/$realmname")
 
   if [ "$status_code" -ne "204" ]; then
@@ -211,7 +211,7 @@ remove_all_realms() {
   realms=$(list_keycloak_realms "$cluster" "$namespace")
   for row in $(echo "$realms" | jq -r '.[] | @base64'); do
     getrealm() {
-      echo ${row} | base64 --decode | jq -r ${1}
+      echo "$row" | base64 --decode | jq -r "$1"
     }
 
     name=$(getrealm '.realm')

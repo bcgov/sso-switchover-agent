@@ -14,14 +14,14 @@ trigger_github_dispatcher() {
     -H "Accept: application/vnd.github.v3+json" \
     -H "Authorization: token $gh_token" \
     -d '{"ref": "main", "inputs": { "namespace":'\""$namespace\""'}}' \
-    https://api.github.com/repos/$GITHUB_ORG/$GITHUB_REPO/actions/workflows/$workflow/dispatches)
-  
+    "https://api.github.com/repos/$GITHUB_ORG/$GITHUB_REPO/actions/workflows/$workflow/dispatches")
+
   if [ "$status_code" -ne "204" ]; then
     warn "failed to trigger github action $workflow"
     warn "$data"
     exit 1;
   fi
 
-  sleep $sleep
+  sleep "$sleep"
   info "successfully triggered github action $workflow"
 }

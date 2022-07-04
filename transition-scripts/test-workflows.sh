@@ -36,7 +36,7 @@ namespace=$2
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
-if [ "$(get_ocp_plate $namespace)" != "c6af30" ]; then
+if [ "$(get_ocp_plate "$namespace")" != "c6af30" ]; then
     error "must run test scripts in sandbox environments"
     exit 1
 fi
@@ -48,12 +48,12 @@ declare -a realms_golddr=()
 
 i=0
 while [ $i -ne 5 ]; do
-    i=$(($i + 1))
+    i=$((i + 1))
     realms_gold+=("$TEST_REALM_PREFIX-$i")
 done
 
 while [ $i -ne 5 ]; do
-    i=$(($i + 1))
+    i=$((i + 1))
     realms_golddr+=("$TEST_REALM_PREFIX-$i")
 done
 
