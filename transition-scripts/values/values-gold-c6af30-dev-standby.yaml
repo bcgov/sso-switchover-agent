@@ -13,7 +13,7 @@ maintenancePage:
   active: false
 
 patroni:
-  replicaCount: 2
+  replicaCount: 1
 
   persistentVolume:
     size: 1Gi
