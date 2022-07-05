@@ -28,4 +28,4 @@ patroni:
     enabled: true
 
   transportServerClaim:
-    enabled: true
+    enabled: false
