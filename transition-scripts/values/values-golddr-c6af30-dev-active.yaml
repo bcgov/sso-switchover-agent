@@ -17,3 +17,9 @@ patroni:
 
   persistentVolume:
     size: 1Gi
+
+  podDisruptionBudget:
+    enabled: true
+
+  transportServerClaim:
+    enabled: false
