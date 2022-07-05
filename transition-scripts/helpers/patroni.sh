@@ -65,6 +65,12 @@ set_patroni_cluster_active() {
 
   namespace="$1"
 
+  patroni_mode=$(check_patroni_cluster_mode "$namespace")
+  if [ "$patroni_mode" == "active" ]; then
+    echo "success"
+    return
+  fi
+
   read -r status_code data < <(kube_curl "$namespace" sso-patroni-0 -XPATCH -d '{"standby_cluster":null}' http://localhost:8008/config)
   if [ "$status_code" -ne "200" ]; then
     echo "failure"
@@ -86,6 +92,13 @@ set_patroni_cluster_standby() {
   if [ "$#" -lt 1 ]; then exit 1; fi
 
   namespace="$1"
+
+  patroni_mode=$(check_patroni_cluster_mode "$namespace")
+  if [ "$patroni_mode" == "standby" ]; then
+    echo "success"
+    return
+  fi
+
   target_host=$(get_tsc_target_host "$namespace" "sso-patroni")
   target_port=$(get_tsc_target_port "$namespace" "sso-patroni")
   if [ -z "$target_port" ]; then exit 1; fi
