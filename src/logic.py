@@ -21,6 +21,7 @@ def handle_queues(queue: Queue, processes: list):
                 if ip == config.get('active_ip'):
                     logger.info("active_ip")
                 elif ip == config.get('passive_ip'):
+                    logger.info("passive_ip")
                     dispatch_action()
 
         except Exception as ex:
@@ -30,7 +31,7 @@ def handle_queues(queue: Queue, processes: list):
 
 def dispatch_action():
     url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), config.get('gh_repo'), config.get('gh_workflow_id'))
-    data = {'ref': config.get('gh_branch'), 'inputs': {}}
+    data = {'ref': config.get('gh_branch'), 'inputs': {'namespace': config.get('namespace')}}
     bearer = 'token %s' % config.get('gh_token')
     headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': bearer}
     x = requests.post(url, json=data, headers=headers)

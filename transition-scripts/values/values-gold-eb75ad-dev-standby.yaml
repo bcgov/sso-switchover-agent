@@ -19,7 +19,7 @@ resources:
     memory: 4Gi
 
 patroni:
-  replicaCount: 3
+  replicaCount: 1
 
   persistentVolume:
     size: 10Gi
