@@ -109,10 +109,10 @@ check_helm_release() {
   namespace="$1"
   release="$2"
 
-  status=$(helm status "$release" -n "$namespace")
+  status=$(helm status "$release" -n "$namespace" 2>&1)
   error_msg="Error: release: not found"
 
-  if [[ "$status" != *"$error_msg"* ]]; then
+  if [[ "$status" == *"$error_msg"* ]]; then
     echo "not found"
   else
     echo "found"
