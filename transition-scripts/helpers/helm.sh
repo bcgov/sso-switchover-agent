@@ -103,3 +103,18 @@ cleanup_namespace() {
   kubectl delete configmap -n "$namespace" -l "app.kubernetes.io/name=sso-patroni"
   kubectl delete pvc -n "$namespace" -l "app.kubernetes.io/name=sso-patroni"
 }
+
+check_helm_release() {
+  if [ "$#" -lt 2 ]; then exit 1; fi
+  namespace="$1"
+  release="$2"
+
+  status=$(helm status "$release" -n "$namespace")
+  error_msg="Error: release: not found"
+
+  if [[ "$status" != *"$error_msg"* ]]; then
+    echo "not found"
+  else
+    echo "found"
+  fi
+}

@@ -44,11 +44,14 @@ done
 switch_kube_context "gold" "$namespace"
 check_ocp_cluster "gold"
 
-if [ "$purge" == "true" ]; then
-    uninstall_helm "$namespace"
-    cleanup_namespace "$namespace"
-else
-    set_patroni_cluster_active "$namespace"
+helm_released=$(check_helm_release "$namespace" "sso-keycloak")
+if [ "$helm_released" == "found" ]; then
+    if [ "$purge" == "true" ]; then
+        uninstall_helm "$namespace"
+        cleanup_namespace "$namespace"
+    else
+        set_patroni_cluster_active "$namespace"
+    fi
 fi
 
 upgrade_helm_active "$namespace"
@@ -60,11 +63,14 @@ wait_for_patroni_all_ready "$namespace"
 switch_kube_context "golddr" "$namespace"
 check_ocp_cluster "golddr"
 
-if [ "$purge" == "true" ]; then
-    uninstall_helm "$namespace"
-    cleanup_namespace "$namespace"
-else
-    set_patroni_cluster_standby "$namespace"
+helm_released=$(check_helm_release "$namespace" "sso-keycloak")
+if [ "$helm_released" == "found" ]; then
+    if [ "$purge" == "true" ]; then
+        uninstall_helm "$namespace"
+        cleanup_namespace "$namespace"
+    else
+        set_patroni_cluster_standby "$namespace"
+    fi
 fi
 
 upgrade_helm_standby "$namespace"
