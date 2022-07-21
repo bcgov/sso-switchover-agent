@@ -10,9 +10,10 @@ Steps:
     1. check if the patroni cluster in Gold is running as 'standby mode'.
     2. convert the patroni cluster in Gold to an 'active mode'.
     3. scale up the Keycloak deployment and update the DB endpoint to Gold.
-    4. wait until all Keycloak pods are running and healthy in Gold.
-    5. convert the patroni cluster in Golddr to an 'standby mode'.
-    6. scale down the Keycloak deployment in Golddr.
+    4. set the route endpoint to the maintenance page in Gold.
+    5. set the route endpoint to the Keycloak when Keycloak & Patroni pods are ready in Gold.
+    6. convert the patroni cluster in Golddr to an 'standby mode'.
+    7. scale down the Keycloak deployment in Golddr.
 
 Usages:
     $0 <namespace>
