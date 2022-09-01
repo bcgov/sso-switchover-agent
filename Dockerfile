@@ -2,20 +2,25 @@ FROM python:3.8.6-alpine
 
 WORKDIR /app
 
-RUN apk add curl
-
 RUN python -m pip install --upgrade pip
 
-ENV XDG_CONFIG_HOME=/var
+ARG POETRY_VERSION=1.2.0
 
-RUN cd /tmp && \
-  curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py > get-poetry.py && \
-  POETRY_HOME=/opt/poetry python get-poetry.py --version 1.1.13 && \
-  cd /usr/local/bin && \
-  chmod +x /opt/poetry/bin/poetry && \
-  ln -s /opt/poetry/bin/poetry && \
-  poetry config virtualenvs.create false && \
-  chmod g+r /var/pypoetry/config.toml
+RUN apk add --no-cache \
+        curl \
+        gcc \
+        libressl-dev \
+        musl-dev \
+        libffi-dev && \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile=minimal && \
+    source $HOME/.cargo/env && \
+    pip install --no-cache-dir poetry==${POETRY_VERSION} && \
+    apk del \
+        curl \
+        gcc \
+        libressl-dev \
+        musl-dev \
+        libffi-dev
 
 COPY ./pyproject.toml .
 COPY ./poetry.lock .
