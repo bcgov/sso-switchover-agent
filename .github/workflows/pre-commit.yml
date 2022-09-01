@@ -32,8 +32,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-test-cache
-          key: ${{ runner.os }}-buildx-test-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-buildx-test-
+          key: ${{ runner.os }}-buildx-dev-test-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-buildx-dev-test-
       - name: Build Test Docker image
         uses: docker/build-push-action@v3
         with:
