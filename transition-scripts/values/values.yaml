@@ -1,4 +1,38 @@
 image:
   repository: ghcr.io/bcgov/sso
-  tag: v7.5-9-build.4
-  pullPolicy: Always
+  tag: 7.6.5-build.2
+  pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    cpu: 2
+    memory: 4Gi
+  requests:
+    cpu: 100m
+    memory: 1Gi
+
+configuration:
+  enabled: true
+  version: "7.6"
+
+livenessProbe:
+  enabled: true
+  verification: script
+  initialDelaySeconds: 240
+  periodSeconds: 20
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 6
+
+readinessProbe:
+  enabled: true
+  verification: script
+  initialDelaySeconds: 180
+  periodSeconds: 20
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 6
+
+rollingUpdate:
+  maxSurge: "100%"
+  maxUnavailable: 0
