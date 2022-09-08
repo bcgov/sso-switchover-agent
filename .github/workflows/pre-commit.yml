@@ -31,9 +31,9 @@ jobs:
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
-          path: /tmp/.buildx-test-cache
-          key: ${{ runner.os }}-buildx-test-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-buildx-test-
+          path: /tmp/.buildx-dev-cache
+          key: ${{ runner.os }}-buildx-dev-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-buildx-dev-
       - name: Build Test Docker image
         uses: docker/build-push-action@v3
         with:
@@ -42,12 +42,12 @@ jobs:
           load: true
           tags: switchover-test
           file: Dockerfile-test
-          cache-from: type=local,src=/tmp/.buildx-test-cache
-          cache-to: type=local,dest=/tmp/.buildx-test-cache-new
+          cache-from: type=local,src=/tmp/.buildx-dev-cache
+          cache-to: type=local,dest=/tmp/.buildx-dev-cache-new
       - name: Move cache
         run: |
-          rm -rf /tmp/.buildx-test-cache
-          mv /tmp/.buildx-test-cache-new /tmp/.buildx-test-cache
+          rm -rf /tmp/.buildx-dev-cache
+          mv /tmp/.buildx-dev-cache-new /tmp/.buildx-dev-cache
       - name: Run tests
         run: docker run switchover-test
 
