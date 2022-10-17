@@ -1,9 +1,5 @@
 replicaCount: 5
 
-service:
-  type: ClusterIP
-  port: 8443
-
 maintenancePage:
   enabled: false
   active: false
