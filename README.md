@@ -8,7 +8,7 @@ In adition to the disaster recovery (switchover) agent, the keycloak deployment 
 
 ### Triggering the deployments/transitions locally
 
-The local deployment workflow is an option if keycloak needs to be redeployed and github actions are down.  It is also a useful workflow when making changes ot the helm charts.   Deploying changes directly to the sandbox environment is easier and less time intensive than requiring a code review and merging a PR. See [Local dev environment set up](##local-development-environment) and [Scripts](##scripts) documentation.
+The local deployment workflow is an option if keycloak needs to be redeployed and github actions are down.  It is also a useful workflow when making changes ot the helm charts.   Deploying changes directly to the sandbox environment is easier and less time intensive than requiring a code review and merging a PR. See [Local dev environment set up](#local-development-environment) and [Scripts](#scripts) documentation.
 
 ### Triggering the deployments/transisiont in github
 
@@ -44,7 +44,7 @@ The tokens for deploying will be the service account deployer tokens.
 
 When and outage occurs, and the switchover agent is on, the `switch-to-golddr.sh` script will trigger.  Setting gold-dr database to be the leader and spinning up the keycloak-dr instance.  It will take about 10 to 15 minutes for keycloak to be back up and running. It will also attempt to put patroni-gold into standby mode, traking any changes that occur in patroni-gold-dr.
 
-If this script does not trigger you will have to do it manually either through actions or your local dev environment. Whether you trigger the scripts locally or through actions, the workflow is the same. The action is `Set the dr deployment to active`, the script is documented [bellow](###switch-to-golddr.sh).
+If this script does not trigger you will have to do it manually either through actions or your local dev environment. Whether you trigger the scripts locally or through actions, the workflow is the same. The action is `Set the dr deployment to active`, the script is documented [bellow](#switch-to-golddr.sh).
 
 ### When gold is restored
 
