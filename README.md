@@ -4,7 +4,7 @@ Switchover Agent in the Disaster Recovery Scenario between Gold &amp; Golddr. Th
 
 ## Using switchover agent as a deployment tool.
 
-In adition to the disaster recovery (switchover) agent, the keycloak deployment in gold is managed through the scripts in this repo. These scripts can be triggered from a local dev environment, the action in the github repo, or automatically via the switchover agent.
+In addition to the disaster recovery (switchover) agent, the keycloak deployment in gold is managed through the scripts in this repo. These scripts can be triggered from a local dev environment, the action in the github repo, or automatically via the switchover agent.
 
 ### Triggering the deployments/transitions locally
 
