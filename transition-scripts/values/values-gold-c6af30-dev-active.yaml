@@ -4,6 +4,9 @@ maintenancePage:
   enabled: false
   active: false
 
+annotations:
+  timeout: 90s
+
 patroni:
   replicaCount: 2
 
