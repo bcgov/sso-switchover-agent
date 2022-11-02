@@ -15,6 +15,9 @@ configuration:
   enabled: true
   version: "7.6"
 
+annotations:
+  timeout: 90s
+
 livenessProbe:
   enabled: true
   verification: script
