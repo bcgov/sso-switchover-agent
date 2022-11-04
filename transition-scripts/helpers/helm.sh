@@ -93,7 +93,7 @@ uninstall_helm() {
   if [ "$#" -lt 1 ]; then exit 1; fi
 
   namespace="$1"
-  helm uninstall sso-keycloak || true
+  helm uninstall sso-keycloak -n "$namespace" || true
 }
 
 cleanup_namespace() {
