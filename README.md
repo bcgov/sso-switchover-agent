@@ -21,7 +21,7 @@ The github actions found [here](.github/workflows) can be triggered manually in 
 
 ## The switchover agent
 
-The switchover agent is deployed in the Gold DR namespace for a given project and watches the global services load balancer to see if the DNS has been redirected to the Gold DR url.  If it detects the change it will automatically trigger the failover to the DR cluster.
+The switchover agent is deployed in the Gold DR namespace for a given project and watches changes in the DNS record.  If it detects the change it will automatically trigger the failover to the DR cluster.
 
 The switchover agent app is built and deployed automatically on pr merges to `dev` and `main` using the action `publish-image.yml`.  On merging to the `dev` branch, the app is deployed to the Gold DR sandbox `dev` namespace.  On merging to the `main` branch, the app is built and deployed to the Gold DR production `dev`, `test`, and `prod` namespaces.
 
