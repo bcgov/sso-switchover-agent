@@ -12,7 +12,7 @@ The Keycloak deployments in Gold and Gold DR are manage by helm, in the `transit
 
 The local deployment workflow is an option if keycloak needs to be redeployed and github actions are down.  It is also a useful workflow when making changes to the helm charts.   Deploying changes directly to the sandbox environment is easier and less time intensive than requiring a code review and merging a PR. See [Local dev environment set up](#local-development-environment) and [Scripts](#scripts) documentation.
 
-<u>Developer Note</u>: When deploying from a local environment it is crucial to have the branch up to date with remote the `dev`.  If the image tag in `/transition-scripts/values/values.yaml` does not match the image tag on the remote dev branch, the keycloak image will revert the next time the github action is triggered.
+**Developer Note**: When deploying client facing apps from a local environment it is crucial to have the branch up to date with remote the `dev`.  If the image tag in `/transition-scripts/values/values.yaml` does not match the image tag on the remote dev branch, the keycloak image will revert the next time the github action is triggered.
 
 ### Triggering the deployments/transisions in github
 
