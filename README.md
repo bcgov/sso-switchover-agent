@@ -6,11 +6,15 @@ Switchover Agent in the Disaster Recovery Scenario between Gold &amp; Golddr. Th
 
 In addition to the disaster recovery (switchover) agent, the keycloak deployment in gold is managed through the scripts in this repo. These scripts can be triggered from a local dev environment, the action in the github repo, or automatically via the switchover agent.
 
+The Keycloak deployments in Gold and Gold DR are manage by helm, in the `transition-scripts/` directory.  This is where you will find the deployment values.  The helm chart version is set by `KEYCLOAK_HELM_CHART_VERSION` variable in the `transition-scripts/helpers/helm.sh` file.  It will need to be updated for the actions to deploy a new version of the helm chart.
+
 ### Triggering the deployments/transitions locally
 
 The local deployment workflow is an option if keycloak needs to be redeployed and github actions are down.  It is also a useful workflow when making changes to the helm charts.   Deploying changes directly to the sandbox environment is easier and less time intensive than requiring a code review and merging a PR. See [Local dev environment set up](#local-development-environment) and [Scripts](#scripts) documentation.
 
-### Triggering the deployments/transisiont in github
+<u>Developer Note</u>: When deploying from a local environment it is crucial to have the branch up to date with remote the `dev`.  If the image tag in `/transition-scripts/values/values.yaml` does not match the image tag on the remote dev branch, the keycloak image will revert the next time the github action is triggered.
+
+### Triggering the deployments/transisions in github
 
 The github actions found [here](.github/workflows) can be triggered manually in the repo.  The actions allow a user to deploy the resources in gold and gold dr, set dr to active, and set gold to active.  These require and target namespace and deployment branch as inputs.
 
@@ -22,6 +26,13 @@ The switchover agent is deployed in the Gold DR namespace for a given project an
 The switchover agent app is built and deployed automatically on pr merges to `dev` and `main` using the action `publish-image.yml`.  On merging to the `dev` branch, the app is deployed to the Gold DR sandbox `dev` namespace.  On merging to the `main` branch, the app is built and deployed to the Gold DR production `dev`, `test`, and `prod` namespaces.
 
 The history of times the switchover agent has been triggered can be seen by looking at the history of the `Set the dr deployment to active` action in this repo.
+
+### DNS rerouting
+
+The DNS rerouting is handled by the a golobal server load balancer (GSLB) that monitors the keycloak health endpoint `https://loginproxy.gov.bc.ca/auth/realms/master/.well-known/openid-configuration` and, if it is not accessible, the GSLB will redirect traffic to the Gold DR cluster app.
+
+The Switchover agent monitors the keycloak app url (loginproxy.gov.bc.ca for production) and checks  every 5 seconds if the DNS record has changed. If it has, that indicates GSLB is redirecting to DR and the 'switch to dr' github action is triggered.
+
 
 ## Local development environment
 
@@ -37,6 +48,8 @@ oc login --token=<<golddr service account deployer token>> --server=https://api.
 The tokens for deploying will be the service account deployer tokens.
 
 ## Disaster recovery workflow
+
+Currently this workflow only allows the failover to function as expected if both patroni clusters are in a healthy state when failover occurs.  If the gold patroni stateful set is scaled down or the gold cluster is offline, restoring to gold will need to be done manually. This is done by re-deploying gold in standby mode, then triggering the `switch-to-gold.sh` script.
 
 ### When gold goes down
 
