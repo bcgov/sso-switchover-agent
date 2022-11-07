@@ -20,6 +20,8 @@ Usages:
 
 Available namespaces:
     - c6af30-dev
+    - c6af30-test
+    - c6af30-prod
     - eb75ad-dev
     - eb75ad-test
     - eb75ad-prod
