@@ -6,7 +6,7 @@ Switchover Agent in the Disaster Recovery Scenario between Gold &amp; Golddr. Th
 
 ## Using switchover agent as a deployment tool.
 
-In addition to the disaster recovery (switchover) agent, the keycloak deployment in gold is managed through the scripts in this repo. These scripts can be triggered from a local dev environment, the action in the github repo, or automatically via the switchover agent.
+In addition to the disaster recovery (switchover) agent, the keycloak deployment in gold is managed through the scripts in this repo. The deployment can be triggered in a local dev environment using [this](./transition-scripts/deploy.sh) script, or using the "Deploy Keycloak resources in Gold & Golddr" action in the github repo.
 
 The Keycloak deployments in Gold and Gold DR are manage by helm, in the `transition-scripts/` directory.  This is where you will find the deployment values.  The helm chart version is set by `KEYCLOAK_HELM_CHART_VERSION` variable in the `transition-scripts/helpers/helm.sh` file.  It will need to be updated for the actions to deploy a new version of the helm chart.
 
