@@ -53,7 +53,7 @@ The tokens for deploying will be the service account deployer tokens. Note: the 
 
 ### When gold goes down
 
-When and outage occurs, and the switchover agent is on, the `switch-to-golddr.sh` script will trigger.  Setting gold-dr database to be the leader and spinning up the keycloak-dr instance.  It will take about 10 to 15 minutes for keycloak to be back up and running. It will also attempt to put patroni-gold into standby mode, traking any changes that occur in patroni-gold-dr.
+When and outage occurs, and the switchover agent is on, the `switch-to-golddr.sh` script will trigger.  Setting gold-dr database to be the leader and spinning up the keycloak-dr instance.  It will take about 10 to 15 minutes for keycloak to be back up and running. It will also attempt to put patroni-gold into standby mode, tracking any changes that occur in patroni-gold-dr.
 
 If patroni-gold is down, or the Gold cluster cannot be reached, it will not be put in standby mode.  The github action will look like it failed, however keaycloak and patroni will have been successfully deployed in the Gold DR cluster.
 
