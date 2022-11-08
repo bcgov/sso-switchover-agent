@@ -18,7 +18,7 @@ The local deployment workflow is an option if keycloak needs to be redeployed an
 
 ### Triggering the deployments/transisions in github
 
-The github actions found [here](.github/workflows) can be triggered manually in the repo.  The actions allow a user to deploy the resources in gold and gold dr, set dr to active, and set gold to active.  These require and target namespace and deployment branch as inputs.
+The github actions found [here](.github/workflows) can be triggered manually in the repo.  The actions allow a user to deploy the resources in gold and gold dr, set dr to active, and set gold to active.  These require the target namespace and deployment branch as inputs.
 
 
 ## The switchover agent
