@@ -41,27 +41,36 @@ As with most sso team repos the switchover agent uses the asdf tool for local pa
 For the switchover scripts to work the user must provide credentials for both gold and gold-dr.  Using the terminal they can login using:
 
 ```
-oc login --token=<<gold service account deployer token>> --server=https://api.gold.devops.gov.bc.ca:6443
-oc login --token=<<golddr service account deployer token>> --server=https://api.golddr.devops.gov.bc.ca:6443
+oc login --token=<<gold oc-sso-deployer-token>> --server=https://api.gold.devops.gov.bc.ca:6443
+oc login --token=<<golddr oc-sso-deployer-token>> --server=https://api.golddr.devops.gov.bc.ca:6443
 ```
 
-The tokens for deploying will be the service account deployer tokens.
+The tokens for deploying will be the service account deployer tokens. Note: the scripts will not run if is is not the `oc-sso-deployer-token`.  There are many `deployer-token` secrets, only one `oc-sso-deployer-token`.
 
 ## Disaster recovery workflow
-
-Currently this workflow only allows the failover to function as expected if both patroni clusters are in a healthy state when failover occurs.  If the gold patroni stateful set is scaled down or the gold cluster is offline, restoring to gold will need to be done manually. This is done by re-deploying gold in standby mode, then triggering the `switch-to-gold.sh` script.
 
 ### When gold goes down
 
 When and outage occurs, and the switchover agent is on, the `switch-to-golddr.sh` script will trigger.  Setting gold-dr database to be the leader and spinning up the keycloak-dr instance.  It will take about 10 to 15 minutes for keycloak to be back up and running. It will also attempt to put patroni-gold into standby mode, traking any changes that occur in patroni-gold-dr.
 
-If this script does not trigger you will have to do it manually either through actions or your local dev environment. Whether you trigger the scripts locally or through actions, the workflow is the same. The action is `Set the dr deployment to active`, the script is documented [below](#switch-to-golddr.sh).
+If patroni-gold is down, or the Gold cluster cannot be reached, it will not be put in standby mode.  The github action will look like it failed, however keaycloak and patroni will have been successfully deployed in the Gold DR cluster.
+
+If this script does not trigger you will have to do it manually either through github actions or your local development environment. Whether you trigger the scripts locally or through actions, the workflow is the same. The action is `Set the dr deployment to active`, the script is documented [below](#switch-to-golddr.sh).
 
 ### When gold is restored
 
 When the Gold cluster is back in a healthy state, you will need to manually trigger the switchover from Gold DR to Gold.  This process is not automated by the switchover agent because it will cause a 10 to 15 minute outage for users and it may be best to delay the restoration until a low traffic time of day.
 
-Before triggering the restore, make certain gold patroni is in standby mode, following the gold dr patroni cluster.  Once done, trigger the github action `Set the gold deployment to active`, or, if Github actions are down, run the script `switch-to-gold.sh` in your local dev environment.
+Before triggering the restoration of Keycloak in Gold.  Confirm the Gold DR cluster is healthy and working as expected. If it's not in a healthy state, it may better restore Gold database from the daily backup and accept losing a day's data.
+
+When ready to restore gold, trigger the github action `Set the gold deployment to active`, or, if Github actions are down, run the script `switch-to-gold.sh` in your local dev environment.
+
+#### State conflict
+
+Even if patroni-gold is not in standby mode, the `switch-to-gold.sh`script is designed to handle that case.  It will put gold into standby mode to get the latest changes, then switch gold to the active cluster.   If this fails it may be necessary to delete the gold patroni deployment and recreate it in standby mode following the patroni-dr cluster.
+
+<!-- MORE DOCUMENTATION TO BE ADDED HERE WHEN THE WORKFLOW SCRIPT IS CREATED -->
+
 
 ## Scripts
 
