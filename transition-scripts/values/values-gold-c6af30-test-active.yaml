@@ -1,0 +1,17 @@
+replicaCount: 5
+
+maintenancePage:
+  enabled: false
+  active: false
+
+patroni:
+  replicaCount: 2
+
+  persistentVolume:
+    size: 1Gi
+
+  podDisruptionBudget:
+    enabled: true
+
+  transportServerClaim:
+    enabled: true

@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/bcgov/sso
-  tag: 7.6.5-build.5
+  tag: 7.6.5-build.16
   pullPolicy: IfNotPresent
 
 resources:
@@ -14,6 +14,9 @@ resources:
 configuration:
   enabled: true
   version: "7.6"
+
+annotations:
+  timeout: 90s
 
 livenessProbe:
   enabled: true

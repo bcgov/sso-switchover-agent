@@ -4,7 +4,7 @@ this="${BASH_SOURCE[0]}"
 pwd=$(dirname "$this")
 values="$pwd/../values"
 
-KEYCLOAK_HELM_CHART_VERSION="v1.14.0"
+KEYCLOAK_HELM_CHART_VERSION="v1.14.2"
 KEYCLOAK_HELM_DEPLOYMENT_NAME="sso-keycloak"
 
 upgrade_helm() {
@@ -93,7 +93,7 @@ uninstall_helm() {
   if [ "$#" -lt 1 ]; then exit 1; fi
 
   namespace="$1"
-  helm uninstall sso-keycloak || true
+  helm uninstall sso-keycloak -n "$namespace" || true
 }
 
 cleanup_namespace() {
