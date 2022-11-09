@@ -35,6 +35,9 @@ The DNS rerouting is handled by the a golobal server load balancer (GSLB) that m
 
 The Switchover agent monitors the keycloak app url (loginproxy.gov.bc.ca for production) and checks  every 5 seconds if the DNS record has changed. If it has, that indicates GSLB is redirecting to DR and the 'switch to dr' github action is triggered.
 
+### The GSLB
+
+Global server load balancing or GSLB is the practice of distributing Internet traffic amongst a large number of connected servers dispersed around multiple clusters. The benefits of GSLB include increased reliability, reductions in latency, and it promotes high availability.
 
 ## Local development environment
 
