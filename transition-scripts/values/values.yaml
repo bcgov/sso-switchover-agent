@@ -3,6 +3,8 @@ image:
   tag: 7.6.5-build.16
   pullPolicy: IfNotPresent
 
+additionalServerOptions: "-Dkeycloak.profile.feature.impersonation=disabled -Djboss.persistent.log.dir=/var/log/eap"
+
 resources:
   limits:
     cpu: 2
