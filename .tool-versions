@@ -2,3 +2,4 @@ python 3.8.6
 poetry 1.2.0
 helm 3.2.4
 shellcheck 0.8.0
+oc 4.7.5
