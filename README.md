@@ -74,7 +74,26 @@ When ready to restore gold, trigger the github action `Set the gold deployment t
 
 Even if patroni-gold is not in standby mode, the `switch-to-gold.sh`script is designed to handle that case.  It will put gold into standby mode to get the latest changes, then switch gold to the active cluster.   If this fails it may be necessary to delete the gold patroni deployment and recreate it in standby mode following the patroni-dr cluster.
 
-<!-- MORE DOCUMENTATION TO BE ADDED HERE WHEN THE WORKFLOW SCRIPT IS CREATED -->
+Step 0.) Confirm Patroni-DR is up, healthy and **not** in standby mode.
+
+Step 1.) Run the backup script on Patroni-Gold.
+
+Step 2.) Scale the Patroni-Gold pods to zero
+
+Step 3.) Delete all local config contexts. Not doing this can break the context switching in the scripts.  It is possible for there to be a lot of contexts that need deleting.
+```
+kubectl config get-contexts
+kubectl config delete-context <<CONTEXT_NAME>>
+```
+
+Step 4.) Log into the Gold and Gold DR clusters via the command line, using the `oc-sso-deployer-token` tokens.
+
+Step 5.) Run the `deploy-gold-in-standby.sh` script.  **Warning: This will delete the gold PVCs and patroni configmaps.**
+```
+./deploy-gold-in-standby.sh <<NAMESPACE>>
+```
+
+When this script completes the Patroni-Gold cluster should be in stand-by mode, following the active patroni cluster.
 
 
 ## Scripts
