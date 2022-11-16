@@ -36,14 +36,28 @@ namespace=$1
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
+# Ensure Gold DR is healthy and active
+switch_kube_context "golddr" "$namespace"
+check_ocp_cluster "golddr"
+
+wait_for_patroni_healthy "$namespace"
+patroni_mode=$(check_patroni_cluster_mode "$namespace")
+
+if [ "$patroni_mode" == "active" ]; then
+    echo "Patroni DR in active mode"
+else
+    echo "Patroni DR not in active mode"
+    exit 1
+fi
+
+
 # Gold deployments
 switch_kube_context "gold" "$namespace"
 check_ocp_cluster "gold"
 
-
 cleanup_namespace "$namespace"
 
-echo "Cleaned up the pvcs"
+info "Cleaned up the pvcs"
 upgrade_helm_standby "$namespace"
 
 wait_for_patroni_healthy "$namespace"
