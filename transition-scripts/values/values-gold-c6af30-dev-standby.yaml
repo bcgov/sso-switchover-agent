@@ -23,3 +23,6 @@ patroni:
 
   transportServerClaim:
     enabled: true
+
+rollingUpdate:
+  maxSurge: 2
