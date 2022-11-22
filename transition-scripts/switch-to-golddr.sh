@@ -92,7 +92,7 @@ if [ "$cluster_update" != "success" ]; then
     exit 1
 fi
 
-upgrade_helm_standby "$namespace"
+upgrade_helm_standby "$namespace" --maintenance-on
 
 wait_for_patroni_healthy "$namespace"
 wait_for_patroni_all_ready "$namespace"

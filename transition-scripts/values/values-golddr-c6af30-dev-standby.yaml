@@ -9,8 +9,8 @@ resources:
     memory: 1Gi
 
 maintenancePage:
-  enabled: true
-  active: true
+  enabled: false
+  active: false
 
 patroni:
   replicaCount: 2
