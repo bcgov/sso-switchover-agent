@@ -75,7 +75,7 @@ if [ "$helm_released" == "found" ]; then
     fi
 fi
 
-upgrade_helm_standby "$namespace"
+upgrade_helm_standby "$namespace" --maintenance-on
 
 wait_for_patroni_healthy "$namespace"
 wait_for_patroni_all_ready "$namespace"
