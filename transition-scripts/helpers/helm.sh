@@ -6,6 +6,7 @@ values="$pwd/../values"
 
 KEYCLOAK_HELM_CHART_VERSION="v1.14.2"
 KEYCLOAK_HELM_DEPLOYMENT_NAME="sso-keycloak"
+KEYCLOAK_ROUTE="sso-test"
 
 upgrade_helm() {
   if [ "$#" -lt 2 ]; then exit 1; fi
@@ -39,6 +40,13 @@ upgrade_helm_active() {
   upgrade_helm "$namespace" "active" \
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
+
+  if [ "$maintenance" = "true" ]
+  then
+    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak-maintenance"}}}'
+  else
+    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak"}}}'
+  fi
 }
 
 upgrade_helm_standby() {
@@ -87,6 +95,13 @@ upgrade_helm_standby() {
     --set patroni.additionalCredentials[0].password="$password_appuser1" \
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
+
+  if [ "$maintenance" = "true" ]
+  then
+    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak-maintenance"}}}'
+  else
+    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak"}}}'
+  fi
 }
 
 uninstall_helm() {
