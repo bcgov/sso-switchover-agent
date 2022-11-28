@@ -41,12 +41,13 @@ upgrade_helm_active() {
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
 
-  if [ "$maintenance" = "true" ]
-  then
-    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak-maintenance"}}}'
-  else
-    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak"}}}'
-  fi
+  connect_route_to_correct_service "$maintenance" "$namespace"
+  # if [ "$maintenance" = "true" ]
+  # then
+  #   kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak-maintenance"}}}'
+  # else
+  #   kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak"}}}'
+  # fi
 }
 
 upgrade_helm_standby() {
@@ -96,12 +97,14 @@ upgrade_helm_standby() {
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
 
-  if [ "$maintenance" = "true" ]
-  then
-    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak-maintenance"}}}'
-  else
-    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak"}}}'
-  fi
+  connect_route_to_correct_service "$maintenance" "$namespace"
+
+  # if [ "$maintenance" = "true" ]
+  # then
+  #   kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak-maintenance"}}}'
+  # else
+  #   kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak"}}}'
+  # fi
 }
 
 uninstall_helm() {
@@ -132,4 +135,19 @@ check_helm_release() {
   else
     echo "found"
   fi
+}
+
+connect_route_to_correct_service() {
+  if [ "$#" -lt 2 ]; then exit 1; fi
+
+  maintenance="$1"
+  namespace="$2"
+
+  if [ "$maintenance" = "true" ]
+  then
+    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak-maintenance"}}}'
+  else
+    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak"}}}'
+  fi
+
 }
