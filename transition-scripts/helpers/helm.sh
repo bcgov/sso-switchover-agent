@@ -42,12 +42,6 @@ upgrade_helm_active() {
     --set maintenancePage.active="$maintenance"
 
   connect_route_to_correct_service "$maintenance" "$namespace"
-  # if [ "$maintenance" = "true" ]
-  # then
-  #   kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak-maintenance"}}}'
-  # else
-  #   kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak"}}}'
-  # fi
 }
 
 upgrade_helm_standby() {
@@ -98,13 +92,6 @@ upgrade_helm_standby() {
     --set maintenancePage.active="$maintenance"
 
   connect_route_to_correct_service "$maintenance" "$namespace"
-
-  # if [ "$maintenance" = "true" ]
-  # then
-  #   kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak-maintenance"}}}'
-  # else
-  #   kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak"}}}'
-  # fi
 }
 
 uninstall_helm() {
@@ -145,9 +132,9 @@ connect_route_to_correct_service() {
 
   if [ "$maintenance" = "true" ]
   then
-    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak-maintenance"}}}'
+    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'-maintenance"}}}'
   else
-    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak"}}}'
+    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'"}}}'
   fi
 
 }
