@@ -6,7 +6,6 @@ values="$pwd/../values"
 
 KEYCLOAK_HELM_CHART_VERSION="v1.14.2"
 KEYCLOAK_HELM_DEPLOYMENT_NAME="sso-keycloak"
-KEYCLOAK_ROUTE="sso-test"
 
 upgrade_helm() {
   if [ "$#" -lt 2 ]; then exit 1; fi
@@ -129,6 +128,20 @@ connect_route_to_correct_service() {
 
   maintenance="$1"
   namespace="$2"
+
+  if [ "$namespace" = "c6af30-dev" ]
+  then
+    KEYCLOAK_ROUTE="sso-test"
+  elif [ "$namespace" = "eb75ad-dev" ]
+  then
+    KEYCLOAK_ROUTE="sso-dev"
+  elif [ "$namespace" = "eb75ad-test" ]
+  then
+    KEYCLOAK_ROUTE="sso-test"
+  elif [ "$namespace" = "eb75ad-prod" ]
+  then
+    KEYCLOAK_ROUTE="sso-prod"
+  fi
 
   if [ "$maintenance" = "true" ]
   then
