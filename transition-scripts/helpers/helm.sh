@@ -39,6 +39,8 @@ upgrade_helm_active() {
   upgrade_helm "$namespace" "active" \
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
+
+  connect_route_to_correct_service "$maintenance" "$namespace"
 }
 
 upgrade_helm_standby() {
@@ -87,6 +89,8 @@ upgrade_helm_standby() {
     --set patroni.additionalCredentials[0].password="$password_appuser1" \
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
+
+  connect_route_to_correct_service "$maintenance" "$namespace"
 }
 
 uninstall_helm() {
@@ -117,4 +121,33 @@ check_helm_release() {
   else
     echo "found"
   fi
+}
+
+connect_route_to_correct_service() {
+  if [ "$#" -lt 2 ]; then exit 1; fi
+
+  maintenance="$1"
+  namespace="$2"
+
+  if [ "$namespace" = "c6af30-dev" ]
+  then
+    KEYCLOAK_ROUTE="sso-test"
+  elif [ "$namespace" = "eb75ad-dev" ]
+  then
+    KEYCLOAK_ROUTE="sso-dev"
+  elif [ "$namespace" = "eb75ad-test" ]
+  then
+    KEYCLOAK_ROUTE="sso-test"
+  elif [ "$namespace" = "eb75ad-prod" ]
+  then
+    KEYCLOAK_ROUTE="sso-prod"
+  fi
+
+  if [ "$maintenance" = "true" ]
+  then
+    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'-maintenance"}}}'
+  else
+    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'"}}}'
+  fi
+
 }
