@@ -132,6 +132,12 @@ connect_route_to_correct_service() {
   if [ "$namespace" = "c6af30-dev" ]
   then
     KEYCLOAK_ROUTE="sso-test"
+  elif [ "$namespace" = "c6af30-test" ]
+  then
+    KEYCLOAK_ROUTE="sso-test"
+  elif [ "$namespace" = "c6af30-prod" ]
+  then
+    KEYCLOAK_ROUTE="sso-prod"
   elif [ "$namespace" = "eb75ad-dev" ]
   then
     KEYCLOAK_ROUTE="sso-dev"
