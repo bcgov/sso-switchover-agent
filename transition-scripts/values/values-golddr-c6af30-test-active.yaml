@@ -1,4 +1,4 @@
-replicaCount: 0
+replicaCount: 2
 
 resources:
   limits:
@@ -7,6 +7,9 @@ resources:
   requests:
     cpu: 0.8
     memory: 1Gi
+
+tls:
+  enabled: true
 
 maintenancePage:
   enabled: false
@@ -19,10 +22,7 @@ patroni:
     size: 1Gi
 
   podDisruptionBudget:
-    enabled: false
-
-  transportServerClaim:
     enabled: true
 
-rollingUpdate:
-  maxSurge: 2
+  transportServerClaim:
+    enabled: false

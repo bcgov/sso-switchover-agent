@@ -5,18 +5,10 @@ service:
   port: 8443
 
 tls:
-  enabled: true
+  enabled: false
 
 persistentLog:
   size: 10Gi
-
-resources:
-  limits:
-    cpu: 2
-    memory: 4Gi
-  requests:
-    cpu: 1250m
-    memory: 4Gi
 
 patroni:
   replicaCount: 2

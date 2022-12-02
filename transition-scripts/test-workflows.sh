@@ -19,6 +19,8 @@ Usages:
 
 Available namespaces:
     - c6af30-dev
+    - c6af30-test
+    - c6af30-prod
 
 Examples:
     $ $0 ghp_xxxx c6af30-dev

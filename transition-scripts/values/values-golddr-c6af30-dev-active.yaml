@@ -8,6 +8,9 @@ resources:
     cpu: 0.8
     memory: 1Gi
 
+tls:
+  enabled: true
+
 maintenancePage:
   enabled: false
   active: false
@@ -23,3 +26,6 @@ patroni:
 
   transportServerClaim:
     enabled: false
+
+rollingUpdate:
+  maxSurge: 2

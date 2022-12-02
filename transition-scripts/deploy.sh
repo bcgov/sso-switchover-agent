@@ -11,6 +11,8 @@ Usages:
 
 Available namespaces:
     - c6af30-dev
+    - c6af30-test
+    - c6af30-prod
     - eb75ad-dev
     - eb75ad-test
     - eb75ad-prod
@@ -73,7 +75,7 @@ if [ "$helm_released" == "found" ]; then
     fi
 fi
 
-upgrade_helm_standby "$namespace"
+upgrade_helm_standby "$namespace" --maintenance-on
 
 wait_for_patroni_healthy "$namespace"
 wait_for_patroni_all_ready "$namespace"

@@ -8,9 +8,12 @@ resources:
     cpu: 0.8
     memory: 1Gi
 
-maintenancePage:
+tls:
   enabled: false
-  active: false
+
+maintenancePage:
+  enabled: true
+  active: true
 
 patroni:
   replicaCount: 2
@@ -23,3 +26,6 @@ patroni:
 
   transportServerClaim:
     enabled: false
+
+rollingUpdate:
+  maxSurge: 2

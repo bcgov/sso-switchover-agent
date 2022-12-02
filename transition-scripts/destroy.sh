@@ -6,10 +6,12 @@ usage() {
 Destroy Keycloak resources in the target namespaces.
 
 Usages:
-    $0 <namespace>
+    $0 <namespace> [-p|--purge]
 
 Available namespaces:
     - c6af30-dev
+    - c6af30-test
+    - c6af30-prod
 
 Examples:
     $ $0 c6af30-dev
