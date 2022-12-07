@@ -45,7 +45,7 @@ The Switchover agent monitors the keycloak app url (loginproxy.gov.bc.ca for pro
 
 Global server load balancing or GSLB is the practice of distributing Internet traffic amongst a large number of connected servers dispersed around multiple clusters. The benefits of GSLB include increased reliability, reductions in latency, and it promotes high availability.
 
-Currently the GSLB is configured in such a way that when the gold health endpoint is up, traffice will be sent there.  If Gold's health endpoint does not return `200 OK`, the GSLB will point traffic at Gold DR.  If that health check endpoint does not pass, The GSLB will not route the traffic to either, returning no DNS response.  A side effect is that traffic automatically returns to Gold as soon as the Gold health check passes, the status of Gold DR has no impact on that redirection.
+Currently the GSLB is configured in such a way that when the gold health endpoint is up, traffic will be sent there.  If Gold's health endpoint does not return `200 OK`, the GSLB will point traffic at Gold DR.  If the Gold DR health check endpoint also fails, the GSLB will not route the traffic to either cluster, returning `SERVFAIL`. (The switchover agent logs this as `no DNS response`).  A side effect is that traffic automatically returns to Gold as soon as the Gold health check passes, the status of Gold DR has no impact on that redirection.
 
 ## Local development environment
 
