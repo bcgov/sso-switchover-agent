@@ -8,6 +8,9 @@ resources:
     cpu: 0.8
     memory: 1Gi
 
+persistentLog:
+  size: 0.5Gi
+
 maintenancePage:
   enabled: false
   active: false

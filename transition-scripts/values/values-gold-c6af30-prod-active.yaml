@@ -1,5 +1,8 @@
 replicaCount: 1
 
+persistentLog:
+  size: 0.5Gi
+
 maintenancePage:
   enabled: false
   active: false

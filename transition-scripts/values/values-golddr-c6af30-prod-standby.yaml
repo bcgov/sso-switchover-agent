@@ -1,5 +1,8 @@
 replicaCount: 0
 
+persistentLog:
+  size: 0.5Gi
+
 resources:
   limits:
     cpu: 1
