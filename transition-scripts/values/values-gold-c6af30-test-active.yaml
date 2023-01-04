@@ -1,4 +1,4 @@
-replicaCount: 5
+replicaCount: 2
 
 maintenancePage:
   enabled: false
@@ -11,7 +11,7 @@ patroni:
     size: 1Gi
 
   podDisruptionBudget:
-    enabled: true
+    enabled: false
 
   transportServerClaim:
     enabled: true

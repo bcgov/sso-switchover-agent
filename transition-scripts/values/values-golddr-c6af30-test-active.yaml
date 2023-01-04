@@ -22,7 +22,7 @@ patroni:
     size: 1Gi
 
   podDisruptionBudget:
-    enabled: true
+    enabled: false
 
   transportServerClaim:
     enabled: false
