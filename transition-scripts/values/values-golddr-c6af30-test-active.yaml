@@ -11,6 +11,9 @@ resources:
 tls:
   enabled: true
 
+persistentLog:
+  size: 2Gi
+
 maintenancePage:
   enabled: false
   active: false

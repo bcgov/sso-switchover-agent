@@ -4,6 +4,9 @@ maintenancePage:
   enabled: false
   active: false
 
+persistentLog:
+  size: 2Gi
+
 patroni:
   replicaCount: 2
 
