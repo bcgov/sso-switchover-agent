@@ -1,5 +1,12 @@
 replicaCount: 0
 
+service:
+  type: ClusterIP
+  port: 8443
+
+tls:
+  enabled: false
+
 resources:
   limits:
     cpu: 1
@@ -7,9 +14,6 @@ resources:
   requests:
     cpu: 0.8
     memory: 1Gi
-
-tls:
-  enabled: false
 
 persistentLog:
   size: 2Gi

@@ -1,5 +1,12 @@
 replicaCount: 0
 
+service:
+  type: ClusterIP
+  port: 8443
+
+tls:
+  enabled: false
+
 persistentLog:
   size: 0.5Gi
 
