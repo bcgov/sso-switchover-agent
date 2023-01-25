@@ -1,17 +1,27 @@
-replicaCount: 5
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 8443
+
+tls:
+  enabled: true
 
 maintenancePage:
   enabled: false
   active: false
 
+persistentLog:
+  size: 2Gi
+
 patroni:
   replicaCount: 2
 
   persistentVolume:
-    size: 1Gi
+    size: 0.5Gi
 
   podDisruptionBudget:
-    enabled: true
+    enabled: false
 
   transportServerClaim:
     enabled: true

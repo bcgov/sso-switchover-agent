@@ -1,5 +1,12 @@
 replicaCount: 0
 
+service:
+  type: ClusterIP
+  port: 8443
+
+tls:
+  enabled: false
+
 resources:
   limits:
     cpu: 1
@@ -8,15 +15,18 @@ resources:
     cpu: 0.8
     memory: 1Gi
 
+persistentLog:
+  size: 0.5Gi
+
 maintenancePage:
   enabled: false
   active: false
 
 patroni:
-  replicaCount: 2
+  replicaCount: 1
 
   persistentVolume:
-    size: 1Gi
+    size: 0.5Gi
 
   podDisruptionBudget:
     enabled: false

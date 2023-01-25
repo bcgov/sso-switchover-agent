@@ -25,9 +25,15 @@ The github actions found [here](.github/workflows) can be triggered manually in 
 
 The switchover agent is deployed in the Gold DR namespace for a given project and watches changes in the DNS record.  If it detects the change it will automatically trigger the failover to the DR cluster.
 
-The switchover agent app is built and deployed automatically on pr merges to `dev` and `main` using the action `publish-image.yml`.  On merging to the `dev` branch, the app is deployed to the Gold DR sandbox `dev` namespace.  On merging to the `main` branch, the app is built and deployed to the Gold DR production `dev`, `test`, and `prod` namespaces.
+The switchover agent app is built and deployed automatically on pr merges to `dev` and `main` using the action `publish-image.yml`.  On merging to the `dev` branch, the app is deployed to the Gold DR sandbox `dev` namespace.  On merging to the `main` branch, the app is built and deployed to the Gold DR production `dev`, `test`, and `prod` namespaces. Note: the switchover agent runs transitions scripts against the `main` branch code, not the `dev` branch in the production environment.
 
 The history of times the switchover agent has been triggered can be seen by looking at the history of the `Set the dr deployment to active` action in this repo.
+
+### Turning off automatic failover
+
+To prevent the switchover agent from automatically tirggering a build, it is best to alter the namespace in the `sso-switchover-agent` secret in the Gold DR repos.  This will trigger the "set the dr deployment to active" action for a non-existant namespace. Preventing an unwanted automated failover.
+
+This does not block the team from manually triggering a failover through GitHub actions, or from the local development environment.
 
 ### DNS rerouting
 
@@ -38,6 +44,8 @@ The Switchover agent monitors the keycloak app url (loginproxy.gov.bc.ca for pro
 ### The GSLB
 
 Global server load balancing or GSLB is the practice of distributing Internet traffic amongst a large number of connected servers dispersed around multiple clusters. The benefits of GSLB include increased reliability, reductions in latency, and it promotes high availability.
+
+Currently the GSLB is configured in such a way that when the gold health endpoint is up, traffic will be sent there.  If Gold's health endpoint does not return `200 OK`, the GSLB will point traffic at Gold DR.  If the Gold DR health check endpoint also fails, the GSLB will not route the traffic to either cluster, returning `SERVFAIL`. (The switchover agent logs this as `no DNS response`).  A side effect is that traffic automatically returns to Gold as soon as the Gold health check passes, the status of Gold DR has no impact on that redirection.
 
 ## Local development environment
 
