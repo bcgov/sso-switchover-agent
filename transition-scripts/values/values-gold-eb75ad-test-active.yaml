@@ -23,4 +23,4 @@ patroni:
     enabled: true
 
 rollingUpdate:
-  maxSurge: 2
+  maxSurge: 3
