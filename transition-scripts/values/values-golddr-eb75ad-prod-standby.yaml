@@ -11,7 +11,7 @@ persistentLog:
   size: 15Gi
 
 patroni:
-  replicaCount: 2
+  replicaCount: 3
 
   persistentVolume:
     size: 30Gi
