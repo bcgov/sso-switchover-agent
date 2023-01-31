@@ -50,9 +50,10 @@ namespace=$1
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
-echo "Switching to golddr"
-
 # Golddr deployments
+echo "Ensure cluster is golddr"
+ensure_kube_context "golddr"
+echo "Switching to golddr   "
 switch_kube_context "golddr" "$namespace"
 
 patroni_mode=$(check_patroni_cluster_mode "$namespace")
