@@ -18,8 +18,8 @@ jobs:
         uses: ./.github/actions/oc-login
         with:
           namespace: ${{ github.event.inputs.namespace }}
-          oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
-          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-server-gold: https://api.fakegold.devops.gov.bc.ca:6666
+          oc-token-gold: fakeToken
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
           oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
 

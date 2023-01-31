@@ -50,6 +50,8 @@ namespace=$1
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
+echo "Switching to golddr"
+
 # Golddr deployments
 switch_kube_context "golddr" "$namespace"
 
