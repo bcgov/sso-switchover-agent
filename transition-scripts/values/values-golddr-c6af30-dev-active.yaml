@@ -20,7 +20,7 @@ maintenancePage:
   active: false
 
 patroni:
-  replicaCount: 2
+  replicaCount: 3
 
   persistentVolume:
     size: 1Gi
@@ -32,4 +32,4 @@ patroni:
     enabled: false
 
 rollingUpdate:
-  maxSurge: 2
+  maxSurge: 3
