@@ -26,7 +26,8 @@ Available namespaces:
     - eb75ad-prod
 
 Pre-conditions:
-    - the patroni cluster in Gold must be healthy and in active mode.
+    - the patroni cluster in Gold must be healthy and in active mode for this to complete successfully.
+      However the switchover to gold dr will still occur if gold is down.
     - the patroni cluster in Golddr must be healthy and in standby mode.
 
 Examples:
@@ -51,12 +52,8 @@ pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
 # Golddr deployments
-echo "Ensure cluster is golddr"
+echo "Ensure cluster is golddr."
 ensure_kube_context "golddr"
-echo "Ensure cluster is not gold"
-ensure_kube_context "gold"
-echo "Switching to golddr   "
-switch_kube_context "golddr" "$namespace"
 
 patroni_mode=$(check_patroni_cluster_mode "$namespace")
 if [ "$patroni_mode" != "standby" ]; then
