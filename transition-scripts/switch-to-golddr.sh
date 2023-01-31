@@ -53,6 +53,8 @@ source "$pwd/helpers/_all.sh"
 # Golddr deployments
 echo "Ensure cluster is golddr"
 ensure_kube_context "golddr"
+echo "Ensure cluster is not gold"
+ensure_kube_context "gold"
 echo "Switching to golddr   "
 switch_kube_context "golddr" "$namespace"
 
