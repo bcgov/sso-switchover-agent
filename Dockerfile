@@ -22,10 +22,12 @@ RUN apk add --no-cache \
         musl-dev \
         libffi-dev
 
+
 COPY ./pyproject.toml .
 COPY ./poetry.lock .
 
-RUN poetry install --no-root --no-dev
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-root --no-dev
 
 COPY ./src /app/src
 
@@ -33,5 +35,4 @@ EXPOSE 8000
 
 ENV PY_ENV=local
 
-ENTRYPOINT ["poetry", "run"]
 CMD ["python", "src/main.py"]
