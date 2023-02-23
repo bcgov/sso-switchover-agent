@@ -9,6 +9,9 @@ on:
       - 'src/**'
       - 'helm/**'
       - '.github/workflows/publish-image.yml'
+      - 'Dockerfile'
+      - 'poetry.lock'
+      - 'pyproject.toml'
 
 env:
   GITHUB_REGISTRY: ghcr.io
