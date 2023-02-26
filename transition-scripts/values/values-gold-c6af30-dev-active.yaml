@@ -1,9 +1,5 @@
 replicaCount: 5
 
-image:
-  repository: ghcr.io/bcgov/sso
-  tag: 7.6.5-build.27
-  pullPolicy: IfNotPresent
 
 service:
   type: ClusterIP
