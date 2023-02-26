@@ -25,7 +25,11 @@ The github actions found [here](.github/workflows) can be triggered manually in 
 
 The switchover agent is deployed in the Gold DR namespace for a given project and watches changes in the DNS record.  If it detects the change it will automatically trigger the failover to the DR cluster.
 
-The switchover agent app is built and deployed automatically on pr merges to `dev` and `main` using the action `publish-image.yml`.  On merging to the `dev` branch, the app is deployed to the Gold DR sandbox `dev` namespace.  On merging to the `main` branch, the app is built and deployed to the Gold DR production `dev`, `test`, and `prod` namespaces. Note: the switchover agent runs transitions scripts against the `main` branch code, not the `dev` branch in the production environment.
+The switchover agent app is built and deployed automatically on pr merges to `dev` and `main` using the action `publish-image.yml`.  On merging to the `dev` branch, the app is deployed to the Gold DR sandbox `dev` namespace.  On merging to the `main` branch, the app is built and deployed to the Gold DR production `dev`, `test`, and `prod` namespaces.
+
+**Note 1**: the switchover agent runs transitions scripts against the `main` branch code, not the `dev` branch in the production environment.
+
+**Note 2**: While the image updates and the helm chart is upgraded, the switchover agent pod must be scaled down and back up to make use of the new image.
 
 The history of times the switchover agent has been triggered can be seen by looking at the history of the `Set the dr deployment to active` action in this repo.
 
