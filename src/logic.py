@@ -5,15 +5,20 @@ import requests
 
 from multiprocessing import Queue
 from config import config
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
 
 def handle_queues(queue: Queue, processes: list):
+    time_last_synch = None
     while True:
         try:
             item = queue.get()
             logger.info(item)
+            if item['event'] == 'xlog':
+                logger.info(f"The xlogs were in synch at {item['time_synch']}")
+                time_last_synch = item['time_synch']
 
             if item['event'] == 'dns':
                 ip = item['result']
@@ -22,7 +27,11 @@ def handle_queues(queue: Queue, processes: list):
                     logger.info("active_ip")
                 elif ip == config.get('passive_ip'):
                     logger.info("passive_ip")
-                    dispatch_action()
+                    current_time = datetime.now()
+                    if (time_last_synch is None or (current_time - timedelta(minutes=15) > time_last_synch)):
+                        logger.info("XLogs have not been in synch for over 15 minutes, automatic failover to gold dr blocked")
+                    else:
+                        dispatch_action()
 
         except Exception as ex:
             logger.error('Unknown error in logic. %s' % ex)

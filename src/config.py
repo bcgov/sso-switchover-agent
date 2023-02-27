@@ -12,4 +12,7 @@ config = dict(
     gh_workflow_id=os.environ.get("GH_WORKFLOW_ID", 'switch-to-golddr.yml'),
     gh_token=os.environ.get("GH_TOKEN", ''),
     namespace=os.environ.get("NAMESPACE", 'xxxxxx-dev'),
+    gold_port=os.environ.get("GOLD_PORT", 'xxxxx'),
+    gold_patroni_service=os.environ.get("GOLD_PATRONI_SERVICE_NAME", 'sso-patroni-config-readonly-gold'),
+    dr_patroni_service=os.environ.get("DR_PATRONI_SERVICE_NAME", 'sso-patroni-config-readonly')
 )

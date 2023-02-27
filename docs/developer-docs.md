@@ -4,32 +4,26 @@
 
 Due to the agent working in the openshift cluster, a purely local developement environment may not be feasible.  However it is still useful to be able to build the app locally and deploy it to a sandbox environment.
 
-### Creating the github image locally.
+### Build and tag the github image locally.
 
 ```
-docker build . -t switchagent:testtag
+docker build . -t ghcr.io/bcgov/sso-switchover-agent:testtag
 ```
 
 ### Publishing the image to a remote repos
 
-Publishing the imgage to the sso-switchover-agent repos requires three steps:
+Publishing the taged image to the sso-switchover-agent repos requires two steps:
 
-1) Tagging the local image:
-<!-- # docker tag [OPTIONS] IMAGE[:TAG] [REGISTRYHOST/][USERNAME/]NAME[:TAG] -->
-```
-docker tag switchagent:testtag ghcr.io/bcgov/sso-switchover-agent:testtag
-```
+1) Login to the ghcr, a guide can be found here: [github guide](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
 
-2) Login to the ghcr here is a [github guide](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
-
-3) Pushing the repos up:
+1) Pushing the repos up:
 ```
 docker push ghcr.io/bcgov/sso-switchover-agent:testtag
 ```
 
 ### Deploying the image to a specific namespace.
 
-This imgage can be deployed from the local environment using helm. Note you must be logged into the GoldDR cluster for this, not the gold cluster.
+This image can be deployed from the local environment using helm. Note you must be logged into the GoldDR cluster for this, not the gold cluster.
 
 ```
 helm upgrade --install <<test-deployment-name>> . \
@@ -37,3 +31,16 @@ helm upgrade --install <<test-deployment-name>> . \
 -f values.yaml \
 -f "values-c6af30-local.yaml"
 ```
+
+## Running the local image:
+
+For some development tasks, a deployment of the image to the gold dr cluster may not be neccessary.  In that case simply build and run the imagege locally:
+
+```
+docker build . -t <image_name>:<image_tag>
+docker run <image_name>:<image_tag>
+```
+
+## Running unit tests:
+
+No testing infrastructure is currently in place for the switchover agent code.
