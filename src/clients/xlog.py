@@ -48,7 +48,10 @@ async def xlog_lookup(service_name: str, q: Queue):
 
             patroni_gold_response = requests.get(gold_url, timeout=5)
             patroni_gold_config = json.loads(patroni_gold_response.text)
-            patroni_gold_xlog = patroni_gold_config['xlog']['location']
+            if patroni_gold_config['role'] == 'replica':
+                patroni_gold_xlog = patroni_gold_config['xlog']['received_location']
+            else:
+                patroni_gold_xlog = patroni_gold_config['xlog']['location']
 
             if patroni_gold_xlog != patroni_dr_xlog:
                 logger.info(f"The xlogs are out of synch")
@@ -60,9 +63,11 @@ async def xlog_lookup(service_name: str, q: Queue):
             logger.error("XLOG failed response")
             logger.error(e)
 
-        except KeyError('location') as kee:
+        except KeyError as kee:
             logger.error("Xlog not found in response")
             logger.error(kee)
+            logger.error(f"The gold config is: {patroni_gold_config}")
+            logger.error(f"The dr config is: {patroni_dr_config}")
 
         if last_synch_time is not None:
             q.put({'event': 'xlog', 'time_synch': last_synch_time,

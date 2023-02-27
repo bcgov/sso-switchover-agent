@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 logger = logging.getLogger(__name__)
 
 
-# Jon python question why would a function have an argument
 def handle_queues(queue: Queue, processes: list):
     time_last_synch = None
     while True:
