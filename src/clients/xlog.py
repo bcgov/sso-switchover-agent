@@ -32,7 +32,7 @@ async def xlog_lookup(service_name: str, q: Queue):
     namespace = config.get('namespace')
     gold_port = config.get('gold_port')
     try:
-        if gold_port is "xxxxx":
+        if gold_port == "xxxxx":
             raise Exception("The gold port is not configured, please add GOLD_PORT to the switchover config secret.")
     except Exception as e:
         logger.error(e)
@@ -42,11 +42,11 @@ async def xlog_lookup(service_name: str, q: Queue):
     while True:
         last_synch_time = None
         try:
-            patroni_dr_response = requests.get(dr_url)
+            patroni_dr_response = requests.get(dr_url, timeout=5)
             patroni_dr_config = json.loads(patroni_dr_response.text)
             patroni_dr_xlog = patroni_dr_config['xlog']['received_location']
 
-            patroni_gold_response = requests.get(gold_url)
+            patroni_gold_response = requests.get(gold_url, timeout=5)
             patroni_gold_config = json.loads(patroni_gold_response.text)
             patroni_gold_xlog = patroni_gold_config['xlog']['location']
 
@@ -59,6 +59,10 @@ async def xlog_lookup(service_name: str, q: Queue):
         except requests.exceptions.RequestException as e:
             logger.error("XLOG failed response")
             logger.error(e)
+
+        except KeyError('location') as kee:
+            logger.error("Xlog not found in response")
+            logger.error(kee)
 
         if last_synch_time is not None:
             q.put({'event': 'xlog', 'time_synch': last_synch_time,
