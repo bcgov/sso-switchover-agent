@@ -29,7 +29,7 @@ def handle_queues(queue: Queue, processes: list):
                     logger.info("passive_ip")
                     current_time = datetime.now()
                     if (time_last_synch is None or (current_time - timedelta(minutes=15) > time_last_synch)):
-                        logger.info("XLogs have not been in synch for 15 minutes, automatic failover to gold dr blocked")
+                        logger.info("XLogs have not been in synch for over 15 minutes, automatic failover to gold dr blocked")
                     else:
                         dispatch_action()
 
