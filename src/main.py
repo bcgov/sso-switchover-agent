@@ -4,8 +4,6 @@ import logging
 from multiprocessing import Process, Queue
 
 from clients.dns import dns_watch
-from clients.xlog import xlog_watch
-
 from logic import handle_queues
 from logic_test import test_queues, set_active_hosts
 from config import config
@@ -31,12 +29,6 @@ if __name__ == '__main__':
 
     t = Process(target=dns_watch, args=(
         config.get('domain_name'),
-        queue
-    ))
-    processes.append(t)
-
-    t = Process(target=xlog_watch, args=(
-        "test_service",
         queue
     ))
     processes.append(t)
