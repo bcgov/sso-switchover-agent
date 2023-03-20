@@ -33,8 +33,3 @@ patroni:
 
   transportServerClaim:
     enabled: true
-
-  # transportServerClaimConfig:
-  #   enabled: true
-  #   interval: 10
-  #   timeout: 10
