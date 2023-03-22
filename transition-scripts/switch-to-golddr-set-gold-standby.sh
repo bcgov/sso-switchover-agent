@@ -3,13 +3,16 @@ set -e
 
 usage() {
     cat <<EOF
-Set the target namespace of the Golddr cluster active, and do nothing to the gold cluster.
+Set the target namespace of the Golddr cluster active, and the corresponding Gold cluster standby.
 
 Steps:
     1. check if the patroni cluster in Golddr is running as 'standby mode'.
     2. convert the patroni cluster in Golddr to an 'active mode'.
     3. scale up the Keycloak deployment and update the DB endpoint to Golddr.
-    4. set the route endpoint to the Keycloak when Keycloak & Patroni pods are ready in Golddr.
+    4. set the route endpoint to the maintenance page in Golddr.
+    5. set the route endpoint to the Keycloak when Keycloak & Patroni pods are ready in Golddr.
+    6. convert the patroni cluster in Gold to an 'standby mode'.
+    7. scale down the Keycloak deployment in Gold.
 
 Usages:
     $0 <namespace>
@@ -23,6 +26,8 @@ Available namespaces:
     - eb75ad-prod
 
 Pre-conditions:
+    - the patroni cluster in Gold must be healthy and in active mode for this to complete successfully.
+      However the switchover to gold dr will still occur if gold is down.
     - the patroni cluster in Golddr must be healthy and in standby mode.
 
 Examples:
@@ -79,3 +84,18 @@ wait_for_keycloak_all_ready "$namespace"
 
 info "Keycloak pods are ready in $namespace"
 upgrade_helm_active "$namespace"
+
+# Gold deployments
+switch_kube_context "gold" "$namespace"
+
+cluster_update=$(set_patroni_cluster_standby "$namespace")
+if [ "$cluster_update" != "success" ]; then
+    error "failed to convert patroni cluster type to standby"
+    exit 1
+fi
+
+upgrade_helm_standby "$namespace"
+
+wait_for_patroni_healthy "$namespace"
+wait_for_patroni_all_ready "$namespace"
+wait_for_patroni_xlog_synced "$namespace"
