@@ -1,4 +1,4 @@
-name: Set the Gold deployment to active
+name: Set the DR deployment to standby
 
 on:
   workflow_dispatch:
@@ -6,7 +6,12 @@ on:
       namespace:
         description: "The target namespace"
         required: true
-        options: ["c6af30-dev", "eb75ad-dev", "eb75ad-test", "eb75ad-prod"]
+        options: ["c6af30-dev","c6af30-test","c6af30-prod", "eb75ad-dev", "eb75ad-test", "eb75ad-prod"]
+      purgeDRpvc:
+        description: "If the xlogs won't synch between patroni-dr and patroni-gold, purge the dr pvcs and config"
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   transition-scripts:
@@ -25,6 +30,6 @@ jobs:
 
       - name: Run transition script
         run: |
-          chmod +x ./switch-to-gold.sh
-          ./switch-to-gold.sh ${{ github.event.inputs.namespace }}
+          chmod +x ./set-dr-to-standby.sh
+          ./set-dr-to-standby.sh ${{ github.event.inputs.namespace }} ${{ github.event.inputs.purgeDRpvc }}
         working-directory: transition-scripts
