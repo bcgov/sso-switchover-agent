@@ -1,12 +1,12 @@
 name: Run test workflows
 
-on:
-  workflow_dispatch:
-    inputs:
-      namespace:
-        description: "The target namespace"
-        required: true
-        options: ["c6af30-dev"]
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       namespace:
+#         description: "The target namespace"
+#         required: true
+#         options: ["c6af30-dev"]
 
 jobs:
   transition-scripts:
