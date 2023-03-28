@@ -76,13 +76,9 @@ If this script does not trigger you will have to do it manually either through g
 
 When keycloak comes back online in Gold and passes the health check, the GSLB will immediately send traffic back to the Gold cluster.  Any changes made to the database while traffic was sent to the GoldDR cluster will be lost.
 
-To put the GoldDr deployment back in standby mode we can run the deployment action "Deploy Keycloak resources in Gold and GoldDR". There may be issues with synching the transaction logs (`xlogs`).  If that occurs, delete the GoldDR resources and reinstall. (config files and PVCs as well)
-<!-- Pending deletion -->
-<!-- When the Gold cluster is back in a healthy state, you will need to manually trigger the switchover from Gold DR to Gold.  This process is not automated by the switchover agent because it will cause a 10 to 15 minute outage for users and it may be best to delay the restoration until a low traffic time of day.
+To put the GoldDr deployment back in standby mode we can run the action "Set the DR deployment to standby". This will put up the GoldDr maintenance page and synch patroni-DR to the patroni-Gold leader.
 
-Before triggering the restoration of Keycloak in Gold.  Confirm the Gold DR cluster is healthy and working as expected. If it's not in a healthy state, it may better restore Gold database from the daily backup and accept losing a day's data.
-
-When ready to restore gold, trigger the github action `Set the gold deployment to active`, or, if Github actions are down, run the script `switch-to-gold.sh` in your local dev environment. -->
+There may be issues with synching the transaction logs (`xlogs`).  If that occurs, run the action again with the `deletePVC` option checked. It will delete all PVCs and config in the GoldDR namespace.
 
 #### State conflict
 
@@ -145,6 +141,15 @@ cd transition-scripts
 switch-to-golddr.sh <namespace>
 ```
 
+### set-dr-to-standby.sh
+
+Returns the patroni-dr to standby once keycloak gold is back to it's active mode.  It changes no gold configuration, meaning there will be no service outage.  The `deletePVC` option is 'true' or 'false', if xlogs fail to synch on fail back, it will delete the PVCs in DR as well as the config files.  Ensuring a fresh install.
+
+```sh
+cd transition-scripts
+set-dr-to-standby.sh <namespace> <deletePVC>
+```
+
 ### switch-to-dr-set-gold-standby.sh
 
 This will set the GoldDR cluster to active, but also finish by setting patroni-Gold to standby.  This prevents the automatic failback to the gold cluster (GSLB sees gold cluster as down).  This is useful if we expect long term instability in the Gold cluster and wish to direct traffic to GoldDr for a prolonged period of time.
@@ -154,9 +159,9 @@ cd transition-scripts
 switch-to-dr-set-gold-standby.sh <namespace>
 ```
 
-### switch-to-gold.sh
+### synch-gold-to-dr-then-set-gold-active.sh
 
-**DEPRECATED SINCE PATRONI-GOLD NOT PUT IN STANDBY MODE**
+**PATRONI-GOLD is no longer put in standby mode.  The only use for this is if the GoldDR deployment has been active a long time and we do not wish to lose the changes made during the failover.**
 
 The first step of this script sets the patroni-gold stateful set to standby mode, in order to insure it has the latest changes from patroni-golddr. It then sets the patroni-Gold cluster to active, and the corresponding Golddr cluster standby.
 
@@ -164,5 +169,8 @@ This workflow was designed to run in the recovery stage of the Gold cluster's fa
 
 ```sh
 cd transition-scripts
-switch-to-gold.sh <namespace>
+synch-gold-to-dr-then-set-gold-active.sh <namespace>
 ```
+### test-workflow.sh
+
+This action was triggered by the `testworkflows.yml` action. The multi step, logic was needed when patroni-gold had to synch with patroni-dr. However, it will not be nessessary if patroni-gold is no longer put in standby mode.
