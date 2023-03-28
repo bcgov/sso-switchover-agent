@@ -28,12 +28,13 @@ namespaces=(c6af30-dev eb75ad-dev eb75ad-test eb75ad-prod)
 
 for namespace in "${namespaces[@]}"
 do
-    synch_status=$(compare_patroni_xlog "$namespace")
+    wait_for_patroni_xlog_synced "$namespace"
+    # synch_status=$(compare_patroni_xlog "$namespace")
 
-    echo "The xlogs in namespace $namespace are $synch_status"
+    # echo "The xlogs in namespace $namespace are $synch_status"
 
-    if [ "$synch_status" != "synced" ]; then
-        error "the patroni clusters are not synched: ($synch_status)"
-        # exit 1
-    fi
+    # if [ "$synch_status" != "synced" ]; then
+    #     error "the patroni clusters are not synched: ($synch_status)"
+    #     # exit 1
+    # fi
 done
