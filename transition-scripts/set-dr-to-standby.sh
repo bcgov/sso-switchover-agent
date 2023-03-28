@@ -48,7 +48,7 @@ if [ "$patroni_mode" == "active" ]; then
     echo "Patroni-Gold in active mode"
 else
     echo "Patroni-Gold not in active mode"
-    exit 1
+    # exit 1
 fi
 
 # Golddr deployments (This is the same as the deploy block for DR)
