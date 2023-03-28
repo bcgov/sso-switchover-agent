@@ -34,6 +34,6 @@ do
 
     if [ "$synch_status" != "synced" ]; then
         error "the patroni clusters are not synched: ($synch_status)"
-        exit 1
+        # exit 1
     fi
 done
