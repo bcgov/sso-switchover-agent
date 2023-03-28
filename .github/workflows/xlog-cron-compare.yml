@@ -1,0 +1,32 @@
+name: 'Transaction Log Comparison'
+
+on:
+  workflow_dispatch:
+    inputs:
+      namespace:
+        description: "The target namespace"
+        required: false
+        default: "c6af30-dev"
+  schedule:
+    - cron: '0 * * * *'
+
+jobs:
+  xlog-cron:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login Openshift Gold & Golddr
+        uses: ./.github/actions/oc-login
+        with:
+          namespace: ${{ github.event.inputs.namespace }}
+          oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
+          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
+          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+
+      - name: Run xlog comparison
+        run: |
+          chmod +x ./xlog-comparison.sh
+          ./xlog-comparison.sh
+        working-directory: transition-scripts
