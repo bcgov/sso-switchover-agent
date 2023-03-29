@@ -28,6 +28,7 @@ namespaces=(c6af30-dev eb75ad-dev eb75ad-test eb75ad-prod)
 
 for namespace in "${namespaces[@]}"
 do
+    echo "Checking xlog for: $namespace"
     wait_for_patroni_xlog_synced "$namespace"
     # synch_status=$(compare_patroni_xlog "$namespace")
 
