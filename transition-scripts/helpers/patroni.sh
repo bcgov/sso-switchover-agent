@@ -243,7 +243,7 @@ patroni_xlog_diffrence() {
   if [ "$xlog1" -eq "$xlog2" ]; then
     echo "synced"
   else
-    difference=$xlog1-$xlog2
+    difference=$((xlog1-xlog2))
     echo "$difference"
   fi
 }
