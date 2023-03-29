@@ -205,7 +205,7 @@ wait_for_patroni_xlog_synced() {
 
   count=0
   wait_ready() {
-    sync_status=$(compare_patroni_xlog "$namespace")
+    sync_status=$(patroni_xlog_diffrence "$namespace")
     info "patroni xlog is $sync_status"
 
     if [ "$sync_status" == "synced" ]; then return 1; fi
@@ -220,4 +220,31 @@ wait_for_patroni_xlog_synced() {
   }
 
   while wait_ready; do sleep 5; done
+}
+
+patroni_xlog_diffrence() {
+  compare_patroni_xlog() {
+  if [ "$#" -lt 1 ]; then exit 1; fi
+
+  namespace="$1"
+
+  current=$(get_current_cluster)
+  target=$(get_target_cluster)
+
+  xlog1=$(get_patroni_xlog "$namespace")
+
+  switch_kube_context "$target" "$namespace" &>/dev/null
+
+  xlog2=$(get_patroni_xlog "$namespace")
+
+  switch_kube_context "$current" "$namespace" &>/dev/null
+
+  difference=$xlog1-$xlog2
+
+  if [ "$xlog1" -eq "$xlog2" ]; then
+    echo "synced"
+  else
+    echo "$difference"
+  fi
+}
 }
