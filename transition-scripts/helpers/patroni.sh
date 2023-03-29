@@ -223,7 +223,6 @@ wait_for_patroni_xlog_synced() {
 }
 
 patroni_xlog_diffrence() {
-  compare_patroni_xlog() {
   if [ "$#" -lt 1 ]; then exit 1; fi
 
   namespace="$1"
@@ -239,12 +238,12 @@ patroni_xlog_diffrence() {
 
   switch_kube_context "$current" "$namespace" &>/dev/null
 
-  difference=$xlog1-$xlog2
+
 
   if [ "$xlog1" -eq "$xlog2" ]; then
     echo "synced"
   else
+    difference=$xlog1-$xlog2
     echo "$difference"
   fi
-}
 }
