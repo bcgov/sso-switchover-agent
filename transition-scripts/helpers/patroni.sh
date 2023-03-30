@@ -205,7 +205,7 @@ wait_for_patroni_xlog_synced() {
 
   count=0
   wait_ready() {
-    sync_status=$(patroni_xlog_diffrence "$namespace")
+    sync_status=$(compare_patroni_xlog "$namespace")
     info "patroni xlog is $sync_status"
 
     if [ "$sync_status" == "synced" ]; then return 1; fi
@@ -238,12 +238,40 @@ patroni_xlog_diffrence() {
 
   switch_kube_context "$current" "$namespace" &>/dev/null
 
-
-
   if [ "$xlog1" -eq "$xlog2" ]; then
     echo "synced"
   else
     difference=$((xlog1-xlog2))
-    echo "$difference"
+    absdiff=$(abs "$difference")
+    echo "$absdiff"
   fi
+}
+
+wait_for_patroni_xlog_close() {
+  if [ "$#" -lt 1 ]; then exit 1; fi
+
+  namespace="$1"
+
+  count=0
+  wait_ready() {
+    sync_status=$(patroni_xlog_diffrence "$namespace")
+    info "patroni xlog is $sync_status"
+
+    if [ "$sync_status" == "synced" ]; then return 1; fi
+
+    # if []
+    # wait for 5mins
+    if [[ "$count" -gt 20 ]]; then
+      warn "patroni xlog failed to be synced"
+      exit 1
+    fi
+
+    count=$((count + 1))
+  }
+
+  while wait_ready; do sleep 5; done
+}
+
+abs() {
+    [[ $(( $@ )) -lt 0 ]] && echo "$(( ($@) * -1 ))" || echo "$(( $@ ))"
 }
