@@ -262,7 +262,8 @@ wait_for_patroni_xlog_close() {
 
     if ((synch_status < max_xlog_lag)); then
       echo "The xlogs were close enough"
-      return 1
+      exit 1
+      # return 1
     fi
 
     # wait for 100 seconds
