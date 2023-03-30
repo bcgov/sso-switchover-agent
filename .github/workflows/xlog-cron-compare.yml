@@ -30,3 +30,21 @@ jobs:
           chmod +x ./xlog-comparison.sh
           ./xlog-comparison.sh
         working-directory: transition-scripts
+      - name: Rocket.Chat Notification
+        if: failure()
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: ${{ secrets.SSO_ALERTS }}
+          method: 'POST'
+          customHeaders: '{"Content-Type": "application/json"}'
+          data: |
+            '{"text": "Siteminder Tests Failed! @jsharman", "attachments":
+            [{"color": "#FF0000","author_name": "${{ github.actor }}",
+            "title": "Failed test",
+            "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "text": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "fields": [{
+            "title": "Environment", "value": "test value", "short": false},
+            "short": false}]
+            }]
+            }'
