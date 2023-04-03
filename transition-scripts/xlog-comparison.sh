@@ -24,7 +24,7 @@ EOF
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
-namespaces=(c6af30-dev eb75ad-dev eb75ad-test eb75ad-prod)
+namespaces=(eb75ad-dev eb75ad-test eb75ad-prod)
 
 for namespace in "${namespaces[@]}"
 do
