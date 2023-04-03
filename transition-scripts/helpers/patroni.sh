@@ -268,7 +268,7 @@ wait_for_patroni_xlog_close() {
       return 1
     fi
 
-    # wait for 100 seconds
+    # Retry for 100 seconds before failing
     if [[ "$count" -gt 20 ]]; then
       warn "patroni xlog in $namespace failed to be synced"
       # trigger the alert
