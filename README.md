@@ -64,6 +64,14 @@ oc login --token=<<golddr oc-sso-deployer-token>> --server=https://api.golddr.de
 
 The tokens for deploying will be the service account deployer tokens. Note: the scripts will not run if is is not the `oc-sso-deployer-token`.  There are many `deployer-token` secrets, only one `oc-sso-deployer-token`.
 
+**To confirm the login is successful, run the `test-local-connection` script in the `transition-scripts` directory:**
+
+```
+./test-local-connection.sh <<namespace>>
+```
+
+This script will fail if one of the clusters is unreachable and it is innavisable to run scripts that depend on both both Gold and GoldDR locally.  The one exception is `switch-to-golddr.sh`. Which is designed to be run even when the Gold cluster is down.
+
 ## Disaster recovery workflow
 
 ### When gold goes down
