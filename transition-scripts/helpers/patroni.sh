@@ -221,3 +221,66 @@ wait_for_patroni_xlog_synced() {
 
   while wait_ready; do sleep 5; done
 }
+
+patroni_xlog_diffrence() {
+  if [ "$#" -lt 1 ]; then exit 1; fi
+
+  namespace="$1"
+
+  current=$(get_current_cluster)
+  target=$(get_target_cluster)
+
+  xlog1=$(get_patroni_xlog "$namespace")
+
+  switch_kube_context "$target" "$namespace" &>/dev/null
+
+  xlog2=$(get_patroni_xlog "$namespace")
+
+  switch_kube_context "$current" "$namespace" &>/dev/null
+
+  if [ "$xlog1" -eq "$xlog2" ]; then
+    echo "synced"
+  else
+    difference=$((xlog1-xlog2))
+    absdiff=$(abs "$difference")
+    echo "$absdiff"
+  fi
+}
+
+wait_for_patroni_xlog_close() {
+  if [ "$#" -lt 1 ]; then exit 1; fi
+
+  namespace="$1"
+
+  count=0
+  wait_ready() {
+    synch_status=$(patroni_xlog_diffrence "$namespace")
+    max_xlog_lag=100000
+
+    if [ "$synch_status" == "synced" ]; then
+      info "patroni xlog in $namespace is $synch_status"
+      return 1;
+    fi
+
+    info "patroni xlogs in $namespace lag by: $synch_status"
+    if ((synch_status < max_xlog_lag)); then
+      info "The xlogs in $namespace were withing $max_xlog_lag"
+      return 1
+    fi
+
+    # Retry for 100 seconds before failing
+    if [[ "$count" -gt 20 ]]; then
+      warn "patroni xlog in $namespace failed to be synced"
+      # trigger the alert
+      exit 1
+    fi
+
+    count=$((count + 1))
+  }
+
+  while wait_ready; do sleep 5; done
+}
+
+abs() {
+    [[ $(( $@ )) -lt 0 ]] && echo "$(( ($@) * -1 ))" || echo "$(( $@ ))"
+}

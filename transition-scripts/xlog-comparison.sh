@@ -24,11 +24,10 @@ EOF
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
-synch_status=$(compare_patroni_xlog "c6af30-dev")
+namespaces=(eb75ad-dev eb75ad-test eb75ad-prod)
 
-echo "The xlogs are $synch_status"
-
-if [ "$synch_status" != "synced" ]; then
-    error "the patroni clusters are not synched: ($synch_status)"
-    exit 1
-fi
+for namespace in "${namespaces[@]}"
+do
+    echo "Checking xlog for: $namespace"
+    wait_for_patroni_xlog_close "$namespace"
+done
