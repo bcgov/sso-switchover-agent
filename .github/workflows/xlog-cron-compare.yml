@@ -35,5 +35,5 @@ jobs:
           mention: 'jsharman'
           mention_if: 'failure'
           channel: '#sso-alerts'
-          url: ${{ secrets.SSO_ALERTS }}
-          token: ${{ secrets.ROCKETCHAT_TOKEN }}
+          url: ${{ secrets.JON_SSO_ALERTS }}
+          token: ${{ secrets.JON_ROCKETCHAT_TOKEN }}
