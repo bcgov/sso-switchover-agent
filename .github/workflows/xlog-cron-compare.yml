@@ -2,11 +2,6 @@ name: 'Transaction Log Comparison'
 
 on:
   workflow_dispatch:
-    inputs:
-      namespace:
-        description: "The target namespace"
-        required: false
-        default: "c6af30-dev"
   schedule:
     - cron: '0 * * * *'
 
