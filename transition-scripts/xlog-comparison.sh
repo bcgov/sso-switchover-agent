@@ -30,12 +30,4 @@ for namespace in "${namespaces[@]}"
 do
     echo "Checking xlog for: $namespace"
     wait_for_patroni_xlog_close "$namespace"
-    # synch_status=$(compare_patroni_xlog "$namespace")
-
-    # echo "The xlogs in namespace $namespace are $synch_status"
-
-    # if [ "$synch_status" != "synced" ]; then
-    #     error "the patroni clusters are not synched: ($synch_status)"
-    #     # exit 1
-    # fi
 done

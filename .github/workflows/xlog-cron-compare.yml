@@ -36,8 +36,8 @@ jobs:
         if: failure()
         with:
           type: ${{ job.status }}
-          job_name: '*Test Job*'
-          mention: 'here'
+          job_name: '*One of the production xlogs failed to synch*'
+          mention: 'jsharman'
           mention_if: 'failure'
           channel: '#sso-alerts'
           url: ${{ secrets.SSO_ALERTS }}
