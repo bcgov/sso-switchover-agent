@@ -255,15 +255,17 @@ wait_for_patroni_xlog_close() {
   count=0
   wait_ready() {
     synch_status=$(patroni_xlog_diffrence "$namespace")
-    info "patroni xlog is $synch_status"
     max_xlog_lag=100000
 
-    if [ "$synch_status" == "synced" ]; then return 1; fi
+    if [ "$synch_status" == "synced" ]; then
+      info "patroni xlog is $synch_status"
+      return 1;
+    fi
 
+    info "patroni xlogs lag by: $synch_status"
     if ((synch_status < max_xlog_lag)); then
-      echo "The xlogs were close enough"
-      exit 1
-      # return 1
+      echo "The xlogs were withing $max_xlog_lag"
+      return 1
     fi
 
     # wait for 100 seconds
