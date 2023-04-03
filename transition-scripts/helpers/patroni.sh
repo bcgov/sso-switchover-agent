@@ -259,19 +259,19 @@ wait_for_patroni_xlog_close() {
     max_xlog_lag=10
 
     if [ "$synch_status" == "synced" ]; then
-      info "patroni xlog is $synch_status"
+      info "patroni xlog in $namespace is $synch_status"
       return 1;
     fi
 
-    info "patroni xlogs lag by: $synch_status"
+    info "patroni xlogs in $namespace lag by: $synch_status"
     if ((synch_status < max_xlog_lag)); then
-      echo "The xlogs were withing $max_xlog_lag"
+      info "The xlogs in $namespace were withing $max_xlog_lag"
       return 1
     fi
 
     # wait for 100 seconds
-    if [[ "$count" -gt 20 ]]; then
-      warn "patroni xlog failed to be synced"
+    if [[ "$count" -gt 5 ]]; then
+      warn "patroni xlog in $namespace failed to be synced"
       # trigger the alert
       exit 1
     fi
