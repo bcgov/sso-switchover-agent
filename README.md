@@ -55,22 +55,17 @@ Currently the GSLB is configured in such a way that when the gold health endpoin
 
 As with most sso team repos the switchover agent uses the asdf tool for local package management.  The sso-keycloak [Developer Guidelines](https://github.com/bcgov/sso-keycloak/blob/dev/docs/developer-guide.md) provide the steps needed to set up and install the local tools.
 
-For the switchover scripts to work the user must provide credentials for both gold and gold-dr.  Using the terminal they can login using:
+For the switchover scripts to work the user must provide credentials for both gold and gold-dr.  To login to the two clusters copy the `.env-example` file in the `transition-scripts` folder and rename it `.env`.
+
+The tokens can be retrieved from openshift. Note: the scripts will only run with the `oc-sso-deployer-token` tokens.  There are many `deployer-token` secrets, only one `oc-sso-deployer-token`.
+
+Lastly run the `login-and-test-local-connection.sh` script in the `transition-scripts` directory:
 
 ```
-oc login --token=<<gold oc-sso-deployer-token>> --server=https://api.gold.devops.gov.bc.ca:6443
-oc login --token=<<golddr oc-sso-deployer-token>> --server=https://api.golddr.devops.gov.bc.ca:6443
+./login-and-test-local-connection.sh <<namespace>>
 ```
 
-The tokens for deploying will be the service account deployer tokens. Note: the scripts will not run if is is not the `oc-sso-deployer-token`.  There are many `deployer-token` secrets, only one `oc-sso-deployer-token`.
-
-**To confirm the login is successful, run the `test-local-connection` script in the `transition-scripts` directory:**
-
-```
-./test-local-connection.sh <<namespace>>
-```
-
-This script will fail if one of the clusters is unreachable and it is innavisable to run scripts that depend on both both Gold and GoldDR locally.  The one exception is `switch-to-golddr.sh`. Which is designed to be run even when the Gold cluster is down.
+This script will loging and attempt to switch context between Gold and GoldDR.  If it fails, most of the transition/deployment scripts will have issues running.  The one exception is `switch-to-golddr.sh`. Which is designed to be run even when the Gold cluster is down.
 
 ## Disaster recovery workflow
 
