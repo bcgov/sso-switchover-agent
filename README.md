@@ -65,7 +65,7 @@ Lastly run the `login-and-test-local-connection.sh` script in the `transition-sc
 ./login-and-test-local-connection.sh <<namespace>>
 ```
 
-This script will loging and attempt to switch context between Gold and GoldDR.  If it fails, most of the transition/deployment scripts will have issues running.  The one exception is `switch-to-golddr.sh`. Which is designed to be run even when the Gold cluster is down.
+This script will login and attempt to switch context between Gold and GoldDR.  If it fails, most of the transition/deployment scripts will have issues running.  The one exception is `switch-to-golddr.sh`. Which is designed to be run even when the Gold cluster is down.
 
 ## Disaster recovery workflow
 
