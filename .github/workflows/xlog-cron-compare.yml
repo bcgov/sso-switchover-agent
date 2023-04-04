@@ -1,0 +1,39 @@
+name: 'Transaction Log Comparison'
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
+
+jobs:
+  xlog-cron:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login Openshift Gold & Golddr
+        uses: ./.github/actions/oc-login
+        with:
+          namespace: ${{ github.event.inputs.namespace }}
+          oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
+          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
+          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+
+      - name: Run xlog comparison
+        run: |
+          chmod +x ./xlog-comparison.sh
+          ./xlog-comparison.sh
+        working-directory: transition-scripts
+
+      - name: Rocket.Chat Notification
+        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
+        if: failure()
+        with:
+          type: ${{ job.status }}
+          job_name: '*One of the production xlogs failed to synch*'
+          mention: 'jsharman'
+          mention_if: 'failure'
+          channel: '#jsharman-alert-test'
+          url: ${{ secrets.JON_SSO_ALERTS }}
+          token: ${{ secrets.JON_ROCKETCHAT_TOKEN }}

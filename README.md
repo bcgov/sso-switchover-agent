@@ -25,7 +25,11 @@ The github actions found [here](.github/workflows) can be triggered manually in 
 
 The switchover agent is deployed in the Gold DR namespace for a given project and watches changes in the DNS record.  If it detects the change it will automatically trigger the failover to the DR cluster.
 
-The switchover agent app is built and deployed automatically on pr merges to `dev` and `main` using the action `publish-image.yml`.  On merging to the `dev` branch, the app is deployed to the Gold DR sandbox `dev` namespace.  On merging to the `main` branch, the app is built and deployed to the Gold DR production `dev`, `test`, and `prod` namespaces. Note: the switchover agent runs transitions scripts against the `main` branch code, not the `dev` branch in the production environment.
+The switchover agent app is built and deployed automatically on pr merges to `dev` and `main` using the action `publish-image.yml`.  On merging to the `dev` branch, the app is deployed to the Gold DR sandbox `dev` namespace.  On merging to the `main` branch, the app is built and deployed to the Gold DR production `dev`, `test`, and `prod` namespaces.
+
+**Note 1**: the switchover agent runs transitions scripts against the `main` branch code, not the `dev` branch in the production environment.
+
+**Note 2**: While the image updates and the helm chart is upgraded, the switchover agent pod must be scaled down and back up to make use of the new image.
 
 The history of times the switchover agent has been triggered can be seen by looking at the history of the `Set the dr deployment to active` action in this repo.
 
@@ -64,21 +68,21 @@ The tokens for deploying will be the service account deployer tokens. Note: the 
 
 ### When gold goes down
 
-When and outage occurs, and the switchover agent is on, the `switch-to-golddr.sh` script will trigger.  Setting gold-dr database to be the leader and spinning up the keycloak-dr instance.  It will take about 10 to 15 minutes for keycloak to be back up and running. It will also attempt to put patroni-gold into standby mode, tracking any changes that occur in patroni-gold-dr.
-
-If patroni-gold is down, or the Gold cluster cannot be reached, it will not be put in standby mode.  The github action will look like it failed, however keycloak and patroni will have been successfully deployed in the Gold DR cluster.
+When and outage occurs, and the switchover agent is on, the `switch-to-golddr.sh` script will trigger.  Setting gold-dr database to `Active` and spinning up the keycloak-dr instance.  It will take about 10 to 15 minutes for keycloak to be back up and running.
 
 If this script does not trigger you will have to do it manually either through github actions or your local development environment. Whether you trigger the scripts locally or through actions, the workflow is the same. The action is `Set the dr deployment to active`, the script is documented [below](#switch-to-golddr.sh).
 
 ### When gold is restored
 
-When the Gold cluster is back in a healthy state, you will need to manually trigger the switchover from Gold DR to Gold.  This process is not automated by the switchover agent because it will cause a 10 to 15 minute outage for users and it may be best to delay the restoration until a low traffic time of day.
+When keycloak comes back online in Gold and passes the health check, the GSLB will immediately send traffic back to the Gold cluster.  Any changes made to the database while traffic was sent to the GoldDR cluster will be lost.
 
-Before triggering the restoration of Keycloak in Gold.  Confirm the Gold DR cluster is healthy and working as expected. If it's not in a healthy state, it may better restore Gold database from the daily backup and accept losing a day's data.
+To put the GoldDr deployment back in standby mode we can run the action "Set the DR deployment to standby". This will put up the GoldDr maintenance page and synch patroni-DR to the patroni-Gold leader.
 
-When ready to restore gold, trigger the github action `Set the gold deployment to active`, or, if Github actions are down, run the script `switch-to-gold.sh` in your local dev environment.
+There may be issues with synching the transaction logs (`xlogs`).  If that occurs, run the action again with the `deletePVC` option checked. It will delete all PVCs and config in the GoldDR namespace.
 
 #### State conflict
+
+**THIS IS NO LONGER PART OF THE STANDARD WORKFLOW SINCE PATRONI-GOLD IS NOT PUT IN STANDBY MODE**
 
 Even if patroni-gold is not in standby mode, the `switch-to-gold.sh`script is designed to handle that case.  It will put gold into standby mode to get the latest changes, then switch gold to the active cluster.   If this fails it may be necessary to delete the gold patroni deployment and recreate it in standby mode following the patroni-dr cluster.
 
@@ -130,20 +134,43 @@ destroy.sh <namespace>
 
 ### switch-to-golddr.sh
 
-It sets the target namespace of the Golddr cluster active, and the corresponding Gold cluster standby.
-This workflow is designed to run in the status of the Gold cluster's failover.
+It sets the target namespace of the Golddr cluster active, can be automatically trigered by the switchover agent.
 
 ```sh
 cd transition-scripts
 switch-to-golddr.sh <namespace>
 ```
 
-### switch-to-gold.sh
+### set-dr-to-standby.sh
 
-It sets the target namespace of the Gold cluster active, and the corresponding Golddr cluster standby.
-This workflow is designed to run in the recovery stage of the Gold cluster's failover.
+Returns the patroni-dr to standby once keycloak gold is back to it's active mode.  It changes no gold configuration, meaning there will be no service outage.  The `deletePVC` option is 'true' or 'false', if xlogs fail to synch on fail back, it will delete the PVCs in DR as well as the config files.  Ensuring a fresh install.
 
 ```sh
 cd transition-scripts
-switch-to-gold.sh <namespace>
+set-dr-to-standby.sh <namespace> <deletePVC>
 ```
+
+### switch-to-dr-set-gold-standby.sh
+
+This will set the GoldDR cluster to active, but also finish by setting patroni-Gold to standby.  This prevents the automatic failback to the gold cluster (GSLB sees gold cluster as down).  This is useful if we expect long term instability in the Gold cluster and wish to direct traffic to GoldDr for a prolonged period of time.
+
+```sh
+cd transition-scripts
+switch-to-dr-set-gold-standby.sh <namespace>
+```
+
+### synch-gold-to-dr-then-set-gold-active.sh
+
+**PATRONI-GOLD is no longer put in standby mode.  The only use for this is if the GoldDR deployment has been active a long time and we do not wish to lose the changes made during the failover.**
+
+The first step of this script sets the patroni-gold stateful set to standby mode, in order to insure it has the latest changes from patroni-golddr. It then sets the patroni-Gold cluster to active, and the corresponding Golddr cluster standby.
+
+This workflow was designed to run in the recovery stage of the Gold cluster's failover. However it has since been deprecated.
+
+```sh
+cd transition-scripts
+synch-gold-to-dr-then-set-gold-active.sh <namespace>
+```
+### test-workflow.sh
+
+This action was triggered by the `testworkflows.yml` action. The multi step, logic was needed when patroni-gold had to synch with patroni-dr. However, it will not be nessessary if patroni-gold is no longer put in standby mode.
