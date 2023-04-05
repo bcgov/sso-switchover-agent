@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/bcgov/sso
-  tag: 7.6.5-build.29
+  tag: 7.6.5-build.30
   pullPolicy: IfNotPresent
 
 additionalServerOptions: "-Dkeycloak.profile.feature.impersonation=disabled -Djboss.persistent.log.dir=/var/log/eap"
