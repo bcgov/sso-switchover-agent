@@ -55,9 +55,17 @@ Currently the GSLB is configured in such a way that when the gold health endpoin
 
 As with most sso team repos the switchover agent uses the asdf tool for local package management.  The sso-keycloak [Developer Guidelines](https://github.com/bcgov/sso-keycloak/blob/dev/docs/developer-guide.md) provide the steps needed to set up and install the local tools.
 
-For the switchover scripts to work the user must provide credentials for both gold and gold-dr.  To login to the two clusters copy the `.env-example` file in the `transition-scripts` folder and rename it `.env`.
+For the switchover scripts to work the user must provide service credentials for both Gold and GoldDr.  To set this up locally, copy the `.env-example` file in the `transition-scripts` folder and rename it `.env`.
 
-The tokens can be retrieved from openshift. Note: the scripts will only run with the `oc-sso-deployer-token` tokens.  There are many `deployer-token` secrets, only one `oc-sso-deployer-token`.
+To retrieve the tokens, log into the Gold cluster and retrieve one of the `oc-sso-deployer-token` tokens:
+
+```
+oc -n <<prod production namespace>> get secrets | grep oc-sso-deployer-token
+oc -n <<prod production namespace>> get secrets/oc-sso-deployer-token-##### --template={{.data.token}} | base64
+```
+
+Repeat for the GoldDR cluster.
+
 
 Lastly run the `login-and-test-local-connection.sh` script in the `transition-scripts` directory:
 
