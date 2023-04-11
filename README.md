@@ -55,14 +55,25 @@ Currently the GSLB is configured in such a way that when the gold health endpoin
 
 As with most sso team repos the switchover agent uses the asdf tool for local package management.  The sso-keycloak [Developer Guidelines](https://github.com/bcgov/sso-keycloak/blob/dev/docs/developer-guide.md) provide the steps needed to set up and install the local tools.
 
-For the switchover scripts to work the user must provide credentials for both gold and gold-dr.  Using the terminal they can login using:
+For the switchover scripts to work the user must provide service credentials for both Gold and GoldDr.  To set this up locally, copy the `.env-example` file in the `transition-scripts` folder and rename it `.env`.
+
+To retrieve the tokens, log into the Gold cluster and retrieve one of the `oc-sso-deployer-token` tokens:
 
 ```
-oc login --token=<<gold oc-sso-deployer-token>> --server=https://api.gold.devops.gov.bc.ca:6443
-oc login --token=<<golddr oc-sso-deployer-token>> --server=https://api.golddr.devops.gov.bc.ca:6443
+oc -n <<prod production namespace>> get secrets | grep oc-sso-deployer-token
+oc -n <<prod production namespace>> get secrets/oc-sso-deployer-token-##### --template="{{.data.token|base64decode}}"
 ```
 
-The tokens for deploying will be the service account deployer tokens. Note: the scripts will not run if is is not the `oc-sso-deployer-token`.  There are many `deployer-token` secrets, only one `oc-sso-deployer-token`.
+Repeat for the GoldDR cluster.
+
+
+Lastly run the `login-and-test-local-connection.sh` script in the `transition-scripts` directory:
+
+```
+./login-and-test-local-connection.sh <<namespace>>
+```
+
+This script will login and attempt to switch context between Gold and GoldDR.  If it fails, most of the transition/deployment scripts will have issues running.  The one exception is `switch-to-golddr.sh`. Which is designed to be run even when the Gold cluster is down.
 
 ## Disaster recovery workflow
 
