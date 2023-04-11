@@ -32,7 +32,7 @@ jobs:
         with:
           type: ${{ job.status }}
           job_name: '*One of the production xlogs failed to synch*'
-          mention: 'jsharman nithinshekar.kuruba Marco'
+          mention: 'jsharman @nithinshekar.kuruba @Marco'
           mention_if: 'failure'
           channel: '#sso-alerts'
           url: ${{ secrets.SSO_ALERTS }}
