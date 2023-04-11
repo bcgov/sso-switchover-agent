@@ -61,7 +61,7 @@ To retrieve the tokens, log into the Gold cluster and retrieve one of the `oc-ss
 
 ```
 oc -n <<prod production namespace>> get secrets | grep oc-sso-deployer-token
-oc -n <<prod production namespace>> get secrets/oc-sso-deployer-token-##### --template={{.data.token}} | base64
+oc -n <<prod production namespace>> get secrets/oc-sso-deployer-token-##### --template="{{.data.token|base64decode}}"
 ```
 
 Repeat for the GoldDR cluster.
