@@ -13,7 +13,6 @@ Usages:
     $0
 
 Available namespaces:
-    - c6af30-dev
     - eb75ad-dev
     - eb75ad-test
     - eb75ad-prod

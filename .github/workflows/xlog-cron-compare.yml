@@ -32,8 +32,8 @@ jobs:
         with:
           type: ${{ job.status }}
           job_name: '*One of the production xlogs failed to synch*'
-          mention: 'jsharman'
+          mention: 'jsharman @nithinshekar.kuruba @Marco'
           mention_if: 'failure'
-          channel: '#jsharman-alert-test'
-          url: ${{ secrets.JON_SSO_ALERTS }}
-          token: ${{ secrets.JON_ROCKETCHAT_TOKEN }}
+          channel: '#sso-alerts'
+          url: ${{ secrets.SSO_ALERTS }}
+          token: ${{ secrets.ROCKETCHAT_TOKEN }}
