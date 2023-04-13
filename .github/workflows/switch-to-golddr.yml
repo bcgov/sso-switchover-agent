@@ -17,7 +17,7 @@ jobs:
         uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
         with:
           type: ${{ job.status }}
-          job_name: 'The switch to Gold DR action was triggered for ${{ github.event.inputs.namespace }}'
+          job_name: 'The switch to Gold DR action was triggered for ${{ github.event.inputs.namespace }}, confirm if'
           mention: 'jsharman'
           channel: '#jsharman-alert-test'
           url: ${{ secrets.JON_SSO_ALERTS }}
