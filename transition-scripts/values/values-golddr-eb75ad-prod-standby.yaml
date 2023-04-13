@@ -5,7 +5,7 @@ service:
   port: 8443
 
 tls:
-  enabled: true
+  enabled: false
 
 persistentLog:
   size: 15Gi
