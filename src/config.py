@@ -12,4 +12,6 @@ config = dict(
     gh_workflow_id=os.environ.get("GH_WORKFLOW_ID", 'switch-to-golddr.yml'),
     gh_token=os.environ.get("GH_TOKEN", ''),
     namespace=os.environ.get("NAMESPACE", 'xxxxxx-dev'),
+    rc_url=os.environ.get("RC_URL", ''),
+    rc_token=os.environ.get("RC_TOKEN", ''),
 )
