@@ -52,21 +52,18 @@ def dispatch_rocketchat_webhook(cluster: str):
     url = config.get('rc_url')
     bearer = 'token %s' % config.get('rc_token')
     headers = {'Accept': 'application/json', 'Authorization': bearer}
-    # Handle sandbox
+
     namespace = config.get('namespace')
     env = namespace[7:]
     if cluster == 'GoldDR':
-        # Handle failover
         message = f"@all **The Gold Keycloak {env} instance has failed over to the DR cluster**\n* After the DR deployment is complete, end users may continue to login to your apps using the Pathfinder SSO Service (standard or custom).\n* Any changes made to a project's config using the Pathfinder SSO Service (standard or custom realm) while the app is in its failover state will be lost when the app is restored to the Primary cluster. (*aka your config changes will be lost*). \n* The priority of this service is to maximize availability to the end users and automation."
     elif cluster == 'Gold':
-        # Handle failback
         message = f"@all **The Gold Keycloak {env} instance has been restored to the Primary cluster (aka back to normal).**\n* We are be back to normal operations of the Pathfinder SSO Service (standard and custom).\n* Changes made to a project's config using the Pathfinder SSO Service (standard or custom realm) during Disaster Recovery will be missing. \n* The priority of this service is to maximize availability to the end users and automation."
 
-    # data_string = '''{"text":"Example message thursday night","attachments":[{"title":"Rocket.Chat","title_link":"https://rocket.chat","text":"Rocket.Chat, the best open source chat","image_url":"https://chat.developer.gov.bc.ca/images/integration-attachment-example.png","color":"#764FA5"}]}'''
     data = {"text": message}
 
-    x = requests.post(url, json=data, headers=headers)
     try:
+        x = requests.post(url, json=data, headers=headers)
         if x.status_code == 200:
             logger.info('Rocket chat message sent.')
         else:
