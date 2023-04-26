@@ -20,6 +20,8 @@ env:
 jobs:
   build-and-push-image:
     runs-on: ubuntu-20.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     permissions:
       contents: read
       packages: write
@@ -68,6 +70,21 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main'
+        id: release
+        uses: rymndhng/release-on-push-action@v0.20.0
+        with:
+          bump_version_scheme: patch
+          tag_prefix: v
+
+      - name: Check Output Parameters
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "Got tag name ${{ steps.release.outputs.tag_name }}"
+          echo "Got release version ${{ steps.release.outputs.version }}"
+          echo "Upload release artifacts to ${{ steps.release.outputs.upload_url }}"
 
   deploy-to-openshift:
     needs: [build-and-push-image]
