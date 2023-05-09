@@ -32,6 +32,10 @@ helm upgrade --install <<test-deployment-name>> . \
 -f "values-c6af30-local.yaml"
 ```
 
+### Configuring the openshift environment
+
+In the gold dr namespace create the `sso-switchover-agent` secret, and configer the relevant environment variables. See [Environment Variables Documentation](./environment-variables.md).
+
 ## Running the local image:
 
 For some development tasks, a deployment of the image to the gold dr cluster may not be neccessary.  In that case simply build and run the imagege locally:
