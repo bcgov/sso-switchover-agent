@@ -33,6 +33,10 @@ The switchover agent app is built and deployed automatically on pr merges to `de
 
 The history of times the switchover agent has been triggered can be seen by looking at the history of the `Set the dr deployment to active` action in this repo.
 
+### Configuring the openshift environment
+
+In the gold dr namespace create the `sso-switchover-agent` secret, and configer the relevant environment variables. See [Environment Variables Documentation](./environment-variables.md).
+
 ### Turning off automatic failover
 
 To prevent the switchover agent from automatically tirggering a build, it is best to alter the namespace in the `sso-switchover-agent` secret in the Gold DR repos.  This will trigger the "set the dr deployment to active" action for a non-existant namespace. Preventing an unwanted automated failover.
