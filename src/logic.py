@@ -76,12 +76,15 @@ def dispatch_rocketchat_webhook(cluster: str):
 
 
 def dispatch_css_maintenance_action(maintenance_mode: bool):
-    url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), config.get('css_repo'), config.get('css_maintenance_workflow_id'))
-    data = {'ref': config.get('css_branch'), 'inputs': {'environment': config.get('css_environment'), 'maintenanceEnabled': maintenance_mode}}
-    bearer = 'token %s' % config.get('css_gh_token')
-    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': bearer}
-    x = requests.post(url, json=data, headers=headers)
-    if x.status_code == 204:
-        logger.info('CSS GH API status: %s' % x.status_code)
+    if config.get('css_gh_token') == '':
+        logger.info('CSS maintenance mode is not configured for this namespace')
     else:
-        logger.error('GH API error: %s' % x.content)
+        url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), config.get('css_repo'), config.get('css_maintenance_workflow_id'))
+        data = {'ref': config.get('css_branch'), 'inputs': {'environment': config.get('css_environment'), 'maintenanceEnabled': maintenance_mode}}
+        bearer = 'token %s' % config.get('css_gh_token')
+        headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': bearer}
+        x = requests.post(url, json=data, headers=headers)
+        if x.status_code == 204:
+            logger.info('CSS GH API status: %s' % x.status_code)
+        else:
+            logger.error('GH API error: %s' % x.content)
