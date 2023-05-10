@@ -24,12 +24,14 @@ def handle_queues(queue: Queue, processes: list):
                     logger.info("active_ip")
                     if not switchover_agent_starting:
                         dispatch_rocketchat_webhook("Gold")
+                        dispatch_css_maintenance_action(False)
                     else:
                         switchover_agent_starting = False
                 elif ip == config.get('passive_ip'):
                     logger.info("passive_ip")
                     dispatch_action()
                     dispatch_rocketchat_webhook("GoldDR")
+                    dispatch_css_maintenance_action(True)
 
         except Exception as ex:
             logger.error('Unknown error in logic. %s' % ex)
@@ -71,3 +73,18 @@ def dispatch_rocketchat_webhook(cluster: str):
     except Exception as ex:
         logger.error('Unknown error in logic. %s' % ex)
         traceback.print_exc(file=sys.stdout)
+
+
+def dispatch_css_maintenance_action(maintenance_mode: bool):
+    if config.get('css_gh_token') == '':
+        logger.info('CSS maintenance mode is not configured for this namespace')
+    else:
+        url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), config.get('css_repo'), config.get('css_maintenance_workflow_id'))
+        data = {'ref': config.get('css_branch'), 'inputs': {'environment': config.get('css_environment'), 'maintenanceEnabled': maintenance_mode}}
+        bearer = 'token %s' % config.get('css_gh_token')
+        headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': bearer}
+        x = requests.post(url, json=data, headers=headers)
+        if x.status_code == 204:
+            logger.info('CSS GH API status: %s' % x.status_code)
+        else:
+            logger.error('GH API error: %s' % x.content)

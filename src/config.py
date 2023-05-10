@@ -14,4 +14,9 @@ config = dict(
     namespace=os.environ.get("NAMESPACE", 'xxxxxx-dev'),
     rc_url=os.environ.get("RC_URL", ''),
     rc_token=os.environ.get("RC_TOKEN", ''),
+    css_repo=os.environ.get("CSS_REPO", ''),
+    css_branch=os.environ.get("CSS_BRANCH", ''),
+    css_environment=os.environ.get("CSS_ENVIRONMENT", ''),
+    css_maintenance_workflow_id=os.environ.get("CSS_MAINTENANCE_WORKFLOW_ID", ''),
+    css_gh_token=os.environ.get("CSS_GH_TOKEN", ''),
 )
