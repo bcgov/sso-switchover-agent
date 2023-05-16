@@ -13,6 +13,16 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
+      - name: Rocket.Chat Notification
+        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
+        with:
+          type: ${{ job.status }}
+          job_name: 'The switch to Gold DR action was triggered for ${{ github.event.inputs.namespace }}, confirm if'
+          mention: 'jsharman @nithinshekar.kuruba @Marco'
+          mention_if: 'always'
+          channel: '#sso-alerts'
+          url: ${{ secrets.SSO_ALERTS }}
+          token: ${{ secrets.ROCKETCHAT_TOKEN }}
       - uses: actions/checkout@v3
       - name: Login Openshift Gold & Golddr
         uses: ./.github/actions/oc-login
