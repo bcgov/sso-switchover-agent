@@ -189,3 +189,11 @@ synch-gold-to-dr-then-set-gold-active.sh <namespace>
 ### test-workflow.sh
 
 This action was triggered by the `testworkflows.yml` action. The multi step, logic was needed when patroni-gold had to synch with patroni-dr. However, it will not be nessessary if patroni-gold is no longer put in standby mode.
+
+## Release Process
+
+- Create a pull request from `dev` to `main` and update pull request labels to choose a specific type of release
+- `release:major` - will create a major release (example: `v1.0.0` -> `v2.0.0`)
+- `release:minor` - will create a minor release (example: `v1.0.0` -> `v1.1.0`)
+- `release:patch` - will create a patch release (example: `v1.0.0` -> `v1.0.1`)
+- `release:norelease` - will not trigger any release
