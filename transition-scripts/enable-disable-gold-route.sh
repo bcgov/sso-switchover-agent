@@ -33,7 +33,7 @@ switch_kube_context "gold" "$namespace"
 
 if [ "$action" = "disable" ]
 then
-    kubectl -n "$namespace" get route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak-disabled"}}}'
+    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak-disabled"}}}'
 elif [ "$action" = "enable" ]
 then
     kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p '{"spec":{"to":{"name":"sso-keycloak"}}}'
