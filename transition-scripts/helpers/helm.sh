@@ -123,11 +123,10 @@ check_helm_release() {
   fi
 }
 
-connect_route_to_correct_service() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+get_vanity_route_name() {
+  if [ "$#" -lt 1 ]; then exit 1; fi
 
-  maintenance="$1"
-  namespace="$2"
+  namespace="$1"
 
   if [ "$namespace" = "c6af30-dev" ]
   then
@@ -148,6 +147,18 @@ connect_route_to_correct_service() {
   then
     KEYCLOAK_ROUTE="sso-prod"
   fi
+
+  echo $KEYCLOAK_ROUTE
+
+}
+
+connect_route_to_correct_service() {
+  if [ "$#" -lt 2 ]; then exit 1; fi
+
+  maintenance="$1"
+  namespace="$2"
+
+  KEYCLOAK_ROUTE=$(get_vanity_route_name "$namespace")
 
   if [ "$maintenance" = "true" ]
   then
