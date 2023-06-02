@@ -1,0 +1,34 @@
+name: 'Disable/Enable Gold Route'
+
+on:
+  workflow_dispatch:
+    inputs:
+      namespace:
+        description: "The target namespace"
+        required: true
+        options: ["c6af30-dev", "eb75ad-dev", "eb75ad-test", "eb75ad-prod"]
+      action:
+        description: "Disable or enable gold route"
+        required: true
+        options: ["enable", "disable"]
+
+jobs:
+  enable-disable:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login Openshift Gold & Golddr
+        uses: ./.github/actions/oc-login
+        with:
+          namespace: ${{ github.event.inputs.namespace }}
+          oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
+          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
+          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+
+      - name: Enable or Disable Gold Route
+        run: |
+          chmod +x ./enable-disable-gold-route.sh
+          ./enable-disable-gold-route.sh ${{ github.event.inputs.namespace }} ${{ github.event.inputs.action }}
+        working-directory: transition-scripts
