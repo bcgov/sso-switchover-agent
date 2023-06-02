@@ -9,8 +9,11 @@ on:
         options: ["c6af30-dev", "eb75ad-dev", "eb75ad-test", "eb75ad-prod"]
       action:
         description: "Disable or enable gold route"
+        type: choice
         required: true
-        options: ["enable", "disable"]
+        options:
+        - enable
+        - disable
 
 jobs:
   enable-disable:
