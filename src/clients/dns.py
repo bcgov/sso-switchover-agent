@@ -35,7 +35,7 @@ async def dns_lookup(domain_name: str, q: Queue):
             logger.error("No DNS response")
             result = 'error'
 
-        if result != "none" and last_result != result:
+        if last_result != result:
             q.put({'event': 'dns', 'result': result,
                   'message': 'IP CHANGE %s' % result})
             last_result = result

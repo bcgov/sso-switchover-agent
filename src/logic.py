@@ -11,31 +11,46 @@ logger = logging.getLogger(__name__)
 
 
 def handle_queues(queue: Queue, processes: list):
-    switchover_agent_starting = True
+    previous_valid_ip = 'undefined'
+    valid_ips = [config.get('active_ip'), config.get('passive_ip')]
     while True:
         try:
             item = queue.get()
             logger.info(item)
-
             if item['event'] == 'dns':
                 ip = item['result']
                 logger.debug("DNS resolution: %s", ip)
-                if ip == config.get('active_ip'):
-                    logger.info("active_ip")
-                    if not switchover_agent_starting:
-                        dispatch_rocketchat_webhook("Gold")
-                        dispatch_css_maintenance_action(False)
-                    else:
-                        switchover_agent_starting = False
-                elif ip == config.get('passive_ip'):
-                    logger.info("passive_ip")
-                    dispatch_action()
-                    dispatch_rocketchat_webhook("GoldDR")
-                    dispatch_css_maintenance_action(True)
+
+                action_dispatcher(ip, previous_valid_ip, valid_ips[0], valid_ips[1])
+
+                if ip in valid_ips:
+                    previous_valid_ip = ip
 
         except Exception as ex:
             logger.error('Unknown error in logic. %s' % ex)
             traceback.print_exc(file=sys.stdout)
+
+
+def action_dispatcher(ip: str, prev_ip: str, active_ip: str, passive_ip: str):
+    if (ip == active_ip and prev_ip == passive_ip):
+        logger.info("active_ip")
+        dispatch_rocketchat_webhook("Gold")
+        dispatch_css_maintenance_action(False)
+    elif (ip == passive_ip and prev_ip == active_ip):
+        logger.info("passive_ip")
+        dispatch_action()
+        dispatch_rocketchat_webhook("GoldDR")
+        dispatch_css_maintenance_action(True)
+    # elif prev_ip == 'undefined':
+    #     # Trigger an internal alert stating the switchover agent restarted, it's
+    #     # environment and where the GSLB is pointing
+    # elif ip == 'error':
+    #     # Trigger an internal alert stating the GSLB is not resolving any IP, it's
+    #     # environment and where the GSLB was previously pointing
+    # elif ip == prev_ip:
+    #     # Trigger an internal alert stating the GSLB service interuption was
+    #     # was resolved
+    #     # Include the environment, clusted, and explanation of what is going on
 
 
 def dispatch_action():
