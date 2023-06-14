@@ -47,4 +47,10 @@ docker run <image_name>:<image_tag>
 
 ## Running unit tests:
 
-No testing infrastructure is currently in place for the switchover agent code.
+The switchover agent tests can be run using the command:
+
+```
+poetry run pytest src/tests/trigger_test.py
+```
+
+In the root of the project.

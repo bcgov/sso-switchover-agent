@@ -4,7 +4,6 @@ import logging
 import time
 
 from multiprocessing import Queue
-from config import config
 
 logger = logging.getLogger(__name__)
 
