@@ -53,10 +53,6 @@ def action_dispatcher(ip: str, prev_ip: str, active_ip: str, passive_ip: str):
     #     # Include the environment, clusted, and explanation of what is going on
 
 
-def test_funtion():
-    return 5
-
-
 def dispatch_action():
     url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), config.get('gh_repo'), config.get('gh_workflow_id'))
     data = {'ref': config.get('gh_branch'), 'inputs': {'namespace': config.get('namespace')}}
