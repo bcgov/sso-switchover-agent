@@ -36,5 +36,5 @@ jobs:
 
       - name: Run frontend unit tests
         run: |
-          poetry run pytest src/tests/trigger_test.py
+          pytest src/tests/trigger_test.py
         working-directory: ./
