@@ -1,0 +1,37 @@
+name: Run Python Tests
+
+on: [push, pull_request]
+
+jobs:
+  run_python_tests:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: hmarr/debug-action@v2
+      - uses: actions/checkout@v3
+
+      - name: Install asdf
+        uses: asdf-vm/actions/setup@v1
+      - name: Cache asdf tools
+        uses: actions/cache@v3
+        with:
+          path: |
+            /home/runner/.asdf
+          key: ${{ runner.os }}-${{ hashFiles('**/.tool-versions') }}
+
+      - name: Install required tools
+        run: |
+          sudo apt install uuid uuid-dev
+          cat .tool-versions | cut -f 1 -d ' ' | xargs -n 1 asdf plugin-add || true
+          asdf plugin-update --all
+          asdf install
+          asdf reshim
+
+      - name: Install python requirements
+        run: |
+          pip install -r requirements.txt
+          asdf reshim
+
+      - name: Run frontend unit tests
+        run: |
+          pytest src/tests/trigger_test.py
+        working-directory: ./
