@@ -4,8 +4,14 @@ import logging
 import time
 
 from multiprocessing import Queue
+from config import config
+
+from urllib.request import urlopen
+from urllib.error import *
 
 logger = logging.getLogger(__name__)
+
+passive_ip = config.get('passive_ip')
 
 
 def dns_watch(domain_name: str, q: Queue):
@@ -25,6 +31,8 @@ async def dns_lookup(domain_name: str, q: Queue):
         try:
             logger.debug("DNS => %s", domain_name)
             addrs = socket.getaddrinfo(domain_name, 0)
+            # logger.info("The address object is:")
+            # logger.info(addrs)
 
             if len(addrs) > 0:
                 ip = addrs[0][4][0]
@@ -34,6 +42,19 @@ async def dns_lookup(domain_name: str, q: Queue):
         except socket.gaierror:
             logger.error("No DNS response")
             result = 'error'
+
+        # this one works
+        try:
+            html = urlopen("http://sso-keycloak-maintenance:8080", timeout=0.5)
+            # curl -o /dev/null -s -w "%{http_code}\n" http://sso-keycloak-maintenance:8080
+        except HTTPError as e:
+            print("HTTP error", e)
+
+        except URLError as e:
+            print("Opps ! Page not found!", e)
+
+        else:
+            print('Yeah !  found ')
 
         if last_result != result:
             q.put({'event': 'dns', 'result': result,
