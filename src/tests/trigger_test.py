@@ -30,7 +30,7 @@ class TestTheDispatcher(unittest.TestCase):
             action_dispatcher(active_ip, passive_ip, active_ip, passive_ip)
             mock_dispatch_action.assert_not_called()
             mock_css_maintenance.assert_called_once_with(False)
-            mock_rocket_chat.assert_called_once_with("Gold")
+            mock_rocket_chat.assert_not_called()
 
     def test_action_dispatcher_none_to_gold(self):
         with patch('logic.dispatch_action') as mock_dispatch_action, \
@@ -52,7 +52,7 @@ class TestTheDispatcher(unittest.TestCase):
             action_dispatcher(passive_ip, active_ip, active_ip, passive_ip)
             mock_dispatch_action.assert_called_once()
             mock_css_maintenance.assert_called_once_with(True)
-            mock_rocket_chat.assert_called_once_with("GoldDR")
+            mock_rocket_chat.assert_not_called()
 
     def test_action_dispatcher_golddr_to_golddr(self):
         with patch('logic.dispatch_action') as mock_dispatch_action, \

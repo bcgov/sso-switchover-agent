@@ -32,7 +32,9 @@ def test_queues(queue: Queue, processes: list):
 
     last_item = ""
     while queue.qsize() > 0:
-        last_item = queue.get()
+        item = queue.get()
+        if 'result' in item:
+            last_item = item
 
     queue.put("success" if last_item['result'] == config.get('passive_ip') else "failure")
 
