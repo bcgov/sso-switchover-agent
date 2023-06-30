@@ -55,6 +55,8 @@ Global server load balancing or GSLB is the practice of distributing Internet tr
 
 Currently the GSLB is configured in such a way that when the gold health endpoint is up, traffic will be sent there.  If Gold's health endpoint does not return `200 OK`, the GSLB will point traffic at Gold DR.  If the Gold DR health check endpoint also fails, the GSLB will not route the traffic to either cluster, returning `SERVFAIL`. (The switchover agent logs this as `no DNS response`).  A side effect is that traffic automatically returns to Gold as soon as the Gold health check passes, the status of Gold DR has no impact on that redirection.
 
+The state of the health check endpoint can be evaluated by running a curl command against the Gold and GoldDR clusters.  Documented internally [here](https://github.com/bcgov-c/pathfinder-sso-docs/discussions/80).
+
 ## Local development environment
 
 As with most sso team repos the switchover agent uses the asdf tool for local package management.  The sso-keycloak [Developer Guidelines](https://github.com/bcgov/sso-keycloak/blob/dev/docs/developer-guide.md) provide the steps needed to set up and install the local tools.

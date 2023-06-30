@@ -47,4 +47,21 @@ docker run <image_name>:<image_tag>
 
 ## Running unit tests:
 
-No testing infrastructure is currently in place for the switchover agent code.
+The switchover agent tests can be run using the command:
+
+```
+poetry run pytest src/tests/trigger_test.py
+```
+
+In the root of the project.
+
+## Running the queu tests
+
+The queu tests run automatically on pr creation.  To run them locally:
+
+```
+docker build -f Dockerfile-test . -t switchover-test
+docker run switchover-test
+```
+
+The docker container should raise no errors and terminate when the test is complete.
