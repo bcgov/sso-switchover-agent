@@ -13,7 +13,7 @@ Available clusters:
     - golddr
 
 Examples:
-    $ $0 dev.sandbox.loginproxy.con gold
+    $ $0 dev.sandbox.loginproxy.gov.bc.ca gold
 EOF
 }
 
