@@ -58,5 +58,5 @@ if __name__ == '__main__':
 
     if test_mode and queue.qsize() > 0:
         sys.exit(1 if queue.get() == 'failure' else 0)
-
+    logger.info('this is a test trial')
     sys.exit(0)
