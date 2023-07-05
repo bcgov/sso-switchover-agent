@@ -32,6 +32,7 @@ async def dns_lookup(domain_name: str, q: Queue):
         maintenance_mode = "unknown"
         try:
             logger.debug("DNS => %s", domain_name)
+            logger.info("This will show up in a newly build image")
             addrs = socket.getaddrinfo(domain_name, 0)
 
             if len(addrs) > 0:
