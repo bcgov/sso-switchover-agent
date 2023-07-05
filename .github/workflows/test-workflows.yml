@@ -22,6 +22,11 @@ jobs:
           oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
           oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+      - name: Install test dependencies
+        run: |
+          sudo apt update
+          sudo apt-get update
+          sudo apt-get -y install syslinux
       - name: Redeploy Gold and GoldDR keycloak
         run: |
           chmod +x ./deploy.sh
