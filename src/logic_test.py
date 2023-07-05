@@ -26,13 +26,14 @@ def set_passive_hosts():
 
 
 def test_queues(queue: Queue, processes: list):
-    time.sleep(5)
+    time.sleep(7)
     set_passive_hosts()
-    time.sleep(5)
+    time.sleep(7)
 
     last_item = ""
     while queue.qsize() > 0:
         item = queue.get()
+        logger.info(f'The queue item is: {item}')
         if 'result' in item:
             last_item = item
 

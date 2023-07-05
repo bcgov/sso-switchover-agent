@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     if test_mode and queue.qsize() > 0:
         output = queue.get()
-        logger.info(output)
+        logger.info(f'The test output is: {output}')
         sys.exit(1 if output == 'failure' else 0)
 
     sys.exit(0)
