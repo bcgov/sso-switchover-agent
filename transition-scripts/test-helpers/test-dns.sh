@@ -23,7 +23,7 @@ if [ "$#" -lt 2 ]; then
 fi
 
 pwd="$(dirname "$0")"
-source "$pwd/helpers/_all.sh"
+source "$pwd/../helpers/_all.sh"
 
 url_to_resolve=$1
 cluster=$2
