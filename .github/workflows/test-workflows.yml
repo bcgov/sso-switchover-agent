@@ -47,6 +47,7 @@ jobs:
           chmod +x ./test-dns.sh
           ./test-dns.sh dev.sandbox.loginproxy.gov.bc.ca golddr
         working-directory: transition-scripts
+        # wait for Keycloak to be up in golddr
       - name: Enable Gold Route
         run: |
           chmod +x ./enable-disable-gold-route.sh
@@ -61,4 +62,4 @@ jobs:
         run: |
           chmod +x ./set-dr-to-standby.sh
           ./set-dr-to-standby.sh ${{ github.event.inputs.namespace }} false
-        working-directory: transition-scripts# trigger set DR to standby
+        working-directory: transition-scripts

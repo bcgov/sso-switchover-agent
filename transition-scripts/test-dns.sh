@@ -40,15 +40,6 @@ cluster=$2
 #     exit 1
 # fi
 
-
-
-# wait_for_GSLB_to_point_at_cluster() {
-#   if [ "$#" -lt 1 ]; then exit 1; fi
-
-#   namespace="$1"
-
-#   replicas=$(kubectl get deployment sso-keycloak -n "$namespace" -o jsonpath='{.spec.replicas}')
-
 count=0
 wait_ready() {
     ipresolved=$(gethostip -d "$url_to_resolve")
@@ -62,11 +53,8 @@ wait_ready() {
         echo "The GSLB is point traffic to golddr"
         return 1
     else
-        error "The GSLB is not directing traffic to the correct cluster"
+        error "The GSLB is not directing traffic to the $cluster cluster"
     fi
-
-
-# if [ "$ready_count" == "$replicas" ]; then return 1; fi
 
 # wait for 10mins
 if [[ "$count" -gt 120 ]]; then
