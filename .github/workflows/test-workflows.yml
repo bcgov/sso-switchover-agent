@@ -26,7 +26,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt-get update
-          sudo apt-get -y install syslinux
+          sudo apt-get -y install syslinux-utils
       - name: Redeploy Gold and GoldDR keycloak
         run: |
           chmod +x ./deploy.sh
