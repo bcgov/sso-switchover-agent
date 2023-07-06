@@ -5,8 +5,9 @@ on:
     inputs:
       namespace:
         description: "The target namespace"
-        required: true
+        required: false
         options: ["c6af30-dev"]
+        default: "c6af30-dev"
 
 jobs:
   failover-failback-test:
@@ -47,11 +48,16 @@ jobs:
           chmod +x ./test-dns.sh
           ./test-dns.sh dev.sandbox.loginproxy.gov.bc.ca golddr
         working-directory: transition-scripts/test-helpers
-      # - name: Wait for keycloak dr pods to be up
-      #   run: |
-      #     chmod +x ./.sh
-      #     ./.sh ${{ github.event.inputs.namespace }}
-      #   working-directory: transition-scripts
+      - name: Wait for keycloak dr pods to be up
+        run: |
+          chmod +x ./wait-keycloak-dr-ready.sh
+          ./wait-keycloak-dr-ready.sh ${{ github.event.inputs.namespace }}
+        working-directory: transition-scripts/test-helpers
+      - name: Confirm DNS still pointing to GoldDR
+        run: |
+          chmod +x ./test-dns.sh
+          ./test-dns.sh dev.sandbox.loginproxy.gov.bc.ca golddr
+        working-directory: transition-scripts/test-helpers
       - name: Enable Gold Route
         run: |
           chmod +x ./enable-disable-gold-route.sh
