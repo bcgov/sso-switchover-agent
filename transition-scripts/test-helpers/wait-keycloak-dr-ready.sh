@@ -19,6 +19,8 @@ source "$pwd/../helpers/_all.sh"
 
 # Golddr deployments
 echo "Ensure cluster is golddr."
+
+switch_kube_context "golddr"
 ensure_kube_context "golddr"
 
 wait_for_keycloak_all_ready "$namespace"
