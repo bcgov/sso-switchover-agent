@@ -3,7 +3,7 @@ set -e
 
 usage() {
     cat <<EOF
-Waits for keycloak DR to be ready Used for test automation.
+Waits for keycloak DR to be ready. Used for test automation.
 EOF
 }
 
@@ -27,7 +27,6 @@ wait_for_keycloak_all_ready_with_replicas() {
     replicas=$(kubectl get deployment sso-keycloak -n "$namespace" -o jsonpath='{.spec.replicas}')
     ready_count=$(count_ready_keycloak_pods "$namespace")
     info "keycloak ready $ready_count/$replicas"
-    warn "The replica count is $replicas"
 
     if [ "$replicas" -gt 0 ] && [ "$ready_count" == "$replicas" ]; then return 1; fi
 
@@ -50,6 +49,9 @@ echo "Ensure cluster is golddr."
 switch_kube_context "golddr"
 ensure_kube_context "golddr"
 
+echo "Wait for keycloak DR pods to be up and for the replica count to be greater than zero.
+This will only pass after the 'Set DR active' action has run successfully"
+
 wait_for_keycloak_all_ready_with_replicas "$namespace"
 
 info "Keycloak pods are ready in $namespace"
@@ -60,7 +62,7 @@ info "Keycloak pods are ready in $namespace"
 
 
 count=0
-wait_ready() {
+wait_for_route_to_direct_to_keycloak() {
     routeservicename=$(oc -n "$namespace" get route sso-keycloak -o jsonpath='{.spec.to.name}')
     info "The route is directing traffic to the $routeservicename service."
 
@@ -80,4 +82,4 @@ fi
 count=$((count + 1))
 }
 
-while wait_ready; do sleep 5; done
+while wait_for_route_to_direct_to_keycloak; do sleep 5; done

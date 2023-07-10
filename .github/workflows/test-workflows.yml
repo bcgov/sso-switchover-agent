@@ -8,6 +8,16 @@ on:
         required: false
         options: ["c6af30-dev"]
         default: "c6af30-dev"
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'helm/**'
+      - '.github/workflows/publish-image.yml'
+      - 'Dockerfile'
+      - 'poetry.lock'
+      - 'pyproject.toml'
 
 jobs:
   failover-failback-test:
