@@ -28,7 +28,8 @@ wait_for_keycloak_all_ready_with_replicas() {
     ready_count=$(count_ready_keycloak_pods "$namespace")
     info "keycloak ready $ready_count/$replicas"
     warn "The replica count is $replicas"
-    if [ "$ready_count" == "$replicas" ]; then return 1; fi
+
+    if [ "$replicas" -gt 0 ] && [ "$ready_count" == "$replicas" ]; then return 1; fi
 
     # wait for 30mins
     if [[ "$count_kc" -gt 360 ]]; then
