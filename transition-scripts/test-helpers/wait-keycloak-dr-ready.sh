@@ -17,15 +17,45 @@ namespace=$1
 pwd="$(dirname "$0")"
 source "$pwd/../helpers/_all.sh"
 
+wait_for_keycloak_all_ready_with_replicas() {
+  if [ "$#" -lt 1 ]; then exit 1; fi
+
+  namespace="$1"
+
+  count_kc=0
+  wait_kc_ready() {
+    replicas=$(kubectl get deployment sso-keycloak -n "$namespace" -o jsonpath='{.spec.replicas}')
+    ready_count=$(count_ready_keycloak_pods "$namespace")
+    info "keycloak ready $ready_count/$replicas"
+    warn "The replica count is $replicas"
+    if [ "$ready_count" == "$replicas" ]; then return 1; fi
+
+    # wait for 30mins
+    if [[ "$count_kc" -gt 360 ]]; then
+      warn "keycloak replicas is not ready"
+      exit 1
+    fi
+
+    count_kc=$((count_kc + 1))
+  }
+
+  while wait_kc_ready; do sleep 5; done
+}
+
+
 # Golddr deployments
 echo "Ensure cluster is golddr."
 
 switch_kube_context "golddr"
 ensure_kube_context "golddr"
 
-wait_for_keycloak_all_ready "$namespace"
+wait_for_keycloak_all_ready_with_replicas "$namespace"
 
 info "Keycloak pods are ready in $namespace"
+
+
+
+
 
 
 count=0
