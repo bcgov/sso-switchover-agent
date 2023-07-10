@@ -28,22 +28,9 @@ source "$pwd/../helpers/_all.sh"
 url_to_resolve=$1
 cluster=$2
 
-
-# ipresolved=$(gethostip -d "$url_to_resolve")
-
-# if [ "$cluster" == gold ] && [ "$ipresolved" == "142.34.229.4" ]; then
-#     echo "The GSLB is point traffic to gold"
-# elif [ "$cluster" == golddr ] && [ "$ipresolved" == "142.34.64.4" ]; then
-#     echo "The GSLB is point traffic to golddr"
-# else
-#     error "The GSLB is not directing traffic to the correct cluster"
-#     exit 1
-# fi
-
 count=0
 wait_ready() {
     ipresolved=$(gethostip -d "$url_to_resolve")
-# ready_count=$(count_ready_keycloak_pods "$namespace")
     info "The GSLB is resolving the IP: $ipresolved"
 
     if [ "$cluster" == gold ] && [ "$ipresolved" == "142.34.229.4" ]; then
@@ -56,13 +43,13 @@ wait_ready() {
         error "The GSLB is not directing traffic to the $cluster cluster"
     fi
 
-# wait for 10mins
-if [[ "$count" -gt 120 ]]; then
-    warn "The GSLB did not point to the $cluster cluster in 10 min."
-    exit 1
-fi
+    # wait for 10mins
+    if [[ "$count" -gt 120 ]]; then
+        warn "The GSLB did not point to the $cluster cluster in 10 min."
+        exit 1
+    fi
 
-count=$((count + 1))
+    count=$((count + 1))
 }
 
 while wait_ready; do sleep 5; done
