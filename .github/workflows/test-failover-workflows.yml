@@ -1,4 +1,4 @@
-name: Disaster Recovery Integration Test
+name: Test - Disaster Recovery Integration Test
 
 on:
   workflow_dispatch:
