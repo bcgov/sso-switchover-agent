@@ -18,6 +18,11 @@ on:
       - 'Dockerfile'
       - 'poetry.lock'
       - 'pyproject.toml'
+    inputs:
+      namespace:
+        description: "The target namespace"
+        required: false
+        default: "c6af30-dev"
 
 jobs:
   failover-failback-test:
