@@ -14,6 +14,7 @@ elif [ "$project" == "SANDBOX-OLD" ]; then
 elif [ "$project" == "PRODUCTION" ]; then
     namespace="eb75ad-$env"
 else
+    error "Invalid project name '$project' entered"
     exit 1
 fi
 # export namespace="c6af30-dev"
