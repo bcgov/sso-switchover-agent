@@ -9,7 +9,7 @@ env=$2
 
 if [ "$project" == "SANDBOX" ]; then
     namespace="e4ca1d-$env"
-elif [ "$project" == "OLD-SANDBOX2" ]; then
+elif [ "$project" == "OLD-SANDBOX" ]; then
     namespace="c6af30-$env"
 elif [ "$project" == "PRODUCTION" ]; then
     namespace="eb75ad-$env"
