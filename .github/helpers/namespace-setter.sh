@@ -2,7 +2,6 @@
 set -e
 
 if [ "$#" -lt 2 ]; then
-    usage
     exit 1
 fi
 project=$1
