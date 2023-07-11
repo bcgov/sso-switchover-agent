@@ -42,7 +42,7 @@ jobs:
 
       - name: Run transition script
         run: |
-          echo $NAMESPACE
+          echo "Running on the $NAMESPACE namespace"
           chmod +x ./set-dr-to-standby.sh
           ./set-dr-to-standby.sh $NAMESPACE ${{ github.event.inputs.deleteDRpvc }}
         working-directory: transition-scripts
