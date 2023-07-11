@@ -9,12 +9,12 @@ env=$2
 
 if [ "$project" == "SANDBOX" ]; then
     namespace="e4ca1d-$env"
-elif [ "$project" == "SANDBOX-OLD" ]; then
+elif [ "$project" == "OLD-SANDBOX2" ]; then
     namespace="c6af30-$env"
 elif [ "$project" == "PRODUCTION" ]; then
     namespace="eb75ad-$env"
 else
-    error "Invalid project name '$project' entered"
+    echo "Invalid project name '$project' entered"
     exit 1
 fi
 # export namespace="c6af30-dev"
