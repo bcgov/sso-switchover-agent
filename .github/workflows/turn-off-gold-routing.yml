@@ -33,11 +33,6 @@ jobs:
           chmod +x ./namespace-setter.sh
           ./namespace-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.environment }}
         working-directory: .github/helpers
-      - name: Set the deployment namespace
-        run: |
-          chmod +x ./namespace-setter.sh
-          ./namespace-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.namespace }}
-        working-directory: .github/helpers
       - name: Login Openshift Gold & Golddr
         uses: ./.github/actions/oc-login
         with:
