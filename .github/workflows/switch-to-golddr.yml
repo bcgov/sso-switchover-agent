@@ -3,21 +3,33 @@ name: Set the dr deployment to active
 on:
   workflow_dispatch:
     inputs:
-      namespace:
-        description: "The target namespace"
+      project:
+        description: "The target project"
+        type: choice
         required: true
-        options: ["c6af30-dev", "eb75ad-dev", "eb75ad-test", "eb75ad-prod"]
+        options: ["SANDBOX", "PRODUCTION", "OLD-SANDBOX"]
+        default: "SANDBOX"
+      environment:
+        description: "env to deploy"
+        type: choice
+        options: ["dev","test","prod"]
+        default: "dev"
 
 jobs:
   transition-scripts:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
+      - name: Set the deployment namespace
+        run: |
+          chmod +x ./namespace-setter.sh
+          ./namespace-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.environment }}
+        working-directory: .github/helpers
       - name: Rocket.Chat Notification
         uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
         with:
           type: ${{ job.status }}
-          job_name: 'The switch to Gold DR action was triggered for ${{ github.event.inputs.namespace }}, confirm if'
+          job_name: 'The switch to Gold DR action was triggered for $NAMESPACE, confirm if'
           mention: 'jsharman @nithinshekar.kuruba @Marco'
           mention_if: 'always'
           channel: '#sso-alerts'
@@ -27,7 +39,7 @@ jobs:
       - name: Login Openshift Gold & Golddr
         uses: ./.github/actions/oc-login
         with:
-          namespace: ${{ github.event.inputs.namespace }}
+          namespace: $NAMESPACE
           oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
           oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
@@ -35,6 +47,7 @@ jobs:
 
       - name: Run transition script
         run: |
+          echo "Running on the $NAMESPACE namespace"
           chmod +x ./switch-to-golddr.sh
-          ./switch-to-golddr.sh ${{ github.event.inputs.namespace }}
+          ./switch-to-golddr.sh $NAMESPACE
         working-directory: transition-scripts
