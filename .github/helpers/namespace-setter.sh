@@ -17,5 +17,5 @@ else
     echo "Invalid project name '$project' entered"
     exit 1
 fi
-# export namespace="c6af30-dev"
+
 echo "NAMESPACE=$namespace" >> "$GITHUB_ENV"
