@@ -57,8 +57,9 @@ def action_dispatcher(ip: str, prev_ip: str, active_ip: str, passive_ip: str):
 
 
 def dispatch_action():
+    environment = config.get('namespace')[7:]
     url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), config.get('gh_repo'), config.get('gh_workflow_id'))
-    data = {'ref': config.get('gh_branch'), 'inputs': {'namespace': config.get('namespace')}}
+    data = {'ref': config.get('gh_branch'), 'inputs': {'project': config.get('project'), 'environment': environment}}
     bearer = 'token %s' % config.get('gh_token')
     headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': bearer}
     x = requests.post(url, json=data, headers=headers)

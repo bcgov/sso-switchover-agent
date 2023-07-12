@@ -8,7 +8,7 @@ There are multiple environment variables set in the secret `sso-switchover-agent
  - GH_BRANCH: The branch in the sso-switchover-agent repo from which to deploy. `dev` for sandbox environments `main` for production.
  - GH_TOKEN: The personal access token for deploying the switchover actions.
  - NAMESPACE: The namespace in which we will we be deploying. In general, it is the same namespace as the switchover agent deployment.
-
+ - PROJECT: The project (PRODUCTION, SANDBOX, OLD-SANDBOX), wich we will be deploying.
 ## Rocket Chat Integration
 To notify rocket chat when failover and failback occurs.  Create a rocket chat webhook (already done for SSO-keyacloak). Then add the following values to the secret file.  Currently the production alerts are client facing (sso), and the sandbox alerts are intertal (sso-ops channel).
 
