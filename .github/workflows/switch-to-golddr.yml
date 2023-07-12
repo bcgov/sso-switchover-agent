@@ -30,7 +30,7 @@ jobs:
         uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
         with:
           type: ${{ job.status }}
-          job_name: "The switch to Gold DR action was triggered for $NAMESPACE, confirm if"
+          job_name: 'The switch to Gold DR action was triggered for ${{ $NAMESPACE }}, confirm if'
           mention: 'jsharman @nithinshekar.kuruba @Marco'
           mention_if: 'always'
           channel: '#sso-alerts'
