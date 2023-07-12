@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
+      - uses: actions/checkout@v3
       - name: Set the deployment namespace
         run: |
           chmod +x ./namespace-setter.sh
@@ -35,7 +36,6 @@ jobs:
           channel: '#sso-alerts'
           url: ${{ secrets.SSO_ALERTS }}
           token: ${{ secrets.ROCKETCHAT_TOKEN }}
-      - uses: actions/checkout@v3
       - name: Login Openshift Gold & Golddr
         uses: ./.github/actions/oc-login
         with:
