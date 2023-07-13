@@ -3,10 +3,17 @@ name: Deploy Keycloak resources in Gold & Golddr
 on:
   workflow_dispatch:
     inputs:
-      namespace:
-        description: "The target namespace"
+      project:
+        description: "The target project"
+        type: choice
         required: true
-        options: ["c6af30-dev", "eb75ad-dev", "eb75ad-test", "eb75ad-prod"]
+        options: ["SANDBOX", "PRODUCTION", "OLD-SANDBOX"]
+        default: "SANDBOX"
+      environment:
+        description: "env to deploy"
+        type: choice
+        options: ["dev","test","prod"]
+        default: "dev"
 
 jobs:
   transition-scripts:
@@ -14,10 +21,15 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v3
+      - name: Set the deployment namespace
+        run: |
+          chmod +x ./namespace-setter.sh
+          ./namespace-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.environment }}
+        working-directory: .github/helpers
       - name: Login Openshift Gold & Golddr
         uses: ./.github/actions/oc-login
         with:
-          namespace: ${{ github.event.inputs.namespace }}
+          namespace: $NAMESPACE
           oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
           oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
@@ -25,6 +37,7 @@ jobs:
 
       - name: Run transition script
         run: |
+          echo "Running on the $NAMESPACE namespace"
           chmod +x ./deploy.sh
-          ./deploy.sh ${{ github.event.inputs.namespace }}
+          ./deploy.sh $NAMESPACE
         working-directory: transition-scripts
