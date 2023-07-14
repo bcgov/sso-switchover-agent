@@ -57,7 +57,7 @@ jobs:
         uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
         with:
           type: ${{ job.status }}
-          job_name: 'The switch to Gold DR for the ${{ github.event.inputs.project }}-${{ github.event.inputs.environment }} project FAILED'
+          job_name: 'The switch to Gold DR for the ${{ github.event.inputs.project }}-${{ github.event.inputs.environment }} project'
           mention: 'jsharman @nithinshekar.kuruba @Marco'
           mention_if: 'always'
           channel: '#sso-alerts'
