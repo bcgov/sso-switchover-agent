@@ -51,3 +51,15 @@ jobs:
           chmod +x ./switch-to-golddr.sh
           ./switch-to-golddr.sh $NAMESPACE
         working-directory: transition-scripts
+
+      - name: Alert on failure
+        if: failure()
+        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
+        with:
+          type: ${{ job.status }}
+          job_name: 'The switch to Gold DR for the ${{ github.event.inputs.project }}-${{ github.event.inputs.environment }} project'
+          mention: 'jsharman @nithinshekar.kuruba @Marco'
+          mention_if: 'always'
+          channel: '#sso-alerts'
+          url: ${{ secrets.SSO_ALERTS }}
+          token: ${{ secrets.ROCKETCHAT_TOKEN }}
