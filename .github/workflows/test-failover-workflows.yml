@@ -3,11 +3,17 @@ name: Test - Disaster Recovery Integration Test
 on:
   workflow_dispatch:
     inputs:
-      namespace:
-        description: "The target namespace"
-        required: false
-        options: ["c6af30-dev"]
-        default: "c6af30-dev"
+      project:
+        description: "The target project"
+        type: choice
+        required: true
+        options: ["OLD-SANDBOX"]
+        default: "OLD-SANDBOX"
+      environment:
+        description: "env to deploy"
+        type: choice
+        options: ["dev"]
+        default: "dev"
   push:
     branches:
       - main
@@ -19,10 +25,14 @@ on:
       - 'poetry.lock'
       - 'pyproject.toml'
     inputs:
-      namespace:
-        description: "The target namespace"
-        required: false
-        default: "c6af30-dev"
+      project:
+        description: "The target project"
+        required: true
+        default: "OLD-SANDBOX"
+      environment:
+        description: "env to deploy"
+        required: true
+        default: "dev"
 
 jobs:
   failover-failback-test:
@@ -30,10 +40,15 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v3
+      - name: Set the deployment namespace
+        run: |
+          chmod +x ./namespace-setter.sh
+          ./namespace-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.environment }}
+        working-directory: .github/helpers
       - name: Login Openshift Gold & Golddr
         uses: ./.github/actions/oc-login
         with:
-          namespace: ${{ github.event.inputs.namespace }}
+          namespace: $NAMESPACE
           oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
           oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
@@ -45,8 +60,9 @@ jobs:
           sudo apt-get -y install syslinux-utils
       - name: Redeploy Gold and GoldDR keycloak
         run: |
+          echo "Running on the $NAMESPACE namespace"
           chmod +x ./deploy.sh
-          ./deploy.sh ${{ github.event.inputs.namespace }}
+          ./deploy.sh $NAMESPACE
         working-directory: transition-scripts
       - name: Confirm DNS pointing to Gold
         run: |
@@ -56,7 +72,7 @@ jobs:
       - name: Disable Gold Route
         run: |
           chmod +x ./enable-disable-gold-route.sh
-          ./enable-disable-gold-route.sh ${{ github.event.inputs.namespace }} disable
+          ./enable-disable-gold-route.sh $NAMESPACE disable
         working-directory: transition-scripts
       - name: Confirm DNS pointing to GoldDR
         run: |
@@ -66,7 +82,7 @@ jobs:
       - name: Wait for keycloak dr pods to be up
         run: |
           chmod +x ./wait-keycloak-dr-ready.sh
-          ./wait-keycloak-dr-ready.sh ${{ github.event.inputs.namespace }}
+          ./wait-keycloak-dr-ready.sh $NAMESPACE
         working-directory: transition-scripts/test-helpers
       - name: Confirm DNS still pointing to GoldDR
         run: |
@@ -76,7 +92,7 @@ jobs:
       - name: Enable Gold Route
         run: |
           chmod +x ./enable-disable-gold-route.sh
-          ./enable-disable-gold-route.sh ${{ github.event.inputs.namespace }} enable
+          ./enable-disable-gold-route.sh $NAMESPACE enable
         working-directory: transition-scripts
       - name: Confirm DNS pointing to Gold
         run: |
@@ -86,5 +102,5 @@ jobs:
       - name: Set DR to Standby
         run: |
           chmod +x ./set-dr-to-standby.sh
-          ./set-dr-to-standby.sh ${{ github.event.inputs.namespace }} false
+          ./set-dr-to-standby.sh $NAMESPACE false
         working-directory: transition-scripts

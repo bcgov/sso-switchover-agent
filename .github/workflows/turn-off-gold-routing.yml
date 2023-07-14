@@ -3,10 +3,17 @@ name: 'Disable/Enable Gold Route'
 on:
   workflow_dispatch:
     inputs:
-      namespace:
-        description: "The target namespace"
+      project:
+        description: "The target project"
+        type: choice
         required: true
-        options: ["c6af30-dev", "eb75ad-dev", "eb75ad-test", "eb75ad-prod"]
+        options: ["SANDBOX", "PRODUCTION", "OLD-SANDBOX"]
+        default: "SANDBOX"
+      environment:
+        description: "env to enable or disable"
+        type: choice
+        options: ["dev","test","prod"]
+        default: "dev"
       action:
         description: "Disable or enable gold route"
         type: choice
@@ -21,17 +28,22 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v3
+      - name: Set the deployment namespace
+        run: |
+          chmod +x ./namespace-setter.sh
+          ./namespace-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.environment }}
+        working-directory: .github/helpers
       - name: Login Openshift Gold & Golddr
         uses: ./.github/actions/oc-login
         with:
-          namespace: ${{ github.event.inputs.namespace }}
+          namespace: $NAMESPACE
           oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
           oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
           oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
-
       - name: Enable or Disable Gold Route
         run: |
+          echo "Running on the $NAMESPACE namespace"
           chmod +x ./enable-disable-gold-route.sh
-          ./enable-disable-gold-route.sh ${{ github.event.inputs.namespace }} ${{ github.event.inputs.action }}
+          ./enable-disable-gold-route.sh $NAMESPACE ${{ github.event.inputs.action }}
         working-directory: transition-scripts
