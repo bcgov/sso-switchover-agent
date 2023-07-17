@@ -10,15 +10,15 @@ Usages:
     $0 <namespace>
 
 Available namespaces:
-    - c6af30-dev
-    - c6af30-test
-    - c6af30-prod
+    - e4ca1d-dev
+    - e4ca1d-test
+    - e4ca1d-prod
     - eb75ad-dev
     - eb75ad-test
     - eb75ad-prod
 
 Examples:
-    $ $0 c6af30-dev
+    $ $0 e4ca1d-dev
 EOF
 }
 
