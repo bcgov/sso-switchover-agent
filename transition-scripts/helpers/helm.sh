@@ -39,7 +39,7 @@ upgrade_helm_active() {
   upgrade_helm "$namespace" "active" \
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
-  echo "deployed successfully"
+
   connect_route_to_correct_service "$maintenance" "$namespace"
 }
 
@@ -167,7 +167,7 @@ connect_route_to_correct_service() {
   namespace="$2"
 
   KEYCLOAK_ROUTE=$(get_vanity_route_name "$namespace")
-  echo "The keycloak route is $KEYCLOAK_ROUTE"
+
   if [ "$maintenance" = "true" ]
   then
     kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
