@@ -42,7 +42,7 @@ def action_dispatcher(ip: str, prev_ip: str, active_ip: str, passive_ip: str):
         css_maintenance_to_active = True
         for env in ['dev', 'test', 'prod']:
             dns_matched = check_dns_by_env(env, passive_ip)
-            if(dns_matched or dns_matched == 'error'):
+            if (dns_matched or dns_matched == 'error'):
                 logger.info("%s is still pointing to %s or unable to check dns" % (env, passive_ip))
                 css_maintenance_to_active = False
                 break

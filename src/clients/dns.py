@@ -97,10 +97,9 @@ def fetch_domain_by_env(env, prod):
 
 
 def check_dns_by_env(env, mode):
-    print('hello')
     try:
         ip_address = socket.gethostbyname(fetch_domain_by_env(env, "sandbox" not in config.get('domain_name')))
-        if(config.get(mode) == ip_address):
+        if (config.get(mode) == ip_address):
             return True
         return False
     except socket.gaierror:
