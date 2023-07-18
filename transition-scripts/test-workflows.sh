@@ -18,12 +18,12 @@ Usages:
     $0 <gh_token> <namespace>
 
 Available namespaces:
-    - c6af30-dev
-    - c6af30-test
-    - c6af30-prod
+    - e4ca1d-dev
+    - e4ca1d-test
+    - e4ca1d-prod
 
 Examples:
-    $ $0 ghp_xxxx c6af30-dev
+    $ $0 ghp_xxxx e4ca1d-dev
 EOF
 }
 
@@ -38,7 +38,7 @@ namespace=$2
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
-if [ "$(get_ocp_plate "$namespace")" != "c6af30" ]; then
+if [ "$(get_ocp_plate "$namespace")" != "e4ca1d" ]; then
     error "must run test scripts in sandbox environments"
     exit 1
 fi

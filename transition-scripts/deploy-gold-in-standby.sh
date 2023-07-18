@@ -12,7 +12,9 @@ Usages:
     $0 <namespace>
 
 Available namespaces:
-    - c6af30-dev
+    - e4ca1d-dev
+    - e4ca1d-test
+    - e4ca1d-prod
     - eb75ad-dev
     - eb75ad-test
     - eb75ad-prod
@@ -22,7 +24,7 @@ Pre-conditions:
     - the Gold patroni pods are scaled to zero.
 
 Examples:
-    $ $0 c6af30-dev
+    $ $0 e4ca1d-dev
 EOF
 }
 
