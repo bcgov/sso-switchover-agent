@@ -7,8 +7,8 @@ on:
         description: "The target project"
         type: choice
         required: true
-        options: ["OLD-SANDBOX"]
-        default: "OLD-SANDBOX"
+        options: ["SANDBOX"]
+        default: "SANDBOX"
       environment:
         description: "env to deploy"
         type: choice
@@ -28,7 +28,7 @@ on:
       project:
         description: "The target project"
         required: true
-        default: "OLD-SANDBOX"
+        default: "SANDBOX"
       environment:
         description: "env to deploy"
         required: true
