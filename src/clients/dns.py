@@ -96,10 +96,10 @@ def fetch_domain_by_env(env, prod):
         return switcher.get("%s-%s" % ("sandbox", env), "")
 
 
-def check_dns_by_env(env, mode):
+def check_dns_by_env(env, ip):
     try:
         ip_address = socket.gethostbyname(fetch_domain_by_env(env, "sandbox" not in config.get('domain_name')))
-        if (config.get(mode) == ip_address):
+        if (ip == ip_address):
             return True
         return False
     except socket.gaierror:
