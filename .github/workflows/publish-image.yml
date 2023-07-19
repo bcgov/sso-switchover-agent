@@ -94,7 +94,7 @@ jobs:
           insecure_skip_tls_verify: true
 
       - name: Deploy app with Helm chart
-        if: (endsWith(github.ref, '/dev') && matrix.license == 'e4ca1d' || endsWith(github.ref, '/main') && matrix.license == 'eb75ad')
+        if: (endsWith(github.ref, '/dev') && matrix.license == 'e4ca1d'
         run: |
           namespace=${{ matrix.license }}-${{ matrix.env }}
           helm dep up
