@@ -108,7 +108,7 @@ class TestTheDispatcher(unittest.TestCase):
 
     def test_skip_css_maintenance_action_if_dns_is_resolved_to_passive_ip(self):
         with patch('logic.dispatch_css_maintenance_action') as mock_css_maintenance, \
-                patch('clients.dns.check_dns_by_env', return_value=True) as mock_check_dns_by_env:
+                patch('logic.check_dns_by_env', return_value=True) as mock_check_dns_by_env:
             action_dispatcher(active_ip, passive_ip, active_ip, passive_ip)
             mock_check_dns_by_env.assert_called_once_with('dev', passive_ip)
             mock_css_maintenance.assert_not_called()
