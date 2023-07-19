@@ -3,6 +3,7 @@ import logging
 import traceback
 import requests
 import json
+from clients.dns import check_dns_by_env
 
 from multiprocessing import Queue
 from config import config
@@ -38,8 +39,19 @@ def handle_queues(queue: Queue, processes: list):
 
 def action_dispatcher(ip: str, prev_ip: str, active_ip: str, passive_ip: str):
     if (ip == active_ip and prev_ip == passive_ip):
-        logger.info("active_ip")
-        dispatch_css_maintenance_action(False)
+        css_maintenance_to_active = True
+        for env in ['dev', 'test', 'prod']:
+            dns_matched = check_dns_by_env(env, passive_ip)
+            if (dns_matched or dns_matched == 'error'):
+                logger.info("%s is still pointing to %s or unable to check dns" % (env, passive_ip))
+                css_maintenance_to_active = False
+                break
+
+        if css_maintenance_to_active:
+            logger.info("active_ip")
+            dispatch_css_maintenance_action(False)
+        else:
+            logger.info("Failed to turn off the css maintenance mode")
     elif (ip == passive_ip and prev_ip == active_ip):
         logger.info("passive_ip")
         dispatch_action()

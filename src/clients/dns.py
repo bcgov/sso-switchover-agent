@@ -79,3 +79,29 @@ def is_keycloak_dr_up_and_receiving_traffic(ip: str):
         return 'gold_up'
     else:
         return 'error'
+
+
+def fetch_domain_by_env(env, prod):
+    switcher = {
+        "sandbox-dev": "dev.sandbox.loginproxy.gov.bc.ca",
+        "sandbox-test": "test.sandbox.loginproxy.gov.bc.ca",
+        "sandbox-prod": "sandbox.loginproxy.gov.bc.ca",
+        "dev": "dev.loginproxy.gov.bc.ca",
+        "test": "test.loginproxy.gov.bc.ca",
+        "prod": "loginproxy.gov.bc.ca",
+    }
+    if prod:
+        return switcher.get(env, "")
+    else:
+        return switcher.get("%s-%s" % ("sandbox", env), "")
+
+
+def check_dns_by_env(env, mode):
+    try:
+        ip_address = socket.gethostbyname(fetch_domain_by_env(env, "sandbox" not in config.get('domain_name')))
+        if (config.get(mode) == ip_address):
+            return True
+        return False
+    except socket.gaierror:
+        logger.error("Invalid domain or could not resolve the IP address.")
+        return 'error'
