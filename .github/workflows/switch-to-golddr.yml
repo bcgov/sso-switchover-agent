@@ -29,7 +29,7 @@ jobs:
           mention_if: 'always'
           channel: '#sso-alerts'
           url: ${{ secrets.SSO_ALERTS }}
-          token: ${{ secrets.ROCKETCHAT_TOKEN }}
+          token: "purposelybadtoken"
   transition-scripts:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
