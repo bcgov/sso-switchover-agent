@@ -16,16 +16,10 @@ on:
         default: "dev"
 
 jobs:
-  transition-scripts:
+  alert-sso-alerts:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v3
-      - name: Set the deployment namespace
-        run: |
-          chmod +x ./namespace-setter.sh
-          ./namespace-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.environment }}
-        working-directory: .github/helpers
       - name: Rocket.Chat Notification
         uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
         with:
@@ -36,6 +30,16 @@ jobs:
           channel: '#sso-alerts'
           url: ${{ secrets.SSO_ALERTS }}
           token: ${{ secrets.ROCKETCHAT_TOKEN }}
+  transition-scripts:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set the deployment namespace
+        run: |
+          chmod +x ./namespace-setter.sh
+          ./namespace-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.environment }}
+        working-directory: .github/helpers
       - name: Login Openshift Gold & Golddr
         uses: ./.github/actions/oc-login
         with:
