@@ -28,7 +28,7 @@ jobs:
           mention: 'jsharman @nithinshekar.kuruba @Marco'
           mention_if: 'always'
           channel: '#sso-alerts'
-          url: ${{ secrets.SSO_ALERTS }}
+          url: "purposelybrokentoo"
           token: "purposelybadtoken"
   transition-scripts:
     runs-on: ubuntu-22.04
