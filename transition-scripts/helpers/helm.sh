@@ -127,14 +127,13 @@ get_vanity_route_name() {
   if [ "$#" -lt 1 ]; then exit 1; fi
 
   namespace="$1"
-
-  if [ "$namespace" = "c6af30-dev" ]
+  if [ "$namespace" = "e4ca1d-dev" ]
   then
     KEYCLOAK_ROUTE="sso-dev-sandbox"
-  elif [ "$namespace" = "c6af30-test" ]
+  elif [ "$namespace" = "e4ca1d-test" ]
   then
     KEYCLOAK_ROUTE="sso-test-sandbox"
-  elif [ "$namespace" = "c6af30-prod" ]
+  elif [ "$namespace" = "e4ca1d-prod" ]
   then
     KEYCLOAK_ROUTE="sso-prod-sandbox"
   elif [ "$namespace" = "eb75ad-dev" ]
