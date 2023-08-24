@@ -20,4 +20,5 @@ config = dict(
     css_environment=os.environ.get("CSS_ENVIRONMENT", ''),
     css_maintenance_workflow_id=os.environ.get("CSS_MAINTENANCE_WORKFLOW_ID", ''),
     css_gh_token=os.environ.get("CSS_GH_TOKEN", ''),
+    delay_time=os.environ.get("DELAY_TIME", 0),
 )
