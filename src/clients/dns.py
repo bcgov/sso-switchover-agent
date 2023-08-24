@@ -12,7 +12,12 @@ from urllib.error import *
 logger = logging.getLogger(__name__)
 
 passive_ip = config.get('passive_ip')
-delay_time = config.get('delay_time')
+try:
+    delay_time = int(config.get('delay_time'))
+except BaseException:
+    logger.error("Invalid delay time, using zero as default.")
+    delay_time = 0
+
 sleep_time = 5
 
 
@@ -50,6 +55,10 @@ async def dns_lookup(domain_name: str, q: Queue):
         # Pause the switchover logic to prevent short failovers
         if last_result != result and not switchover_waiting:
             switchover_waiting = True
+            time_index = 0
+        # Unpause if the original state is back
+        elif last_result == result and switchover_waiting:
+            switchover_waiting = False
             time_index = 0
 
         if switchover_waiting:
