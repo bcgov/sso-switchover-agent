@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 
 passive_ip = config.get('passive_ip')
 try:
-    delay_time = int(config.get('delay_time'))
+    delay_switchover_by_secs = int(config.get('delay_switchover_by_secs'))
 except BaseException:
     logger.error("Invalid delay time, using zero as default.")
-    delay_time = 0
+    delay_switchover_by_secs = 0
 
 sleep_time = 5
 
@@ -62,11 +62,11 @@ async def dns_lookup(domain_name: str, q: Queue):
             time_index = 0
 
         if switchover_waiting:
-            if (delay_time <= sleep_time * time_index):
+            if (delay_switchover_by_secs <= sleep_time * time_index):
                 switchover_waiting = False
                 time_index = 0
             else:
-                logger.debug(f"Switchover paused for {sleep_time*time_index} of {delay_time} seconds")
+                logger.debug(f"Switchover paused for {sleep_time*time_index} of {delay_switchover_by_secs} seconds")
                 time_index += 1
 
         if not switchover_waiting:

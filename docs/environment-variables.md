@@ -14,7 +14,7 @@ There are multiple environment variables set in the secret `sso-switchover-agent
 
 There is an optional delay feature on the switchover agent that prevents the agent from triggering if the GSLB briefly sends traffic away from gold for a few seconds.
 
-`DELAY_TIME`
+`DELAY_SWITCHOVER_BY_SECS`
 
 Is the time in seconds this delay will last.
 
