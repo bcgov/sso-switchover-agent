@@ -97,8 +97,17 @@ def is_keycloak_dr_up_and_receiving_traffic(ip: str):
             logger.debug("HTTP error", e)
             return 'error'
         except URLError as e:
-            logger.debug("Keycloak Dr Is up")
-            return 'keycloak_up'
+            try:
+                urlopen("http://sso-keycloak:8443", timeout=0.5)
+            except HTTPError as e:
+                logger.debug("HTTP error when attempting to reach keycloak dr")
+                logger.debug(e)
+                return 'error'
+            else:
+                logger.debug("Keycloak Dr Is up")
+                return 'keycloak_up'
+            # logger.debug("Keycloak Dr Is up")
+            # return 'keycloak_up'
         else:
             logger.debug('Maintenance Service Up')
             return 'maintenance_up'
