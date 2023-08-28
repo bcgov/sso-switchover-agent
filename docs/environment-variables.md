@@ -23,6 +23,10 @@ To notify rocket chat when failover and failback occurs.  Create a rocket chat w
 
  - RC_URL
  - RC_TOKEN
+ - RC_URL_SSO_OPS
+ - RC_TOKEN_SSO_OPS
+
+ The `*_SSO_OPPS` environment variables are used to notify the team if the switchover agent detected a DNS change without triggering a failover.
 
 ## CSS App Integration
 

@@ -32,6 +32,10 @@ def handle_queues(queue: Queue, processes: list):
                 dispatch_rocketchat_webhook(dr_maintenance_mode)
                 logger.debug("The maintenance mode changed")
 
+            elif item['event'] == 'team_rocketchat':
+                alert_team_to_switch(item['delay'])
+                logger.debug(item['message'])
+
         except Exception as ex:
             logger.error('Unknown error in logic. %s' % ex)
             traceback.print_exc(file=sys.stdout)
@@ -128,6 +132,26 @@ def dispatch_rocketchat_webhook(maintenance_mode: str):
     except Exception as ex:
         logger.error('Unknown error in logic. %s' % ex)
         traceback.print_exc(file=sys.stdout)
+
+
+def alert_team_to_switch(delay):
+    try:
+        url = config.get('rc_url_sso_ops')
+        namespace = config.get('namespace')
+        bearer = 'token %s' % config.get('rc_token_sso_ops')
+        headers = {'Accept': 'application/json', 'Authorization': bearer}
+        message = """@here **The GSLB has changed the DNS it is pointing to for the %s namespace. \
+            if this persists longer than %s seconds the switchover process may \
+            be triggered.""" % (namespace, delay)
+        data = {"text": message}
+        x = requests.post(url, json=data, headers=headers, timeout=10)
+        if x.status_code == 200:
+            logger.info('Rocket chat message sent.')
+        else:
+            logger.error('Rocket chat API error: %s' % x.content)
+
+    except Exception as ex:
+        logger.error('Unknown error in logic. %s' % ex)
 
 
 def dispatch_css_maintenance_action(maintenance_mode: bool):
