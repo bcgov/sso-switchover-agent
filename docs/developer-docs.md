@@ -29,7 +29,7 @@ This image can be deployed from the local environment using helm. Note you must 
 helm upgrade --install <<test-deployment-name>> . \
 -n <<namespace>> \
 -f values.yaml \
--f "values-c6af30-local.yaml"
+-f "values-e4ca1d-local.yaml"
 ```
 
 ### Configuring the openshift environment

@@ -12,6 +12,13 @@ from urllib.error import *
 logger = logging.getLogger(__name__)
 
 passive_ip = config.get('passive_ip')
+try:
+    delay_switchover_by_secs = int(config.get('delay_switchover_by_secs'))
+except BaseException:
+    logger.error("Invalid delay time, using zero as default.")
+    delay_switchover_by_secs = 0
+
+sleep_time = 5
 
 
 def dns_watch(domain_name: str, q: Queue):
@@ -27,6 +34,8 @@ async def dns_lookup(domain_name: str, q: Queue):
     logger.info("DNS Inspection %s" % domain_name)
     last_result = "unknown"
     last_maintenance_mode = "unknown"
+    switchover_waiting = False
+    time_index = 0
     while True:
         result = 'none'
         maintenance_mode = "unknown"
@@ -43,20 +52,38 @@ async def dns_lookup(domain_name: str, q: Queue):
             logger.error("No DNS response")
             result = 'error'
 
-        maintenance_mode = is_keycloak_dr_up_and_receiving_traffic(result)
+        # Pause the switchover logic to prevent short failovers
+        if last_result != result and not switchover_waiting:
+            switchover_waiting = True
+            time_index = 0
+        # Unpause if the original state is back
+        elif last_result == result and switchover_waiting:
+            switchover_waiting = False
+            time_index = 0
 
-        if last_result != result:
-            q.put({'event': 'dns', 'result': result,
-                  'message': 'IP CHANGE %s' % result})
-            last_result = result
+        if switchover_waiting:
+            if (delay_switchover_by_secs <= sleep_time * time_index):
+                switchover_waiting = False
+                time_index = 0
+            else:
+                logger.debug(f"Switchover paused for {sleep_time*time_index} of {delay_switchover_by_secs} seconds")
+                time_index += 1
 
-        if maintenance_mode != last_maintenance_mode and maintenance_mode != 'error':
-            if last_maintenance_mode != "unknown":
-                q.put({'event': 'maintenance', 'maintenance_mode': maintenance_mode,
-                       'message': 'Maintenance mode CHANGE %s' % maintenance_mode})
-            last_maintenance_mode = maintenance_mode
+        if not switchover_waiting:
+            maintenance_mode = is_keycloak_dr_up_and_receiving_traffic(result)
 
-        time.sleep(5)
+            if last_result != result:
+                q.put({'event': 'dns', 'result': result,
+                       'message': 'IP CHANGE %s' % result})
+                last_result = result
+
+            if maintenance_mode != last_maintenance_mode and maintenance_mode != 'error':
+                if last_maintenance_mode != "unknown":
+                    q.put({'event': 'maintenance', 'maintenance_mode': maintenance_mode,
+                           'message': 'Maintenance mode CHANGE %s' % maintenance_mode})
+                last_maintenance_mode = maintenance_mode
+
+        time.sleep(sleep_time)
 
 
 def is_keycloak_dr_up_and_receiving_traffic(ip: str):
