@@ -2,6 +2,7 @@ import socket
 import asyncio
 import logging
 import time
+import json
 
 from multiprocessing import Queue
 from config import config
@@ -94,13 +95,34 @@ def is_keycloak_dr_up_and_receiving_traffic(ip: str):
     # the GSLB health check is passing.
     if (ip == config.get('passive_ip')):
         try:
-            html = urlopen("http://sso-keycloak-maintenance:8080", timeout=0.5)
+            urlopen("http://sso-keycloak-maintenance:8080", timeout=0.5)
         except HTTPError as e:
             logger.debug("HTTP error", e)
             return 'error'
         except URLError as e:
-            logger.debug("Keycloak Dr Is up")
-            return 'keycloak_up'
+            # Confirm that keycloak dr is up and the health check is valid before alerting sso community.
+            try:
+                keycloak_dr = f"https://sso-keycloak-{config.get('namespace')}.apps.golddr.devops.gov.bc.ca/auth/realms/master/.well-known/openid-configuration"
+                response = urlopen(keycloak_dr, timeout=1.5)
+                if 'application/json' in response.headers.get('Content-Type', ''):
+                    data = json.load(response)
+                else:
+                    data = {}
+
+                if "issuer" in data:
+                    logger.debug("Keycloak Dr Is up")
+                    return 'keycloak_up'
+                else:
+                    logger.error("The keycloak dr health check isn't resolving in the json payload")
+                    return 'error'
+            except Exception as err:
+                logger.debug("Unable to resolve keycloak dr.")
+                logging.error('Error at %s', 'division', exc_info=err)
+                return 'error'
+        except Exception as e:
+            logger.error("Exception while attempting to reach maintenance page service.")
+            logging.error('Error at %s', 'division', exc_info=e)
+            return 'error'
         else:
             logger.debug('Maintenance Service Up')
             return 'maintenance_up'
