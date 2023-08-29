@@ -16,7 +16,6 @@ RUN apk add --no-cache \
     source $HOME/.cargo/env && \
     pip install --no-cache-dir poetry==${POETRY_VERSION} && \
     apk del \
-        curl \
         gcc \
         libressl-dev \
         musl-dev \
