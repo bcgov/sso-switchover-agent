@@ -16,10 +16,12 @@ on:
 env:
   GITHUB_REGISTRY: ghcr.io
   IMAGE_NAME: bcgov/sso-switchover-agent
-
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 jobs:
   build-and-push-image:
     runs-on: ubuntu-20.04
+    outputs:
+      release_tag: ${{ steps.get-tag.outputs.release_tag }}
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     permissions:
@@ -37,11 +39,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract Tag for Sandbox
+        if: endsWith(github.ref, '/dev')
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.GITHUB_REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Create Release and Extract Tag for Production
+        if: endsWith(github.ref, '/main')
+        id: release
+        uses: rymndhng/release-on-push-action@v0.28.0
+        with:
+          bump_version_scheme: "patch"
+          tag_prefix: "v"
+          use_github_release_notes: "true"
+          release_name: "Release <RELEASE_VERSION>"
+          max_commits: 100 # default is 50
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -58,7 +72,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ endsWith(github.ref, '/main') && steps.release.outputs.tag_name || steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
@@ -70,6 +84,11 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - id: get-tag
+        name: Get Tag
+        run: |
+          echo "release_tag=${{ endsWith(github.ref, '/main') && steps.release.outputs.tag_name || steps.meta.outputs.tags}}" >> $GITHUB_OUTPUT
 
   deploy-to-openshift:
     needs: [build-and-push-image]
@@ -99,5 +118,5 @@ jobs:
           namespace=${{ matrix.license }}-${{ matrix.env }}
           helm dep up
           helm upgrade --install --atomic switch-agent . -n ${namespace} \
-          -f values.yaml -f "values-${{ matrix.license }}.yaml"
+          -f values.yaml -f "values-${{ matrix.license }}.yaml" --set image.tag="${{ needs.build-and-push-image.outputs.release_tag }}"
         working-directory: ./helm
