@@ -40,7 +40,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract Tag for Sandbox
-        if: endsWith(github.ref, '/dev')
         id: meta
         uses: docker/metadata-action@v4
         with:
