@@ -87,7 +87,7 @@ jobs:
       - id: get-tag
         name: Get Tag
         run: |
-          echo "release_tag=${{ endsWith(github.ref, '/main') && steps.release.outputs.tag_name || steps.meta.outputs.tags}}" >> $GITHUB_OUTPUT
+          echo "release_tag=${{ endsWith(github.ref, '/main') && steps.release.outputs.tag_name || steps.meta.outputs.version }}" >> $GITHUB_OUTPUT
 
   deploy-to-openshift:
     needs: [build-and-push-image]
