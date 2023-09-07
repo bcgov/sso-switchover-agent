@@ -15,9 +15,12 @@ config = dict(
     project=os.environ.get("PROJECT", ''),
     rc_url=os.environ.get("RC_URL", ''),
     rc_token=os.environ.get("RC_TOKEN", ''),
+    rc_url_sso_ops=os.environ.get("RC_URL_SSO_OPS", ''),
+    rc_token_sso_ops=os.environ.get("RC_TOKEN_SSO_OPS", ''),
     css_repo=os.environ.get("CSS_REPO", ''),
     css_branch=os.environ.get("CSS_BRANCH", ''),
     css_environment=os.environ.get("CSS_ENVIRONMENT", ''),
     css_maintenance_workflow_id=os.environ.get("CSS_MAINTENANCE_WORKFLOW_ID", ''),
     css_gh_token=os.environ.get("CSS_GH_TOKEN", ''),
+    delay_switchover_by_secs=os.environ.get("DELAY_SWITCHOVER_BY_SECS", 0),
 )

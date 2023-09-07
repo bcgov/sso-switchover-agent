@@ -1,6 +1,9 @@
+image:
+  repository: ghcr.io/bcgov/sso
+  tag: 7.6.25-build.1
+  pullPolicy: IfNotPresent
+
 replicaCount: 0
-
-
 
 service:
   type: ClusterIP
