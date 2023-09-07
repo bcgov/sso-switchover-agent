@@ -19,15 +19,10 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 jobs:
   build-and-push-image:
+    permissions: write-all
     runs-on: ubuntu-20.04
     outputs:
       release_tag: ${{ steps.get-tag.outputs.release_tag }}
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    permissions:
-      contents: read
-      packages: write
-
     steps:
       - uses: hmarr/debug-action@v2
       - uses: actions/checkout@v2
@@ -98,7 +93,6 @@ jobs:
     runs-on: ubuntu-20.04
     permissions:
       contents: read
-
     steps:
       - uses: actions/checkout@v2
 
