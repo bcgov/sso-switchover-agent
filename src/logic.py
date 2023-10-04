@@ -11,6 +11,13 @@ from config import config
 logger = logging.getLogger(__name__)
 
 
+css_repo = config.get('css_repo')
+css_branch = config.get('css_branch')
+css_environment = config.get('css_environment')
+css_maintenance_workflow_id = config.get('css_maintenance_workflow_id')
+css_gh_token = config.get('css_gh_token')
+
+
 def handle_queues(queue: Queue, processes: list):
     previous_valid_ip = 'undefined'
     valid_ips = [config.get('active_ip'), config.get('passive_ip')]
@@ -60,16 +67,6 @@ def action_dispatcher(ip: str, prev_ip: str, active_ip: str, passive_ip: str):
         logger.info("passive_ip")
         dispatch_action()
         dispatch_css_maintenance_action(True)
-    # elif prev_ip == 'undefined':
-    #     # Trigger an internal alert stating the switchover agent restarted, it's
-    #     # environment and where the GSLB is pointing
-    # elif ip == 'error':
-    #     # Trigger an internal alert stating the GSLB is not resolving any IP, it's
-    #     # environment and where the GSLB was previously pointing
-    # elif ip == prev_ip:
-    #     # Trigger an internal alert stating the GSLB service interuption was
-    #     # was resolved
-    #     # Include the environment, clusted, and explanation of what is going on
 
 
 def dispatch_action():
@@ -155,14 +152,20 @@ def alert_team_to_switch(delay):
 
 
 def dispatch_css_maintenance_action(maintenance_mode: bool):
-    if config.get('css_gh_token') == '':
+
+    if css_repo == '' or css_branch == '' or css_environment == '' or css_maintenance_workflow_id == '' or css_gh_token == '':
         logger.info('CSS maintenance mode is not configured for this namespace')
     else:
-        url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), config.get('css_repo'), config.get('css_maintenance_workflow_id'))
-        data = {'ref': config.get('css_branch'), 'inputs': {'environment': config.get('css_environment'), 'maintenanceEnabled': maintenance_mode}}
-        bearer = 'token %s' % config.get('css_gh_token')
+        url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), css_repo, css_maintenance_workflow_id)
+        data = {'ref': css_branch, 'inputs': {'environment': css_environment, 'maintenanceEnabled': maintenance_mode}}
+        bearer = 'token %s' % css_gh_token
         headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': bearer}
-        x = requests.post(url, json=data, headers=headers)
+        try:
+            logger.info(f'Deploying CSS app in maintenance_mode={maintenance_mode}')
+            x = requests.post(url, json=data, headers=headers)
+        except Exception as ex:
+            logger.error('Maintenance mode action not triggered. Unknown error in logic. %s' % ex)
+
         if x.status_code == 204:
             logger.info('CSS GH API status: %s' % x.status_code)
         else:
