@@ -50,3 +50,7 @@ patroni:
     requests:
       cpu: 50m
       memory: 300Mi
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
