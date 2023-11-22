@@ -25,7 +25,7 @@ jobs:
         with:
           type: ${{ job.status }}
           job_name: 'The switch to Gold DR action was triggered for the ${{ github.event.inputs.project }}-${{ github.event.inputs.environment }} project, confirm if'
-          mention: 'jsharman @nithinshekar.kuruba @Marco'
+          mention: 'jsharman @nithinshekar.kuruba @jlanglois @Marco'
           mention_if: 'always'
           channel: '#sso-alerts'
           url: ${{ secrets.SSO_ALERTS }}
@@ -62,7 +62,7 @@ jobs:
         with:
           type: ${{ job.status }}
           job_name: 'The switch to Gold DR for the ${{ github.event.inputs.project }}-${{ github.event.inputs.environment }} project'
-          mention: 'jsharman @nithinshekar.kuruba @Marco'
+          mention: 'jsharman @nithinshekar.kuruba @jlanglois @Marco'
           mention_if: 'always'
           channel: '#sso-alerts'
           url: ${{ secrets.SSO_ALERTS }}
