@@ -13,7 +13,7 @@ tls:
   enabled: false
 
 persistentLog:
-  size: 10Gi
+  size: 15Gi
 
 patroni:
   replicaCount: 3
