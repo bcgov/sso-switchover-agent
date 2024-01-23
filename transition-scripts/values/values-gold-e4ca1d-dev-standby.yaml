@@ -24,6 +24,11 @@ maintenancePage:
   enabled: false
   active: false
 
+podDisruptionBudget:
+  enabled: false
+  minAvailable:
+  maxUnavailable:
+
 patroni:
   replicaCount: 3
 
