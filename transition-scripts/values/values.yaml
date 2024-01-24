@@ -73,5 +73,5 @@ patroni:
           topologyKey: "topology.kubernetes.io/zone"
           labelSelector:
             matchLabels:
-              app.kubernetes.io/instance:  {{ template "patroni.name" . }}
-              app.kubernetes.io/name: {{ .Release.Name | quote }}
+              app.kubernetes.io/name:  {{ template "patroni.name" . }}
+              app.kubernetes.io/instance: {{ .Release.Name | quote }}
