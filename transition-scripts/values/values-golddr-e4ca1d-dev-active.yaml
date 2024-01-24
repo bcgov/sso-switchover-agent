@@ -3,7 +3,7 @@ image:
   tag: 7.6.39-build.1
   pullPolicy: IfNotPresent
 
-replicaCount: 3
+replicaCount: 2
 
 service:
   type: ClusterIP
@@ -26,7 +26,7 @@ maintenancePage:
 
 podDisruptionBudget:
   enabled: true
-  minAvailable: 2
+  minAvailable: 1
   maxUnavailable:
 
 patroni:
