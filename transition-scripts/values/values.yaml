@@ -13,6 +13,16 @@ resources:
     cpu: 100m
     memory: 1Gi
 
+# https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+affinityTemplate: |
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        topologyKey: "topology.kubernetes.io/zone"
+        labelSelector:
+          matchLabels: {{ include "sso-keycloak.selectorLabels" . | nindent 10 }}
+
 configuration:
   enabled: true
   version: "7.6"
@@ -54,3 +64,14 @@ patroni:
   podDisruptionBudget:
     enabled: true
     minAvailable: 2
+
+  affinityTemplate: |
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: "topology.kubernetes.io/zone"
+          labelSelector:
+            matchLabels:
+              sts:  {{ template "patroni.name" . }}
+              release: {{ .Release.Name | quote }}
