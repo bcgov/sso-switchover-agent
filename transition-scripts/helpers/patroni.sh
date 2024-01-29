@@ -7,7 +7,9 @@ check_patroni_health() {
 
   namespace="$1"
 
-  read -r status_code data < <(kube_curl "$namespace" sso-patroni-0 http://localhost:8008/health)
+  master=$(kubectl get pod -n "$namespace" -l spilo-role=master,app.kubernetes.io/name=sso-patroni -o=jsonpath='{.items[*].metadata.name}' | awk '{sub(/%/, ""); print}')
+
+  read -r status_code data < <(kube_curl "$namespace" "$master" http://localhost:8008/health)
 
   patroni_status=$(echo "$data" | jq -r '.state')
   if [ "$status_code" -ne "200" ] || [ "$patroni_status" != "running" ]; then
@@ -132,25 +134,13 @@ wait_for_patroni_all_ready() {
 
   namespace="$1"
 
-  replicas=$(kubectl get statefulset sso-patroni -n "$namespace" -o jsonpath='{.spec.replicas}')
-
-  count=0
-  wait_ready() {
-    ready_count=$(count_ready_patroni_pods "$namespace")
-    info "patroni ready $ready_count/$replicas"
-
-    if [ "$ready_count" == "$replicas" ]; then return 1; fi
-
-    # wait for 10mins
-    if [[ "$count" -gt 120 ]]; then
-      warn "patroni replicas is not ready"
-      exit 1
-    fi
-
-    count=$((count + 1))
-  }
-
-  while wait_ready; do sleep 5; done
+  # wait 10 mins for patroni pods to be ready
+  if kubectl wait -n "$namespace" -l app.kubernetes.io/name=sso-patroni --for=condition=ready pod --timeout=10m; then
+    echo "patroni replicas are ready."
+  else
+    warn "patroni replicas are not ready."
+    exit 1
+  fi
 }
 
 get_patroni_xlog() {
