@@ -34,12 +34,3 @@ patroni:
 
 rollingUpdate:
   maxSurge: 3
-
-readinessProbe:
-  enabled: true
-  verification: script
-  initialDelaySeconds: 30
-  periodSeconds: 10
-  timeoutSeconds: 5
-  successThreshold: 1
-  failureThreshold: 12

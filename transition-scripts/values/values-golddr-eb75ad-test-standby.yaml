@@ -26,12 +26,3 @@ patroni:
 
   transportServerClaim:
     enabled: false
-
-readinessProbe:
-  enabled: true
-  verification: script
-  initialDelaySeconds: 30
-  periodSeconds: 10
-  timeoutSeconds: 5
-  successThreshold: 1
-  failureThreshold: 12
