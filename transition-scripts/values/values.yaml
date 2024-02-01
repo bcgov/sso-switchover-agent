@@ -42,11 +42,11 @@ livenessProbe:
 readinessProbe:
   enabled: true
   verification: script
-  initialDelaySeconds: 180
-  periodSeconds: 20
+  initialDelaySeconds: 30
+  periodSeconds: 10
   timeoutSeconds: 5
   successThreshold: 1
-  failureThreshold: 6
+  failureThreshold: 12
 
 rollingUpdate:
   maxSurge: "100%"
