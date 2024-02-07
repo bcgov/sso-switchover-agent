@@ -19,7 +19,7 @@ patroni:
   replicaCount: 3
 
   persistentVolume:
-    size: 15Gi
+    size: 10Gi
 
   podDisruptionBudget:
     enabled: false
