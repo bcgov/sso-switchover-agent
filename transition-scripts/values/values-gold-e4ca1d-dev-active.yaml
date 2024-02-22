@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/bcgov/sso
-  tag: 7.6.25-build.2
+  tag: 7.6.39-build.1
   pullPolicy: IfNotPresent
 
 replicaCount: 2
@@ -23,6 +23,11 @@ resources:
 maintenancePage:
   enabled: false
   active: false
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+  maxUnavailable:
 
 patroni:
   replicaCount: 3
