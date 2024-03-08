@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set the deployment namespace
         run: |
           chmod +x ./namespace-setter.sh
@@ -83,7 +83,7 @@ jobs:
         run: |
           chmod +x ./wait-keycloak-dr-ready.sh
           ./wait-keycloak-dr-ready.sh $NAMESPACE
-        working-directory: transition-scripts/helpers
+        working-directory: transition-scripts/test-helpers
       - name: Confirm DNS still pointing to GoldDR
         run: |
           chmod +x ./test-dns.sh

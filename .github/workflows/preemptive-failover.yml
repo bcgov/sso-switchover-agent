@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set the deployment namespace and url
         run: |
           chmod +x ./namespace-setter.sh
@@ -28,6 +28,7 @@ jobs:
           chmod +x ./url-setter.sh
           ./url-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.environment }}
         working-directory: .github/helpers
+
       - name: Login Openshift Gold & Golddr
         uses: ./.github/actions/oc-login
         with:
@@ -36,6 +37,13 @@ jobs:
           oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
           oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt-get update
+          sudo apt-get -y install syslinux-utils
+
       - name: Confirm DNS pointing to Gold
         run: |
           echo "Confirming the $KEYCLOAK_URL url is now served from Gold"
@@ -53,17 +61,16 @@ jobs:
         run: |
           chmod +x ./wait-keycloak-dr-ready.sh
           ./wait-keycloak-dr-ready.sh $NAMESPACE
-        working-directory: transition-scripts/helpers
+        working-directory: transition-scripts/test-helpers
 
-      - name: Confirm DR health check passes
-        run: echo "THIS STILL NEEDS TO BE CODED UP"
+      # - name: Confirm DR health check passes
+      #   run: echo "THIS STILL NEEDS TO BE CODED UP"
 
-      # DON'T MESS WITH GOLD CONFIGS UNTIL TESTING ACTION DONE
-      # - name: Disable Gold Route
-      #   run: |
-      #     chmod +x ./enable-disable-gold-route.sh
-      #     ./enable-disable-gold-route.sh $NAMESPACE disable
-      #   working-directory: transition-scripts
+      - name: Disable Gold Route
+        run: |
+          chmod +x ./enable-disable-gold-route.sh
+          ./enable-disable-gold-route.sh $NAMESPACE disable
+        working-directory: transition-scripts
 
       - name: Confirm DNS pointing to GoldDR
         run: |
