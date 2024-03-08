@@ -36,6 +36,7 @@ jobs:
           oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
           oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+
       - name: Confirm DNS pointing to Gold
         run: |
           echo "Confirming the $KEYCLOAK_URL url is now served from Gold"
@@ -53,7 +54,7 @@ jobs:
         run: |
           chmod +x ./wait-keycloak-dr-ready.sh
           ./wait-keycloak-dr-ready.sh $NAMESPACE
-        working-directory: transition-scripts/helpers
+        working-directory: transition-scripts/test-helpers
 
       - name: Confirm DR health check passes
         run: echo "THIS STILL NEEDS TO BE CODED UP"

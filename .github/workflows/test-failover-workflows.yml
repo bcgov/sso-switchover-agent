@@ -83,7 +83,7 @@ jobs:
         run: |
           chmod +x ./wait-keycloak-dr-ready.sh
           ./wait-keycloak-dr-ready.sh $NAMESPACE
-        working-directory: transition-scripts/helpers
+        working-directory: transition-scripts/test-helpers
       - name: Confirm DNS still pointing to GoldDR
         run: |
           chmod +x ./test-dns.sh
