@@ -37,6 +37,12 @@ jobs:
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
           oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
 
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt-get update
+          sudo apt-get -y install syslinux-utils
+
       - name: Confirm DNS pointing to Gold
         run: |
           echo "Confirming the $KEYCLOAK_URL url is now served from Gold"
