@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set the deployment namespace and url
         run: |
           chmod +x ./namespace-setter.sh
@@ -28,6 +28,7 @@ jobs:
           chmod +x ./url-setter.sh
           ./url-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.environment }}
         working-directory: .github/helpers
+
       - name: Login Openshift Gold & Golddr
         uses: ./.github/actions/oc-login
         with:
