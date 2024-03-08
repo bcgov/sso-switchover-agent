@@ -63,15 +63,14 @@ jobs:
           ./wait-keycloak-dr-ready.sh $NAMESPACE
         working-directory: transition-scripts/test-helpers
 
-      - name: Confirm DR health check passes
-        run: echo "THIS STILL NEEDS TO BE CODED UP"
+      # - name: Confirm DR health check passes
+      #   run: echo "THIS STILL NEEDS TO BE CODED UP"
 
-      # DON'T MESS WITH GOLD CONFIGS UNTIL TESTING ACTION DONE
-      # - name: Disable Gold Route
-      #   run: |
-      #     chmod +x ./enable-disable-gold-route.sh
-      #     ./enable-disable-gold-route.sh $NAMESPACE disable
-      #   working-directory: transition-scripts
+      - name: Disable Gold Route
+        run: |
+          chmod +x ./enable-disable-gold-route.sh
+          ./enable-disable-gold-route.sh $NAMESPACE disable
+        working-directory: transition-scripts
 
       - name: Confirm DNS pointing to GoldDR
         run: |
