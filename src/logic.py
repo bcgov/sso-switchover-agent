@@ -43,6 +43,14 @@ def handle_queues(queue: Queue, processes: list):
                 alert_team_to_switch(item['delay'])
                 logger.debug(item['message'])
 
+            elif item['event'] == 'preemptive_failover':
+                dispatch_action_by_id(config.get("preemptive_failover_workflow_id"))
+                logger.debug(item['message'])
+
+            elif item['event'] == 'preemptive_failback':
+                dispatch_action_by_id(config.get("enable_gold_route_workflow_id"))
+                logger.debug(item['message'])
+
         except Exception as ex:
             logger.error('Unknown error in logic. %s' % ex)
             traceback.print_exc(file=sys.stdout)
@@ -65,13 +73,32 @@ def action_dispatcher(ip: str, prev_ip: str, active_ip: str, passive_ip: str):
             logger.info("Failed to turn off the css maintenance mode")
     elif (ip == passive_ip and prev_ip == active_ip):
         logger.info("passive_ip")
-        dispatch_action()
+        dispatch_action_by_id(config.get('gh_workflow_id'))
+        # dispatch_action()
         dispatch_css_maintenance_action(True)
 
 
 def dispatch_action():
     environment = config.get('namespace')[7:]
     url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), config.get('gh_repo'), config.get('gh_workflow_id'))
+    data = {'ref': config.get('gh_branch'), 'inputs': {'project': config.get('project'), 'environment': environment}}
+    bearer = 'token %s' % config.get('gh_token')
+    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': bearer}
+    x = requests.post(url, json=data, headers=headers)
+    if x.status_code == 204:
+        logger.info('GH API status: %s' % x.status_code)
+    else:
+        logger.error('GH API error: %s' % x.content)
+
+# This runs a github action in the sso-switchover agent repos currently works with actions with 3 three required inputs
+# gh_branch (usually dev or main)
+# project (SANDBOX or PRODUCTION)
+# environment (dev, test, prod)
+
+
+def dispatch_action_by_id(workflow_id: str):
+    environment = config.get('namespace')[7:]
+    url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), config.get('gh_repo'), workflow_id)
     data = {'ref': config.get('gh_branch'), 'inputs': {'project': config.get('project'), 'environment': environment}}
     bearer = 'token %s' % config.get('gh_token')
     headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': bearer}
