@@ -7,7 +7,7 @@ on:
         description: "The target project"
         type: choice
         required: true
-        options: ["SANDBOX"]
+        options: ["SANDBOX", "PRODUCTION"]
         default: "SANDBOX"
       environment:
         description: "env to deploy"
