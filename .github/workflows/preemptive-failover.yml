@@ -46,6 +46,7 @@ jobs:
 
       - name: Confirm DNS pointing to Gold
         run: |
+          echo "Running on the $NAMESPACE namespace"
           echo "Confirming the $KEYCLOAK_URL url is now served from Gold"
           chmod +x ./test-dns.sh
           ./test-dns.sh $KEYCLOAK_URL gold
@@ -53,12 +54,14 @@ jobs:
 
       - name: Set DR To active
         run: |
+          echo "Running on the $NAMESPACE namespace"
           chmod +x ./switch-to-golddr.sh
           ./switch-to-golddr.sh $NAMESPACE
         working-directory: transition-scripts
 
       - name: Wait for keycloak dr pods to be up
         run: |
+          echo "Running on the $NAMESPACE namespace"
           chmod +x ./wait-keycloak-dr-ready.sh
           ./wait-keycloak-dr-ready.sh $NAMESPACE
         working-directory: transition-scripts/test-helpers
@@ -68,12 +71,14 @@ jobs:
 
       - name: Disable Gold Route
         run: |
+          echo "Running on the $NAMESPACE namespace"
           chmod +x ./enable-disable-gold-route.sh
           ./enable-disable-gold-route.sh $NAMESPACE disable
         working-directory: transition-scripts
 
       - name: Confirm DNS pointing to GoldDR
         run: |
+          echo "Running on the $NAMESPACE namespace"
           echo "Confirming the $KEYCLOAK_URL url is now served from GoldDR"
           chmod +x ./test-dns.sh
           ./test-dns.sh $KEYCLOAK_URL golddr
