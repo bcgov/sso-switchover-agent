@@ -12,7 +12,7 @@ on:
       environment:
         description: "env to deploy"
         type: choice
-        options: ["dev"]
+        options: ["dev","test","prod"]
         default: "dev"
 
 jobs:

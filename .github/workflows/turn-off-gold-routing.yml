@@ -17,7 +17,8 @@ on:
       action:
         description: "Disable or enable gold route"
         type: choice
-        required: true
+        required: false
+        default: 'enable'
         options:
         - enable
         - disable
