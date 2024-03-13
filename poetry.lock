@@ -172,6 +172,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "pytz"
+version = "2024.1"
+description = "World timezone definitions, modern and historical"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "requests"
 version = "2.31.0"
 description = "Python HTTP for Humans."
@@ -261,7 +269,7 @@ standard = ["PyYAML (>=5.1)", "colorama (>=0.4)", "httptools (>=0.4.0)", "python
 [metadata]
 lock-version = "1.1"
 python-versions = "3.8.6"
-content-hash = "65d9dcb8910be3257b101da913d33a8a429cbf4e8f3e10534778963ff8ede3e6"
+content-hash = "08abee6cfc7463b7ed05e378c28bd96d04e1c10a061eb386e39a4dfc7b601a72"
 
 [metadata.files]
 anyio = [
@@ -436,6 +444,10 @@ python-dotenv = [
 python-hosts = [
     {file = "python-hosts-1.0.4.tar.gz", hash = "sha256:cbb77b0ae1ae2981140a3147bd66fe88323aa03795b13cc134f4b24b3c6ed599"},
     {file = "python_hosts-1.0.4-py3-none-any.whl", hash = "sha256:2895c763ecca7c058a104576dfacd5d8e5436ec6cd870793a1a20ad365a98d8d"},
+]
+pytz = [
+    {file = "pytz-2024.1-py2.py3-none-any.whl", hash = "sha256:328171f4e3623139da4983451950b28e95ac706e13f3f2630a879749e7a8b319"},
+    {file = "pytz-2024.1.tar.gz", hash = "sha256:2a29735ea9c18baf14b448846bde5a48030ed267578472d8955cd0e7443a9812"},
 ]
 requests = [
     {file = "requests-2.31.0-py3-none-any.whl", hash = "sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f"},

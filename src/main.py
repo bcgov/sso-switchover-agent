@@ -4,6 +4,7 @@ import logging
 from multiprocessing import Process, Queue
 
 from clients.dns import dns_watch
+from clients.preemptive_count_down import countdown_to_switchover
 from logic import handle_queues
 from logic_test import test_queues, set_active_hosts
 from config import config
@@ -30,6 +31,11 @@ if __name__ == '__main__':
     t = Process(target=dns_watch, args=(
         config.get('domain_name'),
         queue
+    ))
+    processes.append(t)
+
+    t = Process(target=countdown_to_switchover, args=(
+        queue,
     ))
     processes.append(t)
 
