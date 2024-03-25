@@ -19,7 +19,12 @@ upgrade_helm() {
     helm repo update
   } &>/dev/null
 
-  helm upgrade --install "$KEYCLOAK_HELM_DEPLOYMENT_NAME" sso-charts/sso-keycloak -n "$namespace" --version "$KEYCLOAK_HELM_CHART_VERSION" -f "$values/values.yaml" -f "$values/values-$current-$namespace-$cluster_mode.yaml" "${@:3}"
+  helm upgrade --install "$KEYCLOAK_HELM_DEPLOYMENT_NAME" sso-charts/sso-keycloak \
+    -n "$namespace" \
+    --version "$KEYCLOAK_HELM_CHART_VERSION" \
+    -f "$values/values.yaml" \
+    -f "$values/values-$current-$namespace-$cluster_mode.yaml" \
+    "${@:3}"
 }
 
 upgrade_helm_active() {
@@ -60,8 +65,16 @@ upgrade_helm_standby() {
   current=$(get_current_cluster)
   target=$(get_target_cluster)
 
+
+
   switch_kube_context "$target" "$namespace"
   check_ocp_cluster "$target"
+
+  echo "The current cluster is $target"
+  # Will declaring the PVC be ignored if the Standby PVC still / already exists?
+  active_pvc_size=$(kubectl -n "$namespace" get pvc storage-volume-sso-patroni-0 -o jsonpath='{.status.capacity.storage}')
+
+  echo "The active pvc size is: $active_pvc_size"
 
   password_superuser=$(kubectl get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-superuser}' | base64 -d)
   password_admin=$(kubectl get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-admin}' | base64 -d)
@@ -73,9 +86,13 @@ upgrade_helm_standby() {
   switch_kube_context "$current" "$namespace"
   check_ocp_cluster "$current"
 
+  echo "The current cluster is $target"
+
   target_host=$(get_tsc_target_host "$namespace" "sso-patroni")
   target_port=$(get_tsc_target_port "$namespace" "sso-patroni")
 
+
+  #This can only work on fresh installs
   upgrade_helm "$namespace" "standby" \
     --set postgres.host="$target_host" \
     --set postgres.port="$target_port" \
@@ -87,6 +104,7 @@ upgrade_helm_standby() {
     --set patroni.credentials.standby.password="$password_standby" \
     --set patroni.additionalCredentials[0].username="$username_appuser1" \
     --set patroni.additionalCredentials[0].password="$password_appuser1" \
+    --set patroni.persistentVolume.size="$active_pvc_size" \
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
 
