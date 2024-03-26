@@ -71,8 +71,8 @@ upgrade_helm_standby() {
   check_ocp_cluster "$target"
 
   echo "The current cluster is $target"
-  # Will declaring the PVC be ignored if the Standby PVC still / already exists?
-  active_pvc_size=$(kubectl -n "$namespace" get pvc storage-volume-sso-patroni-0 -o jsonpath='{.status.capacity.storage}')
+  # Will declaring the PVC be ignored if the Standby PVC still / already exists? no it won't
+  active_pvc_size=$(kubectl -n "$namespace" get pvc storage-volume-sso-patroni-0 -o jsonpath='{.status.capacity.storage}' --ignore-not-found)
 
   echo "The active pvc size is: $active_pvc_size"
 
@@ -87,10 +87,16 @@ upgrade_helm_standby() {
   check_ocp_cluster "$current"
 
   echo "The current cluster is $target"
+  standby_pvc_size=$(kubectl -n "$namespace" get pvc storage-volume-sso-patroni-0 -o jsonpath='{.status.capacity.storage}' --ignore-not-found)
 
   target_host=$(get_tsc_target_host "$namespace" "sso-patroni")
   target_port=$(get_tsc_target_port "$namespace" "sso-patroni")
 
+  if [ -z "$standby_pvc_size" ]; then
+    pvc_set="--set patroni.persistentVolume.size=active_pvc_size"
+  else
+    pvc_set=""
+  fi
 
   #This can only work on fresh installs
   upgrade_helm "$namespace" "standby" \
@@ -103,8 +109,7 @@ upgrade_helm_standby() {
     --set patroni.credentials.admin.password="$password_admin" \
     --set patroni.credentials.standby.password="$password_standby" \
     --set patroni.additionalCredentials[0].username="$username_appuser1" \
-    --set patroni.additionalCredentials[0].password="$password_appuser1" \
-    --set patroni.persistentVolume.size="$active_pvc_size" \
+    --set patroni.additionalCredentials[0].password="$password_appuser1" "$pvc_set" \
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
 
