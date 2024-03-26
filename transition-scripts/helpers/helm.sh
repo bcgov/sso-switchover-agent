@@ -65,11 +65,7 @@ upgrade_helm_standby() {
   switch_kube_context "$target" "$namespace"
   check_ocp_cluster "$target"
 
-  echo "The current cluster is $target"
-  # Will declaring the PVC be ignored if the Standby PVC still / already exists? no it won't
   active_pvc_size=$(kubectl -n "$namespace" get pvc storage-volume-sso-patroni-0 -o jsonpath='{.status.capacity.storage}' --ignore-not-found)
-
-  echo "The active pvc size is: $active_pvc_size"
 
   password_superuser=$(kubectl get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-superuser}' | base64 -d)
   password_admin=$(kubectl get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-admin}' | base64 -d)
@@ -81,7 +77,7 @@ upgrade_helm_standby() {
   switch_kube_context "$current" "$namespace"
   check_ocp_cluster "$current"
 
-  echo "The current cluster is $target"
+
   standby_pvc_size=$(kubectl -n "$namespace" get pvc storage-volume-sso-patroni-0 -o jsonpath='{.status.capacity.storage}' --ignore-not-found)
 
   target_host=$(get_tsc_target_host "$namespace" "sso-patroni")
@@ -99,7 +95,7 @@ upgrade_helm_standby() {
       --set patroni.credentials.standby.password="$password_standby" \
       --set patroni.additionalCredentials[0].username="$username_appuser1" \
       --set patroni.additionalCredentials[0].password="$password_appuser1" \
-      --set patroni.persistentVolume.size=active_pvc_size \
+      --set patroni.persistentVolume.size="$active_pvc_size" \
       --set maintenancePage.enabled="$maintenance" \
       --set maintenancePage.active="$maintenance"
   else
@@ -117,21 +113,6 @@ upgrade_helm_standby() {
       --set maintenancePage.enabled="$maintenance" \
       --set maintenancePage.active="$maintenance"
   fi
-
-  # #This can only work on fresh installs
-  # upgrade_helm "$namespace" "standby" \
-  #   --set postgres.host="$target_host" \
-  #   --set postgres.port="$target_port" \
-  #   --set patroni.standby.enabled=true \
-  #   --set patroni.standby.host="$target_host" \
-  #   --set patroni.standby.port="$target_port" \
-  #   --set patroni.credentials.superuser.password="$password_superuser" \
-  #   --set patroni.credentials.admin.password="$password_admin" \
-  #   --set patroni.credentials.standby.password="$password_standby" \
-  #   --set patroni.additionalCredentials[0].username="$username_appuser1" \
-  #   --set patroni.additionalCredentials[0].password="$password_appuser1" ${pvc_set} \
-  #   --set maintenancePage.enabled="$maintenance" \
-  #   --set maintenancePage.active="$maintenance"
 
   connect_route_to_correct_service "$maintenance" "$namespace"
 }
