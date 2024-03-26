@@ -13,7 +13,7 @@ error_code = "error"
 class TestTheDispatcher(unittest.TestCase):
     # DNS record changes to Gold Cluster
     def test_action_dispatcher_gold_to_gold(self):
-        with patch('logic.dispatch_action') as mock_dispatch_action, \
+        with patch('logic.dispatch_action_by_id') as mock_dispatch_action, \
                 patch('logic.dispatch_rocketchat_webhook') as mock_rocket_chat, \
                 patch('logic.dispatch_css_maintenance_action') as mock_css_maintenance:
 
@@ -23,7 +23,7 @@ class TestTheDispatcher(unittest.TestCase):
             mock_rocket_chat.assert_not_called()
 
     def test_action_dispatcher_golddr_to_gold(self):
-        with patch('logic.dispatch_action') as mock_dispatch_action, \
+        with patch('logic.dispatch_action_by_id') as mock_dispatch_action, \
                 patch('logic.dispatch_rocketchat_webhook') as mock_rocket_chat, \
                 patch('logic.dispatch_css_maintenance_action') as mock_css_maintenance:
 
@@ -33,7 +33,7 @@ class TestTheDispatcher(unittest.TestCase):
             mock_rocket_chat.assert_not_called()
 
     def test_action_dispatcher_none_to_gold(self):
-        with patch('logic.dispatch_action') as mock_dispatch_action, \
+        with patch('logic.dispatch_action_by_id') as mock_dispatch_action, \
                 patch('logic.dispatch_rocketchat_webhook') as mock_rocket_chat, \
                 patch('logic.dispatch_css_maintenance_action') as mock_css_maintenance:
 
@@ -45,7 +45,7 @@ class TestTheDispatcher(unittest.TestCase):
     # DNS record changes to GoldDR Cluster
 
     def test_action_dispatcher_gold_to_golddr(self):
-        with patch('logic.dispatch_action') as mock_dispatch_action, \
+        with patch('logic.dispatch_action_by_id') as mock_dispatch_action, \
                 patch('logic.dispatch_rocketchat_webhook') as mock_rocket_chat, \
                 patch('logic.dispatch_css_maintenance_action') as mock_css_maintenance:
 
@@ -55,7 +55,7 @@ class TestTheDispatcher(unittest.TestCase):
             mock_rocket_chat.assert_not_called()
 
     def test_action_dispatcher_golddr_to_golddr(self):
-        with patch('logic.dispatch_action') as mock_dispatch_action, \
+        with patch('logic.dispatch_action_by_id') as mock_dispatch_action, \
                 patch('logic.dispatch_rocketchat_webhook') as mock_rocket_chat, \
                 patch('logic.dispatch_css_maintenance_action') as mock_css_maintenance:
 
@@ -65,7 +65,7 @@ class TestTheDispatcher(unittest.TestCase):
             mock_rocket_chat.assert_not_called()
 
     def test_action_dispatcher_none_to_golddr(self):
-        with patch('logic.dispatch_action') as mock_dispatch_action, \
+        with patch('logic.dispatch_action_by_id') as mock_dispatch_action, \
                 patch('logic.dispatch_rocketchat_webhook') as mock_rocket_chat, \
                 patch('logic.dispatch_css_maintenance_action') as mock_css_maintenance:
 
@@ -77,7 +77,7 @@ class TestTheDispatcher(unittest.TestCase):
     # DNS record changes to ERROR (no dns resolved)
 
     def test_action_dispatcher_gold_to_error(self):
-        with patch('logic.dispatch_action') as mock_dispatch_action, \
+        with patch('logic.dispatch_action_by_id') as mock_dispatch_action, \
                 patch('logic.dispatch_rocketchat_webhook') as mock_rocket_chat, \
                 patch('logic.dispatch_css_maintenance_action') as mock_css_maintenance:
 
@@ -87,7 +87,7 @@ class TestTheDispatcher(unittest.TestCase):
             mock_rocket_chat.assert_not_called()
 
     def test_action_dispatcher_golddr_to_error(self):
-        with patch('logic.dispatch_action') as mock_dispatch_action, \
+        with patch('logic.dispatch_action_by_id') as mock_dispatch_action, \
                 patch('logic.dispatch_rocketchat_webhook') as mock_rocket_chat, \
                 patch('logic.dispatch_css_maintenance_action') as mock_css_maintenance:
 
@@ -97,7 +97,7 @@ class TestTheDispatcher(unittest.TestCase):
             mock_rocket_chat.assert_not_called()
 
     def test_action_dispatcher_none_to_error(self):
-        with patch('logic.dispatch_action') as mock_dispatch_action, \
+        with patch('logic.dispatch_action_by_id') as mock_dispatch_action, \
                 patch('logic.dispatch_rocketchat_webhook') as mock_rocket_chat, \
                 patch('logic.dispatch_css_maintenance_action') as mock_css_maintenance:
 

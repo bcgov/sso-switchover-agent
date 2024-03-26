@@ -1,0 +1,85 @@
+name: Preemeptive Failover
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: "The target project"
+        type: choice
+        required: true
+        options: ["SANDBOX", "PRODUCTION"]
+        default: "SANDBOX"
+      environment:
+        description: "env to deploy"
+        type: choice
+        options: ["dev","test","prod"]
+        default: "dev"
+
+jobs:
+  preemptive-switchover:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set the deployment namespace and url
+        run: |
+          chmod +x ./namespace-setter.sh
+          ./namespace-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.environment }}
+          chmod +x ./url-setter.sh
+          ./url-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.environment }}
+        working-directory: .github/helpers
+
+      - name: Login Openshift Gold & Golddr
+        uses: ./.github/actions/oc-login
+        with:
+          namespace: $NAMESPACE
+          oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
+          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
+          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt-get update
+          sudo apt-get -y install syslinux-utils
+
+      - name: Confirm DNS pointing to Gold
+        run: |
+          echo "Running on the $NAMESPACE namespace"
+          echo "Confirming the $KEYCLOAK_URL url is now served from Gold"
+          chmod +x ./test-dns.sh
+          ./test-dns.sh $KEYCLOAK_URL gold
+        working-directory: transition-scripts/test-helpers
+
+      - name: Set DR To active
+        run: |
+          echo "Running on the $NAMESPACE namespace"
+          chmod +x ./switch-to-golddr.sh
+          ./switch-to-golddr.sh $NAMESPACE
+        working-directory: transition-scripts
+
+      - name: Wait for keycloak dr pods to be up
+        run: |
+          echo "Running on the $NAMESPACE namespace"
+          chmod +x ./wait-keycloak-dr-ready.sh
+          ./wait-keycloak-dr-ready.sh $NAMESPACE
+        working-directory: transition-scripts/test-helpers
+
+      # - name: Confirm DR health check passes
+      #   run: echo "THIS STILL NEEDS TO BE CODED UP"
+
+      - name: Disable Gold Route
+        run: |
+          echo "Running on the $NAMESPACE namespace"
+          chmod +x ./enable-disable-gold-route.sh
+          ./enable-disable-gold-route.sh $NAMESPACE disable
+        working-directory: transition-scripts
+
+      - name: Confirm DNS pointing to GoldDR
+        run: |
+          echo "Running on the $NAMESPACE namespace"
+          echo "Confirming the $KEYCLOAK_URL url is now served from GoldDR"
+          chmod +x ./test-dns.sh
+          ./test-dns.sh $KEYCLOAK_URL golddr
+        working-directory: transition-scripts/test-helpers

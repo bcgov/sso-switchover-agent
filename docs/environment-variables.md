@@ -37,3 +37,31 @@ The CSS app should be put in maintenance mode when the production environent is 
  - CSS_ENVIRONMENT: `dev` for sandbox dev, `prod` for production prod.
  - CSS_GH_TOKEN:  The personal access token for deploying the CSS app.
  - CSS_BRANCH: `dev` for sandbox-dev agent, `main` for production-prod agent.
+
+## Preemptive Failover
+
+There are 4 optional environment variables if you need to schedule a failover/failback over night.  These are:
+```
+PREEMPTIVE_FAILOVER_START_TIME = "YYYY/MM/DD HH:MM"
+PREEMPTIVE_FAILOVER_END_TIME = "YYYY/MM/DD HH:MM"
+PREEMPTIVE_WORKFLOW_ID = "preemptive-failover.yml
+ENABLE_GOLD_ROUTE_WORKFLOW_ID = "turn-off-gold-routing.yml"
+```
+
+The time zone is hardcoded to "American/Vancouver".  If you add a couple of valid times to the `PREEMPTIVE_FAILOVER_START_TIME` and `PREEMPTIVE_FAILOVER_END_TIME` and restart the switchover agent, the logs will show the following text:
+
+```
+clients.preemptive_count_down A PREEMPTIVE FAILOVER TO GOLDDR IS SCHEDULED AT 2024-03-12 08:38:00-07:00
+clients.preemptive_count_down TRAFFIC WILL BE RETURNED TO GOLD AT: 2024-03-12 08:41:00-07:00
+```
+
+Then every minute a log will be output describing the state of the failover counter. There are 4 possible messages depending on the countdowns state.
+
+```
+[INFO ] clients.preemptive_count_down The preemptive failover will occur in 0:01:53 hh:mm:ss.
+[DEBUG] logic                The preemptive failover to GoldDR is triggered
+[INFO ] clients.preemptive_count_down Traffic returns to gold in: 0:01:53 hh:mm:ss.
+[DEBUG] logic                The Gold route is being re-enabled
+```
+
+Pairing this with a couple of DNS checking Uptime alerts will give the team the confidence to schedule a preemptive failover for the loginproxy app.
