@@ -93,7 +93,7 @@ upgrade_helm_standby() {
   target_port=$(get_tsc_target_port "$namespace" "sso-patroni")
 
   if [ -z "$standby_pvc_size" ]; then
-    pvc_set="--set patroni.persistentVolume.size=active_pvc_size"
+    pvc_set='--set patroni.persistentVolume.size=active_pvc_size'
   else
     pvc_set=""
   fi
