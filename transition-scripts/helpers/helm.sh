@@ -19,12 +19,7 @@ upgrade_helm() {
     helm repo update
   } &>/dev/null
 
-  helm upgrade --install "$KEYCLOAK_HELM_DEPLOYMENT_NAME" sso-charts/sso-keycloak \
-    -n "$namespace" \
-    --version "$KEYCLOAK_HELM_CHART_VERSION" \
-    -f "$values/values.yaml" \
-    -f "$values/values-$current-$namespace-$cluster_mode.yaml" \
-    "${@:3}"
+  helm upgrade --install "$KEYCLOAK_HELM_DEPLOYMENT_NAME" sso-charts/sso-keycloak -n "$namespace" --version "$KEYCLOAK_HELM_CHART_VERSION" -f "$values/values.yaml" -f "$values/values-$current-$namespace-$cluster_mode.yaml" "${@:3}"
 }
 
 upgrade_helm_active() {
@@ -93,9 +88,9 @@ upgrade_helm_standby() {
   target_port=$(get_tsc_target_port "$namespace" "sso-patroni")
 
   if [ -z "$standby_pvc_size" ]; then
-    pvc_set='--set patroni.persistentVolume.size=active_pvc_size'
+    pvc_set=' --set patroni.persistentVolume.size=active_pvc_size'
   else
-    pvc_set=""
+    pvc_set=''
   fi
 
   #This can only work on fresh installs
@@ -109,7 +104,7 @@ upgrade_helm_standby() {
     --set patroni.credentials.admin.password="$password_admin" \
     --set patroni.credentials.standby.password="$password_standby" \
     --set patroni.additionalCredentials[0].username="$username_appuser1" \
-    --set patroni.additionalCredentials[0].password="$password_appuser1" "$pvc_set" \
+    --set patroni.additionalCredentials[0].password="$password_appuser1" "${pvc_set}" \
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
 
