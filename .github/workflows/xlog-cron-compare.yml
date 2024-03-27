@@ -1,9 +1,9 @@
-name: 'Transaction Log Comparison'
+name: "Transaction Log Comparison"
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'
+    - cron: "0 * * * *"
 
 jobs:
   xlog-cron:
@@ -27,16 +27,13 @@ jobs:
         working-directory: transition-scripts
 
       - name: Rocket.Chat Notification
-        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
         if: failure()
+        uses: fjogeleit/http-request-action@v1.15.2
         with:
-          type: ${{ job.status }}
-          job_name: '*One of the production xlogs failed to synch*'
-          mention: 'jsharman @nithinshekar.kuruba @Marco'
-          mention_if: 'failure'
-          channel: '#sso-alerts'
           url: ${{ secrets.SSO_ALERTS }}
-          token: ${{ secrets.ROCKETCHAT_TOKEN }}
+          method: "POST"
+          customHeaders: '{"Content-Type": "application/json"}'
+          data: '{"text": "@jsharman @nithinshekar.kuruba @jlanglois @Marco *One of the production xlogs failed to synch*", "attachments": [{"color": "#F5455C","title": "Details", "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "text": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "fields": [{"title": "Ref", "value": "${{ github.ref }}", "short": false}, {"title": "Workflow", "value": "${{ github.workflow }}", "short": false}]}]}'
   keepalive:
     name: Keepalive Workflow
     runs-on: ubuntu-latest
