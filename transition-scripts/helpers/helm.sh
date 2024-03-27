@@ -103,6 +103,10 @@ upgrade_helm_standby() {
     pvc_size_to_deploy=${standby_pvc_size//\"/}
   fi
 
+  echo "The active pvc is: ${active_pvc_size}"
+  echo "The existing pvc is: ${standby_pvc_size}"
+  echo "The pvc_size_to_deploy is: ${pvc_size_to_deploy}"
+
   upgrade_helm "$namespace" "standby" \
     --set postgres.host="$target_host" \
     --set postgres.port="$target_port" \
