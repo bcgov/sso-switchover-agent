@@ -37,25 +37,21 @@ upgrade_helm_active() {
   done
 
   # If the pvc exists, do not change the existing value.
-  echo "This ran"
   pvc_size=$(helm -n "$namespace" get values "$KEYCLOAK_HELM_DEPLOYMENT_NAME" -o json 2>/dev/null | jq '.patroni.persistentVolume.size')
-  echo 'This rand and found a pvc size'
-  echo "$pvc_size"
 
   if [ -z "$pvc_size" ]; then
-    echo "No PVC found, running a fresh install"
+    echo "No PVC found, running a clean install"
     upgrade_helm "$namespace" "active" \
       --set maintenancePage.enabled="$maintenance" \
       --set maintenancePage.active="$maintenance"
   else
     echo "Existing PVC found, running helm upgrade with existing values."
+    stripped_pvc=${pvc_size//\"/}
     upgrade_helm "$namespace" "active" \
-      --set patroni.persistentVolume.size="$pvc_size" \
+      --set patroni.persistentVolume.size="$stripped_pvc" \
       --set maintenancePage.enabled="$maintenance" \
       --set maintenancePage.active="$maintenance"
   fi
-        # --set patroni.persistentVolume.size="$active_pvc_size" \
-
 
   connect_route_to_correct_service "$maintenance" "$namespace"
 
