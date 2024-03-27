@@ -36,11 +36,25 @@ upgrade_helm_active() {
     shift
   done
 
-  upgrade_helm "$namespace" "active" \
-    --set maintenancePage.enabled="$maintenance" \
-    --set maintenancePage.active="$maintenance"
+  # If the pvc exists, do not change the existing value.
+  pvc_size=$(helm -n "$namespace" get values "$KEYCLOAK_HELM_DEPLOYMENT_NAME" -o json 2>/dev/null | jq '.patroni.persistentVolume.size')
+
+  if [ -z "$pvc_size" ]; then
+    echo "No PVC found, running a clean install"
+    upgrade_helm "$namespace" "active" \
+      --set maintenancePage.enabled="$maintenance" \
+      --set maintenancePage.active="$maintenance"
+  else
+    echo "Existing PVC found, running helm upgrade with existing values."
+    stripped_pvc=${pvc_size//\"/}
+    upgrade_helm "$namespace" "active" \
+      --set patroni.persistentVolume.size="$stripped_pvc" \
+      --set maintenancePage.enabled="$maintenance" \
+      --set maintenancePage.active="$maintenance"
+  fi
 
   connect_route_to_correct_service "$maintenance" "$namespace"
+
 }
 
 upgrade_helm_standby() {
@@ -60,8 +74,12 @@ upgrade_helm_standby() {
   current=$(get_current_cluster)
   target=$(get_target_cluster)
 
+
+
   switch_kube_context "$target" "$namespace"
   check_ocp_cluster "$target"
+
+  active_pvc_size=$(kubectl -n "$namespace" get pvc storage-volume-sso-patroni-0 -o jsonpath='{.status.capacity.storage}' --ignore-not-found)
 
   password_superuser=$(kubectl get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-superuser}' | base64 -d)
   password_admin=$(kubectl get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-admin}' | base64 -d)
@@ -73,8 +91,21 @@ upgrade_helm_standby() {
   switch_kube_context "$current" "$namespace"
   check_ocp_cluster "$current"
 
+  # If the pvc exists, do not change the existing value.
+  standby_pvc_size=$(helm -n "$namespace" get values "$KEYCLOAK_HELM_DEPLOYMENT_NAME" -o json 2>/dev/null | jq '.patroni.persistentVolume.size')
+
   target_host=$(get_tsc_target_host "$namespace" "sso-patroni")
   target_port=$(get_tsc_target_port "$namespace" "sso-patroni")
+
+  if [ -z "$standby_pvc_size" ]; then
+    pvc_size_to_deploy="$active_pvc_size"
+  else
+    pvc_size_to_deploy=${standby_pvc_size//\"/}
+  fi
+
+  echo "The active pvc is: ${active_pvc_size}"
+  echo "The existing pvc is: ${standby_pvc_size}"
+  echo "The pvc_size_to_deploy is: ${pvc_size_to_deploy}"
 
   upgrade_helm "$namespace" "standby" \
     --set postgres.host="$target_host" \
@@ -87,6 +118,7 @@ upgrade_helm_standby() {
     --set patroni.credentials.standby.password="$password_standby" \
     --set patroni.additionalCredentials[0].username="$username_appuser1" \
     --set patroni.additionalCredentials[0].password="$password_appuser1" \
+    --set patroni.persistentVolume.size="$pvc_size_to_deploy" \
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
 
