@@ -91,42 +91,32 @@ upgrade_helm_standby() {
   switch_kube_context "$current" "$namespace"
   check_ocp_cluster "$current"
 
-
-  standby_pvc_size=$(kubectl -n "$namespace" get pvc storage-volume-sso-patroni-0 -o jsonpath='{.status.capacity.storage}' --ignore-not-found)
+  # If the pvc exists, do not change the existing value.
+  standby_pvc_size=$(helm -n "$namespace" get values "$KEYCLOAK_HELM_DEPLOYMENT_NAME" -o json 2>/dev/null | jq '.patroni.persistentVolume.size')
 
   target_host=$(get_tsc_target_host "$namespace" "sso-patroni")
   target_port=$(get_tsc_target_port "$namespace" "sso-patroni")
 
   if [ -z "$standby_pvc_size" ]; then
-    upgrade_helm "$namespace" "standby" \
-      --set postgres.host="$target_host" \
-      --set postgres.port="$target_port" \
-      --set patroni.standby.enabled=true \
-      --set patroni.standby.host="$target_host" \
-      --set patroni.standby.port="$target_port" \
-      --set patroni.credentials.superuser.password="$password_superuser" \
-      --set patroni.credentials.admin.password="$password_admin" \
-      --set patroni.credentials.standby.password="$password_standby" \
-      --set patroni.additionalCredentials[0].username="$username_appuser1" \
-      --set patroni.additionalCredentials[0].password="$password_appuser1" \
-      --set patroni.persistentVolume.size="$active_pvc_size" \
-      --set maintenancePage.enabled="$maintenance" \
-      --set maintenancePage.active="$maintenance"
+    pvc_size_to_deploy="$active_pvc_size"
   else
-    upgrade_helm "$namespace" "standby" \
-      --set postgres.host="$target_host" \
-      --set postgres.port="$target_port" \
-      --set patroni.standby.enabled=true \
-      --set patroni.standby.host="$target_host" \
-      --set patroni.standby.port="$target_port" \
-      --set patroni.credentials.superuser.password="$password_superuser" \
-      --set patroni.credentials.admin.password="$password_admin" \
-      --set patroni.credentials.standby.password="$password_standby" \
-      --set patroni.additionalCredentials[0].username="$username_appuser1" \
-      --set patroni.additionalCredentials[0].password="$password_appuser1" \
-      --set maintenancePage.enabled="$maintenance" \
-      --set maintenancePage.active="$maintenance"
+    pvc_size_to_deploy=${standby_pvc_size//\"/}
   fi
+
+  upgrade_helm "$namespace" "standby" \
+    --set postgres.host="$target_host" \
+    --set postgres.port="$target_port" \
+    --set patroni.standby.enabled=true \
+    --set patroni.standby.host="$target_host" \
+    --set patroni.standby.port="$target_port" \
+    --set patroni.credentials.superuser.password="$password_superuser" \
+    --set patroni.credentials.admin.password="$password_admin" \
+    --set patroni.credentials.standby.password="$password_standby" \
+    --set patroni.additionalCredentials[0].username="$username_appuser1" \
+    --set patroni.additionalCredentials[0].password="$password_appuser1" \
+    --set patroni.persistentVolume.size="$pvc_size_to_deploy" \
+    --set maintenancePage.enabled="$maintenance" \
+    --set maintenancePage.active="$maintenance"
 
   connect_route_to_correct_service "$maintenance" "$namespace"
 }
