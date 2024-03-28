@@ -20,7 +20,7 @@ runs:
   using: composite
   steps:
     - name: Login Gold
-      uses: redhat-actions/oc-login@v1.3
+      uses: redhat-actions/oc-login@v1
       with:
         openshift_server_url: ${{ inputs.oc-server-gold }}
         openshift_token: ${{ inputs.oc-token-gold }}

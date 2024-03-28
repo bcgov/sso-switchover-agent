@@ -32,7 +32,7 @@ jobs:
           echo ${{ env.RC_NOTIFICATION_COLOR }}
 
       - name: Rocket.Chat Notification
-        uses: fjogeleit/http-request-action@v1.15.2
+        uses: fjogeleit/http-request-action@v1
         with:
           url: ${{ secrets.SSO_ALERTS }}
           method: "POST"
@@ -67,7 +67,7 @@ jobs:
 
       - name: Alert on failure
         if: failure()
-        uses: fjogeleit/http-request-action@v1.15.2
+        uses: fjogeleit/http-request-action@v1
         with:
           url: ${{ secrets.SSO_ALERTS }}
           method: "POST"
