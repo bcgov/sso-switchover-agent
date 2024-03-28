@@ -29,7 +29,7 @@ runs:
       continue-on-error: true
 
     - name: Login Golddr
-      uses: redhat-actions/oc-login@v1.3
+      uses: redhat-actions/oc-login@v1
       with:
         openshift_server_url: ${{ inputs.oc-server-golddr }}
         openshift_token: ${{ inputs.oc-token-golddr }}
