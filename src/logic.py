@@ -224,17 +224,20 @@ def dispatch_uptime_incident(enable_incident: bool):
     }
 
     if enable_incident:
-        try:
-            x = requests.post(incident_url, json=body, headers=headers)
-            if x.status_code == 200:
-                incident_id = x.json()["results"]["pk"]
-                logger.info(f"Uptime incident {incident_id} was created.")
-            else:
-                logger.error(f"Uptime incident creation returned code {x.status_code}")
+        if incident_id is None:
+            try:
+                x = requests.post(incident_url, json=body, headers=headers)
+                if x.status_code == 200:
+                    incident_id = x.json()["results"]["pk"]
+                    logger.info(f"Uptime incident {incident_id} was created.")
+                else:
+                    logger.error(f"Uptime incident creation returned code {x.status_code}")
+                    incident_id = None
+            except BaseException:
+                logger.error("Uptime incident creation failed.")
                 incident_id = None
-        except BaseException:
-            logger.error("Uptime incident creation failed.")
-            incident_id = None
+        else:
+            logger.error("An Uptime incident has already been created for this environment")
     else:
         # close the incident
         try:
