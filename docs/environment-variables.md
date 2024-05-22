@@ -38,6 +38,12 @@ The CSS app should be put in maintenance mode when the production environent is 
  - CSS_GH_TOKEN:  The personal access token for deploying the CSS app.
  - CSS_BRANCH: `dev` for sandbox-dev agent, `main` for production-prod agent.
 
+## Uptime.com Status Page Integration
+
+The switchover agent is able to create and close incidents on uptime status pages.  (Production is located at [https://status.loginproxy.gov.bc.ca/](https://status.loginproxy.gov.bc.ca/)).  To do this, two environment vars must be configured:
+
+- UPTIME_STATUS_PAGE_ID: This integer can be found in the status page's non-vanity url for the statu page hosted by uptime.com.
+- UPTIME_STATUS_TOKEN: The credential used for the uptime.com API.  It can be found [here](https://uptime.com/api/tokens).
 ## Preemptive Failover
 
 There are 4 optional environment variables if you need to schedule a failover/failback over night.  These are:
