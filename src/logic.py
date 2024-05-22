@@ -3,6 +3,7 @@ import logging
 import traceback
 import requests
 import json
+import datetime
 from clients.dns import check_dns_by_env
 
 from multiprocessing import Queue
@@ -16,6 +17,8 @@ css_branch = config.get('css_branch')
 css_environment = config.get('css_environment')
 css_maintenance_workflow_id = config.get('css_maintenance_workflow_id')
 css_gh_token = config.get('css_gh_token')
+
+incident_id = None
 
 
 def handle_queues(queue: Queue, processes: list):
@@ -69,12 +72,14 @@ def action_dispatcher(ip: str, prev_ip: str, active_ip: str, passive_ip: str):
         if css_maintenance_to_active:
             logger.info("active_ip")
             dispatch_css_maintenance_action(False)
+            dispatch_uptime_incident(False)
         else:
             logger.info("Failed to turn off the css maintenance mode")
     elif (ip == passive_ip and prev_ip == active_ip):
         logger.info("passive_ip")
         dispatch_action_by_id(config.get('gh_workflow_id'))
         dispatch_css_maintenance_action(True)
+        dispatch_uptime_incident(True)
 
 
 # This runs a github action in the sso-switchover agent repos currently works with actions with 3 three required inputs
@@ -182,3 +187,68 @@ def dispatch_css_maintenance_action(maintenance_mode: bool):
             logger.info('CSS GH API status: %s' % x.status_code)
         else:
             logger.error('GH API error: %s' % x.content)
+
+
+def dispatch_uptime_incident(enable_incident: bool):
+    global incident_id
+
+    url = config.get('uptime_status_api')
+    uptime_token = config.get('uptime_status_token')
+    uptime_statuspage_id = config.get('uptime_status_page_id')
+    namespace = config.get('namespace')
+    env = namespace[7:]
+    if uptime_token == "" or uptime_statuspage_id == "":
+        logger.error('The uptime status page incident creation/closure has not been configured')
+        return
+
+    incident_url = f"{url}{uptime_statuspage_id}/incidents/"
+    bearer = 'token %s' % uptime_token
+    headers = {'Authorization': bearer}
+
+    body = {
+        "name": f"[{env}] Keycloak is in Disaster Recovery mode",
+        "include_in_global_metrics": False,
+        "updates": [
+            {
+                "id": 0,
+                "description": f"The switchover to GoldDR was triggered for the {env} environment.",
+                "incident_state": "investigating"
+            }
+        ],
+        "incident_type": "INCIDENT",
+        "update_component_status": True,
+        "notify_subscribers": True
+    }
+
+    if enable_incident:
+        try:
+            x = requests.post(incident_url, json=body, headers=headers)
+            if x.status_code == 200:
+                incident_id = x.json()["results"]["pk"]
+                logger.info(f"Uptime incident {incident_id} was created.")
+            else:
+                logger.error(f"Uptime incident creation returned code {x.status_code}")
+                incident_id = None
+        except BaseException:
+            logger.error("Uptime incident creation failed.")
+            incident_id = None
+    else:
+        # close the incident
+        try:
+            close_body = body
+            close_body["ends_at"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            close_body["incident_state"] = "resolved"
+            close_body["updates"] = [{
+                "id": 0,
+                "description": f"The {env} environement is no longer in disaster recovery mode.",
+                "incident_state": "resolved"
+            }]
+            x = requests.patch(f"{incident_url}{incident_id}", json=body, headers=headers)
+            if x.status_code == 200:
+                logger.info(f"Uptime incident number {incident_id}, has been closed.")
+            else:
+                logger.error(f"Uptime incident {incident_id} failed to close.")
+        except BaseException:
+            logger.error(f"Uptime incident number {incident_id}, failed to close.")
+
+        incident_id = None

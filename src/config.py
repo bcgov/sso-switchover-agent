@@ -27,4 +27,7 @@ config = dict(
     preemptive_failover_end_time=os.environ.get("PREEMPTIVE_FAILOVER_END_TIME", ""),
     preemptive_failover_workflow_id=os.environ.get("PREEMPTIVE_WORKFLOW_ID", "preemptive-failover.yml"),
     enable_gold_route_workflow_id=os.environ.get("ENABLE_GOLD_ROUTE_WORKFLOW_ID", "turn-off-gold-routing.yml"),
+    uptime_status_api="https://uptime.com/api/v1/statuspages/",
+    uptime_status_page_id=os.environ.get("UPTIME_STATUS_PAGE_ID", ""),
+    uptime_status_token=os.environ.get("UPTIME_STATUS_TOKEN", "")
 )
