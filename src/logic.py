@@ -87,16 +87,19 @@ def action_dispatcher(ip: str, prev_ip: str, active_ip: str, passive_ip: str):
 # project (SANDBOX or PRODUCTION)
 # environment (dev, test, prod)
 def dispatch_action_by_id(workflow_id: str):
-    environment = config.get('namespace')[7:]
-    url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), config.get('gh_repo'), workflow_id)
-    data = {'ref': config.get('gh_branch'), 'inputs': {'project': config.get('project'), 'environment': environment}}
-    bearer = 'token %s' % config.get('gh_token')
-    headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': bearer}
-    x = requests.post(url, json=data, headers=headers)
-    if x.status_code == 204:
-        logger.info('GH API status: %s' % x.status_code)
-    else:
-        logger.error('GH API error: %s' % x.content)
+    try:
+        environment = config.get('namespace')[7:]
+        url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), config.get('gh_repo'), workflow_id)
+        data = {'ref': config.get('gh_branch'), 'inputs': {'project': config.get('project'), 'environment': environment}}
+        bearer = 'token %s' % config.get('gh_token')
+        headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': bearer}
+        x = requests.post(url, json=data, headers=headers)
+        if x.status_code == 204:
+            logger.info('GH API status: %s' % x.status_code)
+        else:
+            logger.error('GH API error: %s' % x.content)
+    except Exception as ex:
+        logger.error('The dispatch action failed. %s' % ex)
 
 
 def dispatch_rocketchat_webhook(maintenance_mode: str):
