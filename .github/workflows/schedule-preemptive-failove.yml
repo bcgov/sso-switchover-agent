@@ -1,0 +1,56 @@
+name: Schedule Preemptive Failover
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: "The target project"
+        type: choice
+        required: true
+        options: ["SANDBOX", "PRODUCTION"]
+        default: "SANDBOX"
+      environment:
+        description: "env to deploy"
+        type: choice
+        options: ["dev","test","prod"]
+        default: "dev"
+      timestart:
+        description: "The time to trigger the preemptive failover (24 hour PST)"
+        type: string
+        required: true
+        default: "YYYY/MM/DD HH:MM"
+      timeend:
+        description: "The time to switch traffic back to Gold (24 hour PST)"
+        type: string
+        required: true
+        default: "YYYY/MM/DD HH:MM"
+
+jobs:
+  transition-scripts:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set the deployment namespace
+        run: |
+          chmod +x ./namespace-setter.sh
+          ./namespace-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.environment }}
+        working-directory: .github/helpers
+
+      - name: Verify Time Inputs
+
+      - name: Login Openshift Gold & Golddr
+        uses: ./.github/actions/oc-login
+        with:
+          namespace: $NAMESPACE
+          oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
+          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
+          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+
+      - name: Run transition script
+        run: |
+          echo "Running on the $NAMESPACE namespace"
+          chmod +x ./deploy-switchover-agent.sh
+          ./deploy-switchover-agent.sh $NAMESPACE "${{ github.event.inputs.timestart }}" "${{ github.event.inputs.timeend }}"
+        working-directory: transition-scripts

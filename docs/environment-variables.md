@@ -42,7 +42,7 @@ The CSS app should be put in maintenance mode when the production environent is 
 
 The switchover agent is able to create and close incidents on uptime status pages.  (Production is located at [https://status.loginproxy.gov.bc.ca/](https://status.loginproxy.gov.bc.ca/)).  To do this, two environment vars must be configured:
 
-- UPTIME_STATUS_PAGE_ID: This integer can be found in the status page's non-vanity url for the statu page hosted by uptime.com.
+- UPTIME_STATUS_PAGE_ID: This integer can be found in the status page's non-vanity url for the status page hosted by uptime.com.
 - UPTIME_STATUS_TOKEN: The credential used for the uptime.com API.  It can be found [here](https://uptime.com/api/tokens).
 ## Preemptive Failover
 
