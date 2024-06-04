@@ -36,7 +36,6 @@ source "$pwd/helpers/_all.sh"
 
 validate_time_regex() {
   local input="$1"
-  #TODO IMPROVE THIS REGEX
   local regex="^2[0-9]{3}\/[0-9]{2}\/[0-9]{2}\s[0-9]{2}:[0-9]{2}$"
   if [[ "$input" =~ $regex ]]; then
     echo "The input matches the time regex."
