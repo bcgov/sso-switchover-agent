@@ -21,6 +21,12 @@ The local deployment workflow is an option if keycloak needs to be redeployed an
 The github actions found [here](.github/workflows) can be triggered manually in the repo.  The actions allow a user to deploy the resources in gold and gold dr, set dr to active, and set gold to active.  These require the target namespace and deployment branch as inputs.
 
 
+## Triggering a preemptive failover
+
+The GitHub action `Schedule Preemptive Failover` allows us to schedule sending traffic to the GoldDR cluster. This ensures a service outage of no more than a few seconds.  This can be used when an outage to the Gold cluster is expected or scheduled.  Note that only one outage can be scheduled at a time.
+
+The job is manually triggered by choosing the environment (PRODUCTION, SANDBOX) and (dev, test, prod).  Then setting the start and end time for when traffic is to be sent to the GoldDR cluster `YYYY/MM/DD HH:MM`. When the failback occurs (after the end time) a dev will need to manually put the GoldDR deployment back into standby mode using the action `Set the DR deployment to standby`.
+
 ## The switchover agent
 
 The switchover agent is deployed in the Gold DR namespace for a given project and watches changes in the DNS record.  If it detects the change it will automatically trigger the failover to the DR cluster.
