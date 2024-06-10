@@ -3,6 +3,7 @@ import asyncio
 import logging
 import time
 import json
+import requests
 
 from multiprocessing import Queue
 from config import config
@@ -76,8 +77,15 @@ async def dns_lookup(domain_name: str, q: Queue):
             maintenance_mode = is_keycloak_dr_up_and_receiving_traffic(result)
 
             if last_result != result:
+                message = f'IP CHANGE {result}'
+
+                if result == 'error':
+                    golddr_network_working = test_external_network()
+                    if not golddr_network_working:
+                        message = 'The GoldDr Network appears to be down. Gold Keycloak may still be up and healthy.'
+
                 q.put({'event': 'dns', 'result': result,
-                       'message': 'IP CHANGE %s' % result})
+                       'message': message})
                 last_result = result
 
             if maintenance_mode != last_maintenance_mode and maintenance_mode != 'error':
@@ -156,3 +164,16 @@ def check_dns_by_env(env, ip):
     except socket.gaierror:
         logger.error("Invalid domain or could not resolve the IP address.")
         return 'error'
+
+
+def test_external_network():
+    agent_network_up = False
+    try:
+        # Use the google public DNS as a way of testing that the
+        # switchover agent's network is up
+        x = requests.get('https://8.8.8.8', timeout=2.5)
+        agent_network_up = x.ok
+    except Exception as err:
+        logging.error('Error at %s', 'division', exc_info=err)
+
+    return agent_network_up
