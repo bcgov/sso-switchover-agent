@@ -83,6 +83,8 @@ async def dns_lookup(domain_name: str, q: Queue):
                     golddr_network_working = test_external_network()
                     if not golddr_network_working:
                         message = 'The GoldDr Network appears to be down. Gold Keycloak may still be up and healthy.'
+                    else:
+                        message = 'GSLB is not resolving Gold or GoldDR IPs.'
 
                 q.put({'event': 'dns', 'result': result,
                        'message': message})
