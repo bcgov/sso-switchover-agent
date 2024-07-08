@@ -1,16 +1,22 @@
 image:
   repository: ghcr.io/bcgov/sso
-  tag: 7.6.39-build.2
-  pullPolicy: IfNotPresent
+  tag: dev-rhbk-24
+  pullPolicy: Always
 
-replicaCount: 3
+additionalServerOptions: >-
+  -Dkeycloak.profile.feature.impersonation=disabled
+  -Djboss.persistent.log.dir=/var/log/eap
+  -Djgroups.dns.query=sso-keycloak-ping.e4ca1d-dev.svc.cluster.local
+
+
+replicaCount: 0
 
 service:
   type: ClusterIP
   port: 8443
 
 tls:
-  enabled: true
+  enabled: false
 
 resources:
   limits:
@@ -21,13 +27,8 @@ resources:
     memory: 1Gi
 
 maintenancePage:
-  enabled: false
-  active: false
-
-podDisruptionBudget:
   enabled: true
-  minAvailable: 1
-  maxUnavailable:
+  active: true
 
 patroni:
   replicaCount: 3
@@ -36,10 +37,10 @@ patroni:
     size: 1Gi
 
   podDisruptionBudget:
-    enabled: true
+    enabled: false
 
   transportServerClaim:
-    enabled: true
+    enabled: false
 
 rollingUpdate:
   maxSurge: 2
