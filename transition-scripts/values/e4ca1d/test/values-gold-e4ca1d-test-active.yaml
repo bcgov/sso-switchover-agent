@@ -1,16 +1,20 @@
-image:
-  repository: ghcr.io/bcgov/sso
-  tag: 7.6.39-build.2
-  pullPolicy: IfNotPresent
-
 replicaCount: 2
 
-service:
-  type: ClusterIP
-  port: 8443
+additionalServerOptions: >-
+  -Dkeycloak.profile.feature.impersonation=disabled
+  -Djboss.persistent.log.dir=/var/log/eap
+  -Djgroups.dns.query=sso-keycloak-ping.e4ca1d-test.svc.cluster.local
 
-tls:
-  enabled: true
+extraEnvs:
+  - name: KC_HOSTNAME_URL
+    value: https://test.sandbox.loginproxy.gov.bc.ca/auth/
+  - name: KC_HOSTNAME_ADMIN_URL
+    value: https://test.sandbox.loginproxy.gov.bc.ca/auth/
+  ## If debugging needs to be done without the use of the vanity urls, use the following KC_HOSTNAMES
+  # - name: KC_HOSTNAME_URL
+  #   value: https://sso-keycloak-e4ca1d-test.apps.gold.devops.gov.bc.ca/auth/
+  # - name: KC_HOSTNAME_ADMIN_URL
+  #   value: https://sso-keycloak-e4ca1d-test.apps.gold.devops.gov.bc.ca/auth/
 
 resources:
   limits:

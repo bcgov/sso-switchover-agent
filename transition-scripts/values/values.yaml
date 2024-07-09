@@ -39,7 +39,7 @@ annotations:
 
 livenessProbe:
   enabled: true
-  verification: #script
+  verification: ""
   initialDelaySeconds: 240
   periodSeconds: 20
   timeoutSeconds: 5
@@ -48,7 +48,7 @@ livenessProbe:
 
 readinessProbe:
   enabled: true
-  verification: #script
+  verification: ""
   initialDelaySeconds: 30
   periodSeconds: 10
   timeoutSeconds: 5
