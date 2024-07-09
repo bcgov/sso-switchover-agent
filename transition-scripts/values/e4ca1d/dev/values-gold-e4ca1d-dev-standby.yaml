@@ -16,9 +16,6 @@ extraEnvs:
   # - name: KC_HOSTNAME_ADMIN_URL
   #   value: https://sso-keycloak-e4ca1d-dev.apps.gold.devops.gov.bc.ca/auth/
 
-tls:
-  enabled: false
-
 resources:
   limits:
     cpu: 1
