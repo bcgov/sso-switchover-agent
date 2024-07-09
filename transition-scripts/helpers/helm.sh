@@ -166,10 +166,10 @@ connect_route_to_correct_service() {
   if [ "$maintenance" = "true" ]
   then
     kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
-    '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'-maintenance"},"tls":{"termination":"edge"}}}'
+    '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'-maintenance"}}}'
   else
     kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
-    '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'"},"tls":{"termination":"reencrypt"}}}'
+    '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'"}}}'
   fi
 
 }
