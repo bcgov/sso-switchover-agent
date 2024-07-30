@@ -8,6 +8,17 @@ additionalServerOptions: >-
   -Djboss.persistent.log.dir=/var/log/eap
   -Djgroups.dns.query=sso-keycloak-ping.e4ca1d-dev.svc.cluster.local
 
+extraEnvs:
+  - name: KC_HOSTNAME_URL
+    value: https://sandbox.loginproxy.gov.bc.ca/auth/
+  - name: KC_HOSTNAME_ADMIN_URL
+    value: https://sandbox.loginproxy.gov.bc.ca/auth/
+  - name: QUARKUS_LOG_FILE_ROTATION_MAX_BACKUP_INDEX
+    value: 42
+  - name: QUARKUS_LOG_FILE_ROTATION_MAX_FILE_SIZE
+    value: 1M
+  - name: QUARKUS_LOG_FILE_ROTATION_FILE_SUFFIX
+    value: .zip
 
 replicaCount: 0
 
