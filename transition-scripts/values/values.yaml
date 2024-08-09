@@ -20,6 +20,10 @@ resources:
     cpu: 100m
     memory: 1Gi
 
+maintenancePage:
+  enabled: false
+  active: false
+
 # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 affinityTemplate: |
   podAntiAffinity:

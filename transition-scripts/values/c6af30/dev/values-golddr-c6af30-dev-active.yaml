@@ -26,9 +26,6 @@ resources:
 
 
 
-maintenancePage:
-  enabled: false
-  active: false
 
 podDisruptionBudget:
   enabled: true

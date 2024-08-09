@@ -18,10 +18,6 @@ extraEnvs:
   - name: KC_HOSTNAME_ADMIN_URL
     value: https://sso-keycloak-c6af30-dev.apps.gold.devops.gov.bc.ca/auth/
 
-maintenancePage:
-  enabled: false
-  active: false
-
 patroni:
   replicaCount: 3
 
