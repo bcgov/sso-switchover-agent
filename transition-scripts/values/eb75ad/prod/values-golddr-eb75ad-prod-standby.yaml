@@ -1,19 +1,11 @@
-image:
-  repository: ghcr.io/bcgov/sso
-  tag: 7.6.39-build.2
-  pullPolicy: IfNotPresent
-
 replicaCount: 0
-
-service:
-  type: ClusterIP
-  port: 8443
-
-tls:
-  enabled: false
 
 persistentLog:
   size: 20Gi
+
+maintenancePage:
+  enabled: true
+  active: true
 
 patroni:
   replicaCount: 3
