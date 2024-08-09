@@ -1,15 +1,39 @@
-replicaCount: 5
+replicaCount: 3
 
-service:
-  type: ClusterIP
-  port: 8443
+additionalServerOptions: >-
+  -Dkeycloak.profile.feature.impersonation=disabled
+  -Djboss.persistent.log.dir=/var/log/eap
+  -Djgroups.dns.query=sso-keycloak-ping.c6af30-dev.svc.cluster.local
 
-tls:
-  enabled: true
+extraEnvs:
+  - name: QUARKUS_LOG_FILE_ROTATION_MAX_BACKUP_INDEX
+    value: "42"
+  - name: QUARKUS_LOG_FILE_ROTATION_MAX_FILE_SIZE
+    value: 1M
+  - name: QUARKUS_LOG_FILE_ROTATION_FILE_SUFFIX
+    value: .zip
+  # There are no vanity urls in c6
+  - name: KC_HOSTNAME_URL
+    value: https://sso-keycloak-c6af30-dev.apps.gold.devops.gov.bc.ca/auth/
+  - name: KC_HOSTNAME_ADMIN_URL
+    value: https://sso-keycloak-c6af30-dev.apps.gold.devops.gov.bc.ca/auth/
+
+
+resources:
+  limits:
+    cpu: 4
+
+
+
 
 maintenancePage:
   enabled: false
   active: false
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+  maxUnavailable:
 
 patroni:
   replicaCount: 3
@@ -24,4 +48,4 @@ patroni:
     enabled: true
 
 rollingUpdate:
-  maxSurge: 2
+  maxSurge: 1

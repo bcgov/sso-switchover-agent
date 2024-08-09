@@ -1,19 +1,22 @@
 replicaCount: 0
 
-resources:
-  limits:
-    cpu: 1
-    memory: 2Gi
-  requests:
-    cpu: 0.8
-    memory: 1Gi
+additionalServerOptions: >-
+  -Dkeycloak.profile.feature.impersonation=disabled
+  -Djboss.persistent.log.dir=/var/log/eap
+  -Djgroups.dns.query=sso-keycloak-ping.c6af30-dev.svc.cluster.local
 
-service:
-  type: ClusterIP
-  port: 8443
-
-tls:
-  enabled: false
+extraEnvs:
+  - name: QUARKUS_LOG_FILE_ROTATION_MAX_BACKUP_INDEX
+    value: "42"
+  - name: QUARKUS_LOG_FILE_ROTATION_MAX_FILE_SIZE
+    value: 1M
+  - name: QUARKUS_LOG_FILE_ROTATION_FILE_SUFFIX
+    value: .zip
+  # There are no vanity urls in c6
+  - name: KC_HOSTNAME_URL
+    value: https://sso-keycloak-c6af30-dev.apps.golddr.devops.gov.bc.ca/auth/
+  - name: KC_HOSTNAME_ADMIN_URL
+    value: https://sso-keycloak-c6af30-dev.apps.golddr.devops.gov.bc.ca/auth/
 
 maintenancePage:
   enabled: true
@@ -32,4 +35,4 @@ patroni:
     enabled: false
 
 rollingUpdate:
-  maxSurge: 2
+  maxSurge: 1
