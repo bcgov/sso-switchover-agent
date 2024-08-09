@@ -32,7 +32,7 @@ persistentLog:
 
 podDisruptionBudget:
   enabled: true
-  minAvailable: 1
+  minAvailable: 2
   maxUnavailable:
 
 patroni:
