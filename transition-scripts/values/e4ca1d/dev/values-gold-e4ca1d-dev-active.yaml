@@ -30,10 +30,6 @@ resources:
     cpu: 0.8
     memory: 1Gi
 
-maintenancePage:
-  enabled: false
-  active: false
-
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
