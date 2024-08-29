@@ -21,7 +21,7 @@ extraEnvs:
 
 resources:
   limits:
-    cpu: 160m
+    cpu: 4
   requests:
     cpu: 150m
 
