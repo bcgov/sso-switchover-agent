@@ -25,6 +25,8 @@ extraEnvs:
 resources:
   limits:
     cpu: 4
+  requests:
+    cpu: 150m
 
 persistentLog:
   size: 20Gi
