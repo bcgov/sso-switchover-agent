@@ -21,19 +21,9 @@ extraEnvs:
 
 resources:
   limits:
-    cpu: 160m
+    cpu: 4
   requests:
     cpu: 150m
-
-readinessProbe:
-  enabled: true
-  verification: ""
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  timeoutSeconds: 5
-  successThreshold: 1
-  failureThreshold: 16
-
 
 podDisruptionBudget:
   enabled: false
