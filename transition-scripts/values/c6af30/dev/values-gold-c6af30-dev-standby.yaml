@@ -1,0 +1,34 @@
+replicaCount: 0
+
+additionalServerOptions: >-
+  -Dkeycloak.profile.feature.impersonation=disabled
+  -Djboss.persistent.log.dir=/var/log/eap
+  -Djgroups.dns.query=sso-keycloak-ping.c6af30-dev.svc.cluster.local
+
+extraEnvs:
+  - name: QUARKUS_LOG_FILE_ROTATION_MAX_BACKUP_INDEX
+    value: "42"
+  - name: QUARKUS_LOG_FILE_ROTATION_MAX_FILE_SIZE
+    value: 1M
+  - name: QUARKUS_LOG_FILE_ROTATION_FILE_SUFFIX
+    value: .zip
+  # There are no vanity urls in c6
+  - name: KC_HOSTNAME_URL
+    value: https://sso-keycloak-c6af30-dev.apps.gold.devops.gov.bc.ca/auth/
+  - name: KC_HOSTNAME_ADMIN_URL
+    value: https://sso-keycloak-c6af30-dev.apps.gold.devops.gov.bc.ca/auth/
+
+patroni:
+  replicaCount: 3
+
+  persistentVolume:
+    size: 8Gi
+
+  podDisruptionBudget:
+    enabled: false
+
+  transportServerClaim:
+    enabled: true
+
+rollingUpdate:
+  maxSurge: 2

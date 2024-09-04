@@ -1,9 +1,16 @@
 image:
   repository: ghcr.io/bcgov/sso
-  tag: 7.6.5-build.30
+  tag: 24.0.6-build.2
   pullPolicy: IfNotPresent
 
 additionalServerOptions: "-Dkeycloak.profile.feature.impersonation=disabled -Djboss.persistent.log.dir=/var/log/eap"
+
+tls:
+  enabled: false
+
+service:
+  type: ClusterIP
+  port: 8080
 
 resources:
   limits:
@@ -12,6 +19,10 @@ resources:
   requests:
     cpu: 100m
     memory: 1Gi
+
+maintenancePage:
+  enabled: false
+  active: false
 
 # https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 affinityTemplate: |
@@ -32,27 +43,37 @@ annotations:
 
 livenessProbe:
   enabled: true
-  verification: script
-  initialDelaySeconds: 240
+  verification: ""
+  initialDelaySeconds: 30
   periodSeconds: 20
   timeoutSeconds: 5
   successThreshold: 1
-  failureThreshold: 6
+  failureThreshold: 12
 
 readinessProbe:
   enabled: true
-  verification: script
-  initialDelaySeconds: 30
+  verification: ""
+  initialDelaySeconds: 5
   periodSeconds: 10
   timeoutSeconds: 5
   successThreshold: 1
-  failureThreshold: 12
+  failureThreshold: 16
 
 rollingUpdate:
   maxSurge: "100%"
   maxUnavailable: 0
 
 patroni:
+  image:
+    repository: ghcr.io/zalando/spilo-15
+    tag: 3.2-p1
+    pullPolicy: Always
+  postgresMajorVersion: 15
+
+  walG:
+    # Specifies whether Wal-G should be enabled
+    enabled: false
+
   resources:
     limits:
       cpu: 500m

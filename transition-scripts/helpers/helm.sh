@@ -4,7 +4,7 @@ this="${BASH_SOURCE[0]}"
 pwd=$(dirname "$this")
 values="$pwd/../values"
 
-KEYCLOAK_HELM_CHART_VERSION="v1.15.2"
+KEYCLOAK_HELM_CHART_VERSION="v1.16.0"
 KEYCLOAK_HELM_DEPLOYMENT_NAME="sso-keycloak"
 
 upgrade_helm() {
@@ -19,7 +19,11 @@ upgrade_helm() {
     helm repo update
   } &>/dev/null
 
-  helm upgrade --install "$KEYCLOAK_HELM_DEPLOYMENT_NAME" sso-charts/sso-keycloak -n "$namespace" --version "$KEYCLOAK_HELM_CHART_VERSION" -f "$values/values.yaml" -f "$values/values-$current-$namespace-$cluster_mode.yaml" "${@:3}"
+  helm upgrade --install "$KEYCLOAK_HELM_DEPLOYMENT_NAME" \
+  sso-charts/sso-keycloak -n "$namespace" \
+  --version "$KEYCLOAK_HELM_CHART_VERSION" \
+  -f "$values/values.yaml" \
+  -f "$values/${namespace:0:6}/${namespace:7}/values-$current-$namespace-$cluster_mode.yaml" "${@:3}"
 }
 
 upgrade_helm_active() {
@@ -162,10 +166,10 @@ connect_route_to_correct_service() {
   if [ "$maintenance" = "true" ]
   then
     kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
-    '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'-maintenance"},"tls":{"termination":"edge"}}}'
+    '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'-maintenance"}}}'
   else
     kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
-    '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'"},"tls":{"termination":"reencrypt"}}}'
+    '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'"}}}'
   fi
 
 }
