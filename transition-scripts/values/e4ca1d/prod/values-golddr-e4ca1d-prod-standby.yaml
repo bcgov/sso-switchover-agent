@@ -6,7 +6,7 @@ image:
 additionalServerOptions: >-
   -Dkeycloak.profile.feature.impersonation=disabled
   -Djboss.persistent.log.dir=/var/log/eap
-  -Djgroups.dns.query=sso-keycloak-ping.e4ca1d-dev.svc.cluster.local
+  -Djgroups.dns.query=sso-keycloak-ping.e4ca1d-prod.svc.cluster.local
 
 extraEnvs:
   - name: KC_HOSTNAME_URL
