@@ -132,7 +132,7 @@ def dispatch_rocketchat_webhook(maintenance_mode: str):
             end users and automation.""" % (env)
     elif maintenance_mode == 'gold_up':
         message = """@all **The Gold Keycloak %s instance has been restored to the Primary \
-            cluster (aka back to normal).** \n* We are be back to normal operations of \
+            cluster (aka back to normal).** \n* We are back to normal operations of \
             the Pathfinder SSO Service (standard and custom).\n* Changes made to a \
             project's config using the Pathfinder SSO Service (standard or custom realm) \
             during Disaster Recovery will be missing. \n* The priority of this service is \
