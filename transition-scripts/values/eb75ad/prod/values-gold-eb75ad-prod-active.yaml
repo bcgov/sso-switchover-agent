@@ -11,7 +11,7 @@ extraEnvs:
   - name: KC_HOSTNAME_ADMIN_URL
     value: https://loginproxy.gov.bc.ca/auth/
   - name: QUARKUS_LOG_FILE_ROTATION_MAX_BACKUP_INDEX
-    value: "21"
+    value: "14"
   - name: QUARKUS_LOG_FILE_ROTATION_MAX_FILE_SIZE
     value: 300M
   - name: QUARKUS_LOG_FILE_ROTATION_FILE_SUFFIX
