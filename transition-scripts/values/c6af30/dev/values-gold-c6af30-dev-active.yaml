@@ -1,4 +1,4 @@
-replicaCount: 2
+replicaCount: 1
 
 additionalServerOptions: >-
   -Dkeycloak.profile.feature.impersonation=disabled
@@ -21,7 +21,7 @@ extraEnvs:
 
 resources:
   limits:
-    cpu: 4
+    cpu: 2
   requests:
     cpu: 150m
 
@@ -29,7 +29,7 @@ podDisruptionBudget:
   enabled: false
 
 patroni:
-  replicaCount: 3
+  replicaCount: 2
 
   persistentVolume:
     size: 8Gi
