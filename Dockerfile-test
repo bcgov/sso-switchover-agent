@@ -10,6 +10,7 @@ RUN apk add --no-cache \
         curl \
         gcc \
         libressl-dev \
+        openssl-dev \
         musl-dev \
         libffi-dev && \
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile=minimal && \
@@ -20,7 +21,8 @@ RUN apk add --no-cache \
         gcc \
         libressl-dev \
         musl-dev \
-        libffi-dev
+        libffi-dev \
+        openssl-dev
 
 COPY ./pyproject.toml .
 COPY ./poetry.lock .
