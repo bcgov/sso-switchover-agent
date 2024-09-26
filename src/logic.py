@@ -18,6 +18,12 @@ css_environment = config.get('css_environment')
 css_maintenance_workflow_id = config.get('css_maintenance_workflow_id')
 css_gh_token = config.get('css_gh_token')
 
+ches_api_endpoint = config.get('ches_api_endpoint')
+ches_token_endpoint = config.get('ches_token_endpoint')
+ches_username = config.get('ches_username')
+ches_password = config.get('ches_password')
+log_email = config.get('log_email')
+
 incident_id = None
 
 
@@ -54,9 +60,59 @@ def handle_queues(queue: Queue, processes: list):
                 dispatch_action_by_id(config.get("enable_gold_route_workflow_id"))
                 logger.debug(item['message'])
 
+            log_events(item)
+
         except Exception as ex:
             logger.error('Unknown error in logic. %s' % ex)
             traceback.print_exc(file=sys.stdout)
+
+
+def log_events(queu_item: object):
+    if ches_token_endpoint != "" and ches_username != "" and ches_password != "":
+        body = f"<p>The following change was detected by the switchover agent:</p> \
+        <p>{json.dumps(queu_item)}</p> \
+        <br> <p>{datetime.datetime.now()}</p>"
+
+        sendChesEmail(log_email, body)
+
+
+def sendChesEmail(to: str, body: str):
+    try:
+        namespace = config.get('namespace')
+        access_token = fetchChesToken()
+
+        if access_token is None:
+            logger.error('No Access Token Created')
+            return
+
+        payload = {
+            "bodyType": "html",
+            "body": body,
+            "encoding": "utf-8",
+            "from": "bcgov.sso@gov.bc.ca",
+            "priority": "normal",
+            "to": [to],
+            "subject": f"The {namespace} switchover agent detected a change.",
+        }
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = requests.post(ches_api_endpoint, json=payload, headers=headers)
+    except Exception as ex:
+        logger.error('Log failed to send log to team email: %s' % ex)
+
+        traceback.print_exc(file=sys.stdout)
+
+
+def fetchChesToken():
+    auth_url = ches_token_endpoint
+    payload = {"grant_type": "client_credentials"}
+    headers = {"content-type": "application/x-www-form-urlencoded"}
+    try:
+        response = requests.post(auth_url, auth=(ches_username, ches_password), data=payload, headers=headers)
+        return response.json()['access_token']
+    except Exception as ex:
+        logger.error('Failed to get a ches token: %s' % ex)
+        traceback.print_exc(file=sys.stdout)
+    return None
 
 
 def action_dispatcher(ip: str, prev_ip: str, active_ip: str, passive_ip: str):

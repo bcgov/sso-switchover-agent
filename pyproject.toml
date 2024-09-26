@@ -1,20 +1,20 @@
 [tool.poetry]
 name = "sso-switchover-agent"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["SSO Team"]
 readme = "README.md"
 packages = [{include = "sso_switchover_agent"}]
 
 [tool.poetry.dependencies]
-python = "3.8.6"
-fastapi = "0.103.1"
-python-dotenv = "^0.20.0"
+python = "3.12.6"
+fastapi = "0.115.0"
+python-dotenv = "^1.0.1"
 asyncio = "^3.4.3"
-requests = "^2.28.0"
-uvicorn = "^0.17.6"
-python-hosts = "^1.0.3"
-pytz = "^2024.1"
+requests = "^2.32.3"
+uvicorn = "^0.30.6"
+python-hosts = "^1.0.7"
+pytz = "^2024.2"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.6.0"
