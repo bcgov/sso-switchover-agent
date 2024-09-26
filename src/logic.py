@@ -83,6 +83,7 @@ def sendChesEmail(to: str, body: str):
 
         if access_token is None:
             logger.error('No Access Token Created')
+            return
 
         payload = {
             "bodyType": "html",
