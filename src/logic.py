@@ -68,9 +68,11 @@ def handle_queues(queue: Queue, processes: list):
 
 
 def log_events(queu_item: object):
-    if ches_token_endpoint is not "" and ches_username is not "" and ches_password is not "":
-        body = f"<p>The following change was detected by the switchover agent:<p> \
-        <p>{json.dump(queu_item)}<p>"
+    if ches_token_endpoint != "" and ches_username != "" and ches_password != "":
+        body = f"<p>The following change was detected by the switchover agent:</p> \
+        <p>{json.dumps(queu_item)}</p> \
+        <br> <p>{datetime.datetime.now()}</p>"
+
         sendChesEmail(log_email, body)
 
 
@@ -91,12 +93,11 @@ def sendChesEmail(to: str, body: str):
             "to": [to],
             "subject": f"The {namespace} switchover agent detected a change.",
         }
-
         headers = {"Authorization": f"Bearer {access_token}"}
         response = requests.post(ches_api_endpoint, json=payload, headers=headers)
-
     except Exception as ex:
         logger.error('Log failed to send log to team email: %s' % ex)
+
         traceback.print_exc(file=sys.stdout)
 
 
