@@ -91,7 +91,7 @@ def sendChesEmail(to: str, body: str):
             "encoding": "utf-8",
             "from": "bcgov.sso@gov.bc.ca",
             "priority": "normal",
-            "to": [to],
+            "to": to.split(','),
             "subject": f"The {namespace} switchover agent detected a change.",
         }
         headers = {"Authorization": f"Bearer {access_token}"}
