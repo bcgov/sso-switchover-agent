@@ -83,4 +83,4 @@ CHES_PASSWORD
 LOG_EMAIL
 ```
 
-The credentials are stored with the team secrets and the `LOG_EMAIL` is a comment separated list for the accounts we want these logs sent to.
+The credentials are stored with the team secrets and the `LOG_EMAIL` is a comma separated list for the accounts we want these logs sent to.
