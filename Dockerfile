@@ -1,10 +1,10 @@
-FROM python:3.8.6-alpine
+FROM python:3.12.6-alpine3.19
 
 WORKDIR /app
 
 RUN python -m pip install --upgrade pip
 
-ARG POETRY_VERSION=1.2.0
+ARG POETRY_VERSION=1.8.3
 
 RUN apk add --no-cache \
         curl \

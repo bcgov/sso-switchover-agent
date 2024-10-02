@@ -71,3 +71,16 @@ Then every minute a log will be output describing the state of the failover coun
 ```
 
 Pairing this with a couple of DNS checking Uptime alerts will give the team the confidence to schedule a preemptive failover for the loginproxy app.
+
+## CHES log integration
+
+To persist the events the switchover agent records, we have integrated it with the CHES email server.  There are four environment varibles that must be set for this to work:
+
+```
+CHES_TOKEN_ENDPOINT
+CHES_USERNAME
+CHES_PASSWORD
+LOG_EMAIL
+```
+
+The credentials are stored with the team secrets and the `LOG_EMAIL` is a comma separated list for the accounts we want these logs sent to.

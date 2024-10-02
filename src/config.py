@@ -29,5 +29,10 @@ config = dict(
     enable_gold_route_workflow_id=os.environ.get("ENABLE_GOLD_ROUTE_WORKFLOW_ID", "turn-off-gold-routing.yml"),
     uptime_status_api="https://uptime.com/api/v1/statuspages/",
     uptime_status_page_id=os.environ.get("UPTIME_STATUS_PAGE_ID", ""),
-    uptime_status_token=os.environ.get("UPTIME_STATUS_TOKEN", "")
+    uptime_status_token=os.environ.get("UPTIME_STATUS_TOKEN", ""),
+    ches_api_endpoint="https://ches.api.gov.bc.ca/api/v1/email",
+    ches_token_endpoint=os.environ.get("CHES_TOKEN_ENDPOINT", ""),
+    ches_username=os.environ.get("CHES_USERNAME", ""),
+    ches_password=os.environ.get("CHES_PASSWORD", ""),
+    log_email=os.environ.get("LOG_EMAIL", "")
 )
