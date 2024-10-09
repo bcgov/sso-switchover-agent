@@ -2,9 +2,9 @@
 
 ## Steps
  - Create the iStore Request for a new cert
- - Generate the cert singing request in the `./env/<<namepace>>/` folder.
+ - Generate the cert singing request in the `./env/<<namepace>>/` folder. Submit to iStore and wait for certificates to be issued.
  - Create the Openshift Secret from those values in Gold and GoldDR
- - Run the bash script `update_ssl_cert.sh` to upgrade the certs.
+ - Run the bash script `update_route_credentials.sh` to upgrade the certs.
 
 ## Create the iStore Request for a new cert
 
@@ -33,7 +33,7 @@ In certain cases a single cert is used for multiple environments.  In that case 
 
 The make ssl secret script will create the secrets
 
-Log into the Gold cluster and run the `sso-switchover-agent/transition-scripts/update_route_credentials.sh` script.
+Log into the Gold cluster and run the `make_ssl_secret.sh` script.
 
 `./make_ssl_secret.sh <<NAMESPACE>> <<YEAR>>`
 
@@ -41,7 +41,7 @@ Log into the GoldDR cluster and repeat.
 
 `./make_ssl_secret.sh <<NAMESPACE>> <<YEAR>>`
 
-This script will create a secret with name `loginproxy-ssl-cert-secret.<<year>>`.  It will error out if that secret with that name already exists.
+This script will create a secret with name `loginproxy-ssl-cert-secret.<<year>>`.  It will error out if a secret with that name already exists.
 
 ## Run the script to update the cert values
 
@@ -51,7 +51,7 @@ In GoldDR, run:
 
 `./update_route_credentials.sh <<namespace>> golddr year`
 
-The previous script may cert change may not take place imediately.  Check that the cert expiry date has updated by running the folowing script:
+The certificate may not update imediately.  To check that the cert expiry date has updated, run the folowing script:
 
 `./check_endpoint_health.sh <<namespace>> golddr`
 
@@ -59,7 +59,7 @@ The last line of output will be the date the certificate expires on.  It should 
 
 ### Gold
 
-Once the GoldDR route is confimed up and healthy
+Once the GoldDR route is confimed up and healthy, log into the Gold cluster and run:
 
 `./update_route_credentials.sh <<namespace>> gold year`
 
