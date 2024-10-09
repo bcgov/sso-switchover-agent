@@ -155,6 +155,34 @@ get_vanity_route_name() {
 
 }
 
+get_vanity_url() {
+  if [ "$#" -lt 1 ]; then exit 1; fi
+
+  namespace="$1"
+  if [ "$namespace" = "e4ca1d-dev" ]
+  then
+    KEYCLOAK_URL="dev.sandbox.loginproxy.gov.bc.ca"
+  elif [ "$namespace" = "e4ca1d-test" ]
+  then
+    KEYCLOAK_URL="test.sandbox.loginproxy.gov.bc.ca"
+  elif [ "$namespace" = "e4ca1d-prod" ]
+  then
+    KEYCLOAK_URL="sandbox.loginproxy.gov.bc.ca"
+  elif [ "$namespace" = "eb75ad-dev" ]
+  then
+    KEYCLOAK_URL="dev.loginproxy.gov.bc.ca"
+  elif [ "$namespace" = "eb75ad-test" ]
+  then
+    KEYCLOAK_URL="test.loginproxy.gov.bc.ca"
+  elif [ "$namespace" = "eb75ad-prod" ]
+  then
+    KEYCLOAK_URL="loginproxy.gov.bc.ca"
+  fi
+
+  echo $KEYCLOAK_URL
+
+}
+
 connect_route_to_correct_service() {
   if [ "$#" -lt 2 ]; then exit 1; fi
 
