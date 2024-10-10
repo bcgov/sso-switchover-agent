@@ -39,8 +39,6 @@ cluster=$2
 pwd="$(dirname "$0")"
 source "$pwd/../transition-scripts/helpers/_all.sh"
 
-check_ocp_cluster "$cluster"
-
 
 KEYCLOAK_URL=$(get_vanity_url "$namespace")
 
