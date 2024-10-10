@@ -31,7 +31,6 @@ In certain cases a single cert is used for multiple environments.  In that case 
 
 ## Run the script to update the cert values
 
-<!-- TODO: do we want to do the gold change first so that we have a GoldDR safety net?-->
 ### GoldDR
 In GoldDR, run:
 
