@@ -63,6 +63,13 @@ check_ssl_cert_expiration() {
     --stderr - | grep "expire date"
 }
 
+# Create a secret in openshift for the current year (will error out if the secret already exists)
+oc -n "$namespace" create secret generic loginproxy-ssl-cert-secret."$year" \
+ --from-file=private-key=.env/"$namespace"/loginproxy.key \
+ --from-file=certificate=.env/"$namespace"/loginproxy.txt \
+ --from-file=csr=.env/"$namespace"/loginproxy.csr \
+ --from-file=ca-chain-certificate=.env/"$namespace"/L1K-for-certs.txt \
+ --from-file=ca-root-certifcate=.env/"$namespace"/L1K-root-for-certs-G2.txt
 
 
 # Get the current certificate expiration date

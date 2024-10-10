@@ -1,9 +1,8 @@
 # The SSL Cert renewal process.
 
 ## Steps
- - Create the iStore Request for a new cert
- - Generate the cert singing request in the `./env/<<namepace>>/` folder. Submit to iStore and wait for certificates to be issued.
- - Create the Openshift Secret from those values in Gold and GoldDR
+ - Create the myservice request for a new cert
+ - Generate the cert singing request in the `./env/<<namepace>>/` folder. Submit to myservice and wait for certificates to be issued.
  - Run the bash script `update_route_credentials.sh` to upgrade the certs.
 
 ## Create the iStore Request for a new cert
@@ -25,23 +24,10 @@ loginproxy.key
 loginproxy.txt
 ```
 
-They can be stored locally in the untracked folders `./env/<<namepace>>/`.  Once the secret is generated, it can be used by the `update_route_credentials.sh` script to update the Route objects.
+They can be stored locally in the untracked folders `./env/<<namepace>>/`.  Once the certs are generated, they can can be used by the `update_route_credentials.sh` script to update the Route objects.
 
 In certain cases a single cert is used for multiple environments.  In that case a copy of the secrets must be saved in each environment's namespace folder.
 
-## Create an openshift secret with these new values
-
-The make ssl secret script will create the secrets
-
-Log into the Gold cluster and run the `make_ssl_secret.sh` script.
-
-`./make_ssl_secret.sh <<NAMESPACE>> <<YEAR>>`
-
-Log into the GoldDR cluster and repeat.
-
-`./make_ssl_secret.sh <<NAMESPACE>> <<YEAR>>`
-
-This script will create a secret with name `loginproxy-ssl-cert-secret.<<year>>`.  It will error out if a secret with that name already exists.
 
 ## Run the script to update the cert values
 
@@ -50,6 +36,8 @@ This script will create a secret with name `loginproxy-ssl-cert-secret.<<year>>`
 In GoldDR, run:
 
 `./update_route_credentials.sh <<namespace>> golddr year`
+
+This script will create a secret with name `loginproxy-ssl-cert-secret.<<year>>` in the GoldDR namespace.  It will error out if a secret with that name already exists.
 
 The certificate may not update imediately.  To check that the cert expiry date has updated, run the folowing script:
 
