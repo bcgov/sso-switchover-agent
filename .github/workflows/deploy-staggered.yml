@@ -68,7 +68,7 @@ jobs:
           ./check-endpoint-health.sh $NAMESPACE golddr
         working-directory: transition-scripts
 
-      - name: Run transition script
+      - name: Deploy Keycloak in Gold cluster
         run: |
           echo "Redeploy the Keycloak app in gold cluster $NAMESPACE namespace."
           chmod +x ./deploy-by-cluster.sh
