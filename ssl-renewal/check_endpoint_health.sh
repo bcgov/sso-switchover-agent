@@ -52,10 +52,10 @@ else
     exit 1
 fi
 
-curl -Iv --resolve "$KEYCLOAK_URL":443:"$IP" -H '"Host:'"$KEYCLOAK_URL"'"' \
+curl -Iv --resolve "$KEYCLOAK_URL":443:"$IP" -H \'Host:"$KEYCLOAK_URL"\' \
 https://"$KEYCLOAK_URL"/auth/realms/master/.well-known/openid-configuration
 
 
-curl -Iv --resolve "$KEYCLOAK_URL":443:"$IP" -H '"Host:'"$KEYCLOAK_URL"'"' \
+curl -Iv --resolve "$KEYCLOAK_URL":443:"$IP" -H \'Host:"$KEYCLOAK_URL"\' \
 https://"$KEYCLOAK_URL"/auth/realms/master/.well-known/openid-configuration  \
 --stderr - | grep "expire date"
