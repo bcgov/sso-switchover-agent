@@ -51,8 +51,18 @@ jobs:
       - name: Checkout current branch
         uses: actions/checkout@v4
 
+      - name: Login Openshift Gold & Golddr
+        uses: ./.github/actions/oc-login
+        with:
+          namespace: $NAMESPACE
+          oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
+          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
+          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+
       - name: Confirm GoldDR Endpoint is passing
         run: |
+          echo "Confirm the GoldDR Endpoint is passing"
           echo "Running on the $NAMESPACE namespace"
           chmod +x ./check-endpoint-health.sh
           ./check-endpoint-health.sh $NAMESPACE golddr
@@ -60,7 +70,7 @@ jobs:
 
       - name: Run transition script
         run: |
-          echo "Running on the $NAMESPACE namespace"
+          echo "Redeploy the Keycloak app in gold cluster $NAMESPACE namespace."
           chmod +x ./deploy-by-cluster.sh
           ./deploy-by-cluster.sh $NAMESPACE gold
         working-directory: transition-scripts
