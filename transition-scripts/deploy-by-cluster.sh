@@ -7,7 +7,7 @@ Deploy Keycloak resources in the target namespaces in a normal situation;
 it sets "active" mode in Gold cluster and "standby" mode in Golddr cluster.
 
 Usages:
-    $0 <namespace>
+    $0 <namespace> <cluster>
 
 Available namespaces:
     - e4ca1d-dev
@@ -18,65 +18,32 @@ Available namespaces:
     - eb75ad-prod
 
 Examples:
-    $ $0 e4ca1d-dev
+    $ $0 e4ca1d-dev gold
 EOF
 }
 
-if [ "$#" -lt 1 ]; then
+if [ "$#" -lt 2 ]; then
     usage
     exit 1
 fi
 
 namespace=$1
-purge="false"
+cluster=$2
 
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
-while [[ "$2" =~ ^- && ! "$2" == "--" ]]; do
-    case $2 in
-    -p | --purge)
-        purge="true"
-        ;;
-    esac
-    shift
-done
 
-# Gold deployments
-switch_kube_context "gold" "$namespace"
-check_ocp_cluster "gold"
+# Cluster deployments
+switch_kube_context "$cluster" "$namespace"
+check_ocp_cluster "$cluster"
 
 helm_released=$(check_helm_release "$namespace" "sso-keycloak")
 if [ "$helm_released" == "found" ]; then
-    if [ "$purge" == "true" ]; then
-        uninstall_helm "$namespace"
-        cleanup_namespace "$namespace"
-    else
-        set_patroni_cluster_active "$namespace"
-    fi
+    set_patroni_cluster_active "$namespace"
 fi
 
 upgrade_helm_active "$namespace"
 
 wait_for_patroni_healthy "$namespace"
 wait_for_patroni_all_ready "$namespace"
-
-# Golddr deployments
-switch_kube_context "golddr" "$namespace"
-check_ocp_cluster "golddr"
-
-helm_released=$(check_helm_release "$namespace" "sso-keycloak")
-if [ "$helm_released" == "found" ]; then
-    if [ "$purge" == "true" ]; then
-        uninstall_helm "$namespace"
-        cleanup_namespace "$namespace"
-    else
-        set_patroni_cluster_standby "$namespace"
-    fi
-fi
-
-upgrade_helm_standby "$namespace" --maintenance-on
-
-wait_for_patroni_healthy "$namespace"
-wait_for_patroni_all_ready "$namespace"
-wait_for_patroni_xlog_synced "$namespace"
