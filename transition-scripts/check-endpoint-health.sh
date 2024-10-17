@@ -57,7 +57,7 @@ wait_for_keycloak_up() {
   count=0
 
   wait_for_keycloak() {
-    response=$(curl -I --resolve "$KEYCLOAK_URL":443:"$IP" -H 'Host:dev.sandbox.loginproxy.gov.bc.ca' \
+    response=$(curl -I --resolve "$KEYCLOAK_URL":443:"$IP" -H \'Host:"$KEYCLOAK_URL"\' \
     https://"$KEYCLOAK_URL"/auth/realms/master/.well-known/openid-configuration)
 
     echo "The status code is"
@@ -65,7 +65,7 @@ wait_for_keycloak_up() {
 
     if [ "$status_code" = "200" ]; then
         echo "Status code 200"
-        json_response=$(curl --resolve "$KEYCLOAK_URL":443:"$IP" -H 'Host:dev.sandbox.loginproxy.gov.bc.ca' \
+        json_response=$(curl --resolve "$KEYCLOAK_URL":443:"$IP" -H \'Host:"$KEYCLOAK_URL"\' \
         https://"$KEYCLOAK_URL"/auth/realms/master/.well-known/openid-configuration)
 
         if echo "$json_response" | jq empty 2>/dev/null; then
