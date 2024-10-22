@@ -44,8 +44,8 @@ upgrade_helm_active() {
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
 
-  echo "THIS GOT CALLED IS KEYCLOAK HEALTH CHECK FAILING YET"
-
+  echo "THIS GOT CALLED IS KEYCLOAK HEALTH CHECK FAILING YET helm active"
+  echo "The maintenance mode is $maintenance"
   connect_route_to_correct_service "$maintenance" "$namespace"
 }
 
@@ -95,8 +95,8 @@ upgrade_helm_standby() {
     --set patroni.additionalCredentials[0].password="$password_appuser1" \
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
-  echo "THIS GOT CALLED IS KEYCLOAK HEALTH CHECK FAILING YET"
-
+  echo "THIS GOT CALLED IS KEYCLOAK HEALTH CHECK FAILING YET helmstandby"
+  echo "The maintenance mode is $maintenance"
   connect_route_to_correct_service "$maintenance" "$namespace"
 }
 
