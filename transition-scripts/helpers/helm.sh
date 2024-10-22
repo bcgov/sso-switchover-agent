@@ -39,9 +39,19 @@ upgrade_helm_active() {
     esac
     shift
   done
+  # TODO SET ENABLED TO ACTIVE IF IN THE GOLDDR CLUSTER
+  current_cluster=$(get_current_cluster)
+  # The golddr maintenance page should remain active at all times
+  if [[ "$current_cluster" == "golddr" ]]; then
+    echo "IN GOLDDR CLUSTER"
+    maintenance_enabled="true"
+  else
+    echo "IN GOLD"
+    maintenance_enabled="$maintenance"
+  fi
 
   upgrade_helm "$namespace" "active" \
-    --set maintenancePage.enabled="$maintenance" \
+    --set maintenancePage.enabled="$maintenance_enabled" \
     --set maintenancePage.active="$maintenance"
 
   echo "THIS GOT CALLED IS KEYCLOAK HEALTH CHECK FAILING YET helm active"
