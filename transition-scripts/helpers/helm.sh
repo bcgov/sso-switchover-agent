@@ -39,14 +39,12 @@ upgrade_helm_active() {
     esac
     shift
   done
-  # TODO SET ENABLED TO ACTIVE IF IN THE GOLDDR CLUSTER
   current_cluster=$(get_current_cluster)
-  # The golddr maintenance page should remain active at all times
+
+  # The golddr maintenance page should remain enabled at all times
   if [[ "$current_cluster" == "golddr" ]]; then
-    echo "IN GOLDDR CLUSTER"
     maintenance_enabled="true"
   else
-    echo "IN GOLD"
     maintenance_enabled="$maintenance"
   fi
 
@@ -54,8 +52,6 @@ upgrade_helm_active() {
     --set maintenancePage.enabled="$maintenance_enabled" \
     --set maintenancePage.active="$maintenance"
 
-  echo "THIS GOT CALLED IS KEYCLOAK HEALTH CHECK FAILING YET helm active"
-  echo "The maintenance mode is $maintenance"
   connect_route_to_correct_service "$maintenance" "$namespace"
 }
 
@@ -105,8 +101,7 @@ upgrade_helm_standby() {
     --set patroni.additionalCredentials[0].password="$password_appuser1" \
     --set maintenancePage.enabled="$maintenance" \
     --set maintenancePage.active="$maintenance"
-  echo "THIS GOT CALLED IS KEYCLOAK HEALTH CHECK FAILING YET helmstandby"
-  echo "The maintenance mode is $maintenance"
+
   connect_route_to_correct_service "$maintenance" "$namespace"
 }
 
