@@ -26,6 +26,9 @@ resources:
   limits:
     cpu: 4
 
+maintenancePage:
+  enabled: true
+
 persistentLog:
   size: 15Gi
 

@@ -39,9 +39,17 @@ upgrade_helm_active() {
     esac
     shift
   done
+  current_cluster=$(get_current_cluster)
+
+  # The golddr maintenance page should remain enabled at all times
+  if [[ "$current_cluster" == "golddr" ]]; then
+    maintenance_enabled="true"
+  else
+    maintenance_enabled="$maintenance"
+  fi
 
   upgrade_helm "$namespace" "active" \
-    --set maintenancePage.enabled="$maintenance" \
+    --set maintenancePage.enabled="$maintenance_enabled" \
     --set maintenancePage.active="$maintenance"
 
   connect_route_to_correct_service "$maintenance" "$namespace"
