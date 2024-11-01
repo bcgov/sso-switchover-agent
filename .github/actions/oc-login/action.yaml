@@ -28,6 +28,12 @@ runs:
         insecure_skip_tls_verify: true
       continue-on-error: true
 
+    - name: Enable or Disable Gold Route
+      run: |
+        echo "Did this raise the error"
+        oc whoami
+        echo "end of statement"
+
     - name: Login Golddr
       uses: redhat-actions/oc-login@v1
       with:
