@@ -45,6 +45,9 @@ jobs:
       - name: Enable or Disable Gold Route
         run: |
           echo "Running on the $NAMESPACE namespace"
+          echo "Run a test oc command"
+          oc whoami
+          echo "Done the test oc command"
           chmod +x ./enable-disable-gold-route.sh
           ./enable-disable-gold-route.sh $NAMESPACE ${{ github.event.inputs.action }}
         working-directory: transition-scripts
