@@ -23,9 +23,9 @@ extraEnvs:
   #   value: https://sso-keycloak-eb75ad-test.apps.gold.devops.gov.bc.ca/auth/
   ## Enable access logs
   - name: QUARKUS_HTTP_ACCESS_LOG_ENABLED
-    value: true
+    value: "true"
   - name: QUARKUS_HTTP_RECORD_REQUEST_START_TIME
-    value: true
+    value: "true"
 
 resources:
   limits:
