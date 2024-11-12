@@ -21,11 +21,6 @@ extraEnvs:
   #   value: https://sso-keycloak-eb75ad-test.apps.gold.devops.gov.bc.ca/auth/
   # - name: KC_HOSTNAME_ADMIN_URL
   #   value: https://sso-keycloak-eb75ad-test.apps.gold.devops.gov.bc.ca/auth/
-  ## Enable access logs
-  - name: QUARKUS_HTTP_ACCESS_LOG_ENABLED
-    value: "true"
-  - name: QUARKUS_HTTP_RECORD_REQUEST_START_TIME
-    value: "true"
 
 resources:
   limits:
