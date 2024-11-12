@@ -1,0 +1,20 @@
+# Run the following command to (re)generate a CSR
+# openssl req -new -sha256 -nodes \
+# -out ./.env/<<NAMESPACE>>/loginproxy.csr -newkey rsa:2048 \
+# -keyout ./.env/<<NAMESPACE>>/loginproxy.key \
+# -config <(cat csr_details_oidc.txt)
+
+[req]
+default_bits=2048
+prompt=no
+default_md=sha256
+distinguished_name=dn
+
+[dn]
+C=CA
+ST=British Columbia
+L=Victoria
+O=Government of the Province of British Columbia
+OU=Citizens' Services
+CN=<<ENV>>.loginproxy.gov.bc.ca
+emailAddress=<<EMAIL_ADDRESS>>@gov.bc.ca

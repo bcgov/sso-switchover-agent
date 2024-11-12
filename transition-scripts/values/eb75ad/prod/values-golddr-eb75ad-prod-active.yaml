@@ -28,6 +28,9 @@ resources:
   requests:
     cpu: 150m
 
+maintenancePage:
+  enabled: true
+
 persistentLog:
   size: 20Gi
 

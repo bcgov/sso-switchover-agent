@@ -4,7 +4,7 @@ this="${BASH_SOURCE[0]}"
 pwd=$(dirname "$this")
 values="$pwd/../values"
 
-KEYCLOAK_HELM_CHART_VERSION="v1.16.0"
+KEYCLOAK_HELM_CHART_VERSION="v1.16.1"
 KEYCLOAK_HELM_DEPLOYMENT_NAME="sso-keycloak"
 
 upgrade_helm() {
@@ -39,9 +39,17 @@ upgrade_helm_active() {
     esac
     shift
   done
+  current_cluster=$(get_current_cluster)
+
+  # The golddr maintenance page should remain enabled at all times
+  if [[ "$current_cluster" == "golddr" ]]; then
+    maintenance_enabled="true"
+  else
+    maintenance_enabled="$maintenance"
+  fi
 
   upgrade_helm "$namespace" "active" \
-    --set maintenancePage.enabled="$maintenance" \
+    --set maintenancePage.enabled="$maintenance_enabled" \
     --set maintenancePage.active="$maintenance"
 
   connect_route_to_correct_service "$maintenance" "$namespace"
@@ -152,6 +160,34 @@ get_vanity_route_name() {
   fi
 
   echo $KEYCLOAK_ROUTE
+
+}
+
+get_vanity_url() {
+  if [ "$#" -lt 1 ]; then exit 1; fi
+
+  namespace="$1"
+  if [ "$namespace" = "e4ca1d-dev" ]
+  then
+    KEYCLOAK_URL="dev.sandbox.loginproxy.gov.bc.ca"
+  elif [ "$namespace" = "e4ca1d-test" ]
+  then
+    KEYCLOAK_URL="test.sandbox.loginproxy.gov.bc.ca"
+  elif [ "$namespace" = "e4ca1d-prod" ]
+  then
+    KEYCLOAK_URL="sandbox.loginproxy.gov.bc.ca"
+  elif [ "$namespace" = "eb75ad-dev" ]
+  then
+    KEYCLOAK_URL="dev.loginproxy.gov.bc.ca"
+  elif [ "$namespace" = "eb75ad-test" ]
+  then
+    KEYCLOAK_URL="test.loginproxy.gov.bc.ca"
+  elif [ "$namespace" = "eb75ad-prod" ]
+  then
+    KEYCLOAK_URL="loginproxy.gov.bc.ca"
+  fi
+
+  echo $KEYCLOAK_URL
 
 }
 
