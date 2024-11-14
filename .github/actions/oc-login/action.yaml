@@ -27,19 +27,12 @@ runs:
         namespace: ${{ inputs.namespace }}
         insecure_skip_tls_verify: true
       continue-on-error: true
-    - name: Run who am i
-      run: |
-        echo "Running on the ${{ inputs.namespace }} namespace"
-        echo "Run a test oc command"
-        sleep 10
-        oc whoami
-        echo "Done the test oc command"
 
-    # - name: Login Golddr
-    #   uses: redhat-actions/oc-login@v1
-    #   with:
-    #     openshift_server_url: ${{ inputs.oc-server-golddr }}
-    #     openshift_token: ${{ inputs.oc-token-golddr }}
-    #     namespace: ${{ inputs.namespace }}
-    #     insecure_skip_tls_verify: true
-    #   continue-on-error: true
+    - name: Login Golddr
+      uses: redhat-actions/oc-login@v1
+      with:
+        openshift_server_url: ${{ inputs.oc-server-golddr }}
+        openshift_token: ${{ inputs.oc-token-golddr }}
+        namespace: ${{ inputs.namespace }}
+        insecure_skip_tls_verify: true
+      continue-on-error: true
