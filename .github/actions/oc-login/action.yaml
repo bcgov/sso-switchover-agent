@@ -28,11 +28,11 @@ runs:
         insecure_skip_tls_verify: true
       continue-on-error: true
 
-    - name: Login Golddr
-      uses: redhat-actions/oc-login@v1
-      with:
-        openshift_server_url: ${{ inputs.oc-server-golddr }}
-        openshift_token: ${{ inputs.oc-token-golddr }}
-        namespace: ${{ inputs.namespace }}
-        insecure_skip_tls_verify: true
-      continue-on-error: true
+    # - name: Login Golddr
+    #   uses: redhat-actions/oc-login@v1
+    #   with:
+    #     openshift_server_url: ${{ inputs.oc-server-golddr }}
+    #     openshift_token: ${{ inputs.oc-token-golddr }}
+    #     namespace: ${{ inputs.namespace }}
+    #     insecure_skip_tls_verify: true
+    #   continue-on-error: true
