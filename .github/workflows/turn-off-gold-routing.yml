@@ -39,7 +39,7 @@ jobs:
         with:
           namespace: $NAMESPACE
           oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
-          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-token-gold: ${{ secrets.GOLD_SANDBOX_TESTING_TOKEN_DEFAULT_GENERATED }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
           oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
       
