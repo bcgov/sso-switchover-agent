@@ -4,6 +4,9 @@
 
 Switchover Agent in the Disaster Recovery Scenario between Gold &amp; Golddr. The workflow is heavily inspired by `API Gateway Team`'s [Switchover Agent](https://github.com/bcgov/switchover-agent).
 
+## Pipeline
+
+The current pipeline documentation for using this repos to deploy the Keycloak app is documented in the private discussion [here](https://github.com/bcgov-c/pathfinder-sso-docs/discussions/201).
 ## Using switchover agent as a deployment tool.
 
 In addition to the disaster recovery (switchover) agent, the keycloak deployment in gold is managed through the scripts in this repo. The deployment can be triggered in a local dev environment using [this](./transition-scripts/deploy.sh) script, or using the "Deploy Keycloak resources in Gold & Golddr" action in the github repo.
@@ -139,11 +142,20 @@ As a common step, please check the version of the Keycloak Helm chart to ensure 
 ### deploy.sh
 
 It deployes Keycloak resources in the target namespaces in a normal situation and sets "active" mode in Gold cluster and "standby" mode in Golddr cluster.
-It upgrades the current Helm deployments if there are existing Helm deployments, otherwise it installs them.
+It upgrades the current Helm deployments if there are existing Helm deployments, otherwise it installs them. **Note: This will deploy both Gold and GoldDR in the same script. This is no longer the deployment pattern the team has decided to use.**
 
 ```sh
 cd transition-scripts
 deploy.sh <namespace>
+```
+
+### deploy-by-cluster.sh
+
+This will deploy the Keycloak application in a single cluster in it's active starte.  It is run using the command:
+
+```sh
+cd transition-scripts
+deploy-by-cluster.sh <namespace> <cluster>
 ```
 
 ### destroy.sh

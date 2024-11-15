@@ -1,0 +1,76 @@
+name: Staggered Gold Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: "The target project"
+        type: choice
+        required: true
+        options: ["SANDBOX", "PRODUCTION" ]
+        default: "SANDBOX"
+      environment:
+        description: "env to deploy"
+        type: choice
+        options: ["dev","test","prod"]
+        default: "dev"
+
+jobs:
+  transition-scripts:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+
+      - name: Check out the main-dr branch
+        uses: actions/checkout@v4
+        with:
+          ref: main-dr
+
+      - name: Set the deployment namespace
+        run: |
+          chmod +x ./namespace-setter.sh
+          ./namespace-setter.sh ${{ github.event.inputs.project }} ${{ github.event.inputs.environment }}
+        working-directory: .github/helpers
+
+      - name: Login Openshift Gold & Golddr
+        uses: ./.github/actions/oc-login
+        with:
+          namespace: $NAMESPACE
+          oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
+          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
+          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+
+      - name: Set DR to active using main-dr branch
+        run: |
+          echo "Running on the $NAMESPACE namespace"
+          chmod +x ./switch-to-golddr.sh
+          ./switch-to-golddr.sh $NAMESPACE
+        working-directory: transition-scripts
+
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+
+      - name: Login Openshift Gold & Golddr
+        uses: ./.github/actions/oc-login
+        with:
+          namespace: $NAMESPACE
+          oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
+          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
+          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+
+      - name: Confirm GoldDR Endpoint is passing
+        run: |
+          echo "Confirm the GoldDR Endpoint is passing"
+          echo "Running on the $NAMESPACE namespace"
+          chmod +x ./check-endpoint-health.sh
+          ./check-endpoint-health.sh $NAMESPACE golddr
+        working-directory: transition-scripts
+
+      - name: Deploy Keycloak in Gold cluster
+        run: |
+          echo "Redeploy the Keycloak app in gold cluster $NAMESPACE namespace."
+          chmod +x ./deploy-by-cluster.sh
+          ./deploy-by-cluster.sh $NAMESPACE gold
+        working-directory: transition-scripts
