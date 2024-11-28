@@ -14,6 +14,9 @@ on:
         type: choice
         options: ["dev","test","prod"]
         default: "dev"
+      token_name:
+        type: string
+        default: "OPENSHIFT_TOKEN"
 
 jobs:
   transition-scripts:
@@ -31,9 +34,9 @@ jobs:
         with:
           namespace: $NAMESPACE
           oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
-          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-token-gold: ${{ secrets[format('{0}_GOLD', github.event.inputs.token_name)] }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
-          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+          oc-token-golddr: ${{ secrets[format('{0}_GOLDDR', github.event.inputs.token_name)] }}
 
       - name: Run transition script
         run: |
