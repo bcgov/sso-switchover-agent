@@ -34,9 +34,9 @@ jobs:
         with:
           namespace: $NAMESPACE
           oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
-          oc-token-gold: ${{ secrets[format('{0}_GOLD', github.event.inputs.token_name)] }}
+          oc-token-gold: ${{ secrets[format('OPENSHIFT_TOKEN_GOLD_{0}', github.event.inputs.project)] }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
-          oc-token-golddr: ${{ secrets[format('{0}_GOLDDR', github.event.inputs.token_name)] }}
+          oc-token-golddr: ${{ secrets[format('OPENSHIFT_TOKEN_GOLDDR_{0}', github.event.inputs.project)] }}
 
       - name: Run transition script
         run: |
