@@ -14,9 +14,6 @@ on:
         type: choice
         options: ["dev","test","prod"]
         default: "dev"
-      token_name:
-        type: string
-        default: "OPENSHIFT_TOKEN"
 
 jobs:
   transition-scripts:
