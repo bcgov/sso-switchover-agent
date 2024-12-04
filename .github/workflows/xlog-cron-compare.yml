@@ -14,7 +14,7 @@ jobs:
       - name: Login Openshift Gold & Golddr
         uses: ./.github/actions/oc-login
         with:
-          namespace: $NAMESPACE
+          namespace: ${{ github.event.inputs.namespace }}
           oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
           oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD_SANDBOX }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
