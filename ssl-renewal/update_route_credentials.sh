@@ -63,13 +63,19 @@ check_ssl_cert_expiration() {
     --stderr - | grep "expire date"
 }
 
+
+
+
 # Create a secret in openshift for the current year (will error out if the secret already exists)
 oc -n "$namespace" create secret generic loginproxy-ssl-cert-secret."$year" \
  --from-file=private-key=.env/"$namespace"/loginproxy.key \
- --from-file=certificate=.env/"$namespace"/loginproxy.txt \
+ --from-file=certificate=.env/"$namespace"/"$KEYCLOAK_URL".txt \
  --from-file=csr=.env/"$namespace"/loginproxy.csr \
- --from-file=ca-chain-certificate=.env/"$namespace"/L1K-for-certs.txt \
- --from-file=ca-root-certifcate=.env/"$namespace"/L1K-root-for-certs-G2.txt
+ --from-file=TLSChain=.env/"$namespace"/TLSChain.txt \
+ --from-file=TLSRoot=.env/"$namespace"/TLSRoot.txt \
+ --from-file=TrustedRoot=.env/"$namespace"/TrustedRoot.txt
+#  --from-file=ca-chain-certificate=.env/"$namespace"/L1K-for-certs.txt \
+#  --from-file=ca-root-certifcate=.env/"$namespace"/L1K-root-for-certs-G2.txt
 
 
 # Get the current certificate expiration date
@@ -83,7 +89,7 @@ key=$(echo -e "$keyEncoded" | base64 --decode | sed ':a;N;$!ba;s/\n/\\n/g')
 certificateEncoded=$(kubectl -n "$namespace" get secret loginproxy-ssl-cert-secret."$year" -o jsonpath='{.data.certificate}')
 certificate=$(echo -e "$certificateEncoded" | base64 --decode | sed ':a;N;$!ba;s/\n/\\n/g')
 
-caCertificateEncoded=$(kubectl -n "$namespace" get secret loginproxy-ssl-cert-secret."$year" -o jsonpath='{.data.ca-chain-certificate}')
+caCertificateEncoded=$(kubectl -n "$namespace" get secret loginproxy-ssl-cert-secret."$year" -o jsonpath='{.data.TLSChain}')
 caCertificate=$(echo -e "$caCertificateEncoded" | base64 --decode | sed ':a;N;$!ba;s/\n/\\n/g')
 
 # Creatre a backup of the old route in case something goes wrong, append to file on multiple runs
