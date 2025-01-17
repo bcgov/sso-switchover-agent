@@ -53,6 +53,3 @@ patroni:
     requests:
       cpu: 50m
       memory: 1.5Gi
-
-rollingUpdate:
-  maxSurge: 1
