@@ -58,7 +58,6 @@ readinessProbe:
   failureThreshold: 16
 
 rollingUpdate:
-  maxSurge: "100%"
   maxUnavailable: 0
 
 patroni:
