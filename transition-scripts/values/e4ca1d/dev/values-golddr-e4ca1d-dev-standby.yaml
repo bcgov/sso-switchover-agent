@@ -40,3 +40,11 @@ patroni:
 
   transportServerClaim:
     enabled: false
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 4Gi
+    requests:
+      cpu: 50m
+      memory: 2.5Gi
