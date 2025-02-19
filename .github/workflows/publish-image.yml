@@ -20,7 +20,7 @@ env:
 jobs:
   build-and-push-image:
     permissions: write-all
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     outputs:
       release_tag: ${{ steps.get-tag.outputs.release_tag }}
     steps:
@@ -90,7 +90,7 @@ jobs:
       matrix:
         license: [e4ca1d, eb75ad]
         env: [dev, test, prod]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
