@@ -96,7 +96,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Authenticate and set context
+      - name: Authenticate and set sandbox context
         if: (endsWith(github.ref, '/dev') && matrix.license == 'e4ca1d')
         uses: redhat-actions/oc-login@v1
         with:
@@ -105,7 +105,7 @@ jobs:
           namespace: ${{ matrix.license }}-${{ matrix.env }}
           insecure_skip_tls_verify: true
 
-      - name: Deploy app with Helm chart
+      - name: Deploy sandbox app with Helm chart
         if: (endsWith(github.ref, '/dev') && matrix.license == 'e4ca1d')
         run: |
           namespace=${{ matrix.license }}-${{ matrix.env }}
@@ -114,7 +114,7 @@ jobs:
           -f values.yaml -f "values-${{ matrix.license }}.yaml" --set image.tag="${{ needs.build-and-push-image.outputs.release_tag }}"
         working-directory: ./helm
 
-      - name: Authenticate and set context
+      - name: Authenticate and set production context
         if: (endsWith(github.ref, '/main') && matrix.license == 'eb75ad')
         uses: redhat-actions/oc-login@v1
         with:
@@ -123,7 +123,7 @@ jobs:
           namespace: ${{ matrix.license }}-${{ matrix.env }}
           insecure_skip_tls_verify: true
 
-      - name: Deploy app with Helm chart
+      - name: Deploy production app with Helm chart
         if: (endsWith(github.ref, '/main') && matrix.license == 'eb75ad')
         run: |
           namespace=${{ matrix.license }}-${{ matrix.env }}
