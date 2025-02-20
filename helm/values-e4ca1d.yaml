@@ -2,3 +2,4 @@ replicaCount: 1
 
 image:
     tag: dev
+    pullPolicy: Always
