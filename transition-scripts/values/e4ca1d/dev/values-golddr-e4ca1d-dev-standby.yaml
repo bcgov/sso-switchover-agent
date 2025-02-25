@@ -28,6 +28,8 @@ resources:
 maintenancePage:
   enabled: true
   active: true
+  image:
+    tag: testtag
 
 patroni:
   replicaCount: 3
