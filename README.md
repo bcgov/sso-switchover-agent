@@ -72,11 +72,11 @@ As with most sso team repos the switchover agent uses the asdf tool for local pa
 
 For the switchover scripts to work the user must provide service credentials for both Gold and GoldDr.  To set this up locally, copy the `.env-example` file in the `transition-scripts` folder and rename it `.env`.
 
-To retrieve the tokens, log into the Gold cluster and retrieve one of the `oc-sso-deployer-token` tokens:
+To retrieve the tokens, log into the Gold cluster and retrieve the `sso-action-deployer-######-token` token.  The `######` is the licence plate for the production or sandbox namespaces:
 
 ```
-oc -n <<prod production namespace>> get secrets | grep oc-sso-deployer-token
-oc -n <<prod production namespace>> get secrets/oc-sso-deployer-token-##### --template="{{.data.token|base64decode}}"
+oc -n <<prod production/sandbox namespace>> get secrets | grep sso-action-deployer-######-token
+oc -n <<prod production/sandbox namespace>> get secrets/sso-action-deployer-######-token-##### --template="{{.data.token|base64decode}}"
 ```
 
 Repeat for the GoldDR cluster.
@@ -124,7 +124,7 @@ kubectl config get-contexts
 kubectl config delete-context <<CONTEXT_NAME>>
 ```
 
-Step 4.) Log into the Gold and Gold DR clusters via the command line, using the `oc-sso-deployer-token` tokens.
+Step 4.) Log into the Gold and Gold DR clusters via the command line, using the `sso-action-deployer-######-token-` tokens.
 
 Step 5.) Run the `deploy-gold-in-standby.sh` script.  **Warning: This will delete the gold PVCs and patroni configmaps.**
 ```
