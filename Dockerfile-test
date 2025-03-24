@@ -36,6 +36,7 @@ ENV PYTHON_ENV=test
 ENV DOMAIN_NAME=localhost
 ENV ACTIVE_IP=1.1.1.1
 ENV PASSIVE_IP=2.2.2.2
+ENV NAMESPACE=e4ca1d-dev
 
 ENTRYPOINT ["poetry", "run"]
 CMD ["python", "src/main.py"]
