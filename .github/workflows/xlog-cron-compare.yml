@@ -16,9 +16,9 @@ jobs:
         with:
           namespace: ${{ github.event.inputs.namespace }}
           oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
-          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD_PRODUCTION }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
-          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR_PRODUCTION }}
 
       - name: Run xlog comparison
         run: |

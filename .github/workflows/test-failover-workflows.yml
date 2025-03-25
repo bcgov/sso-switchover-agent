@@ -50,9 +50,9 @@ jobs:
         with:
           namespace: $NAMESPACE
           oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
-          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-token-gold: ${{ secrets[format('OPENSHIFT_TOKEN_GOLD_{0}', github.event.inputs.project)] }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
-          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+          oc-token-golddr: ${{ secrets[format('OPENSHIFT_TOKEN_GOLDDR_{0}', github.event.inputs.project)] }}
       - name: Install test dependencies
         run: |
           sudo apt update

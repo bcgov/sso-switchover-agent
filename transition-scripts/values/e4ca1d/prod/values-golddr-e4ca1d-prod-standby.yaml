@@ -4,14 +4,12 @@ image:
   pullPolicy: Always
 
 additionalServerOptions: >-
-  -Dkeycloak.profile.feature.impersonation=disabled
-  -Djboss.persistent.log.dir=/var/log/eap
   -Djgroups.dns.query=sso-keycloak-ping.e4ca1d-prod.svc.cluster.local
 
 extraEnvs:
-  - name: KC_HOSTNAME_URL
+  - name: KC_HOSTNAME
     value: https://sandbox.loginproxy.gov.bc.ca/auth/
-  - name: KC_HOSTNAME_ADMIN_URL
+  - name: KC_HOSTNAME_ADMIN
     value: https://sandbox.loginproxy.gov.bc.ca/auth/
   - name: QUARKUS_LOG_FILE_ROTATION_MAX_BACKUP_INDEX
     value: "42"
@@ -49,6 +47,3 @@ patroni:
 
   transportServerClaim:
     enabled: false
-
-rollingUpdate:
-  maxSurge: 2
