@@ -24,7 +24,7 @@ wait_for_keycloak_all_ready_with_replicas() {
 
   count_kc=0
   wait_kc_ready() {
-    replicas=$(kubectl get deployment sso-keycloak -n "$namespace" -o jsonpath='{.spec.replicas}')
+    replicas=$(kubectl get statefulset sso-keycloak -n "$namespace" -o jsonpath='{.spec.replicas}')
     ready_count=$(count_ready_keycloak_pods "$namespace")
     info "keycloak ready $ready_count/$replicas"
 

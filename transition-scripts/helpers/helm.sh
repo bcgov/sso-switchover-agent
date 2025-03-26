@@ -4,7 +4,7 @@ this="${BASH_SOURCE[0]}"
 pwd=$(dirname "$this")
 values="$pwd/../values"
 
-KEYCLOAK_HELM_CHART_VERSION="v1.16.1"
+KEYCLOAK_HELM_CHART_VERSION="v1.16.5"
 KEYCLOAK_HELM_DEPLOYMENT_NAME="sso-keycloak"
 
 upgrade_helm() {
@@ -88,9 +88,13 @@ upgrade_helm_standby() {
   target_host=$(get_tsc_target_host "$namespace" "sso-patroni")
   target_port=$(get_tsc_target_port "$namespace" "sso-patroni")
 
+
+  # The postgres.host and postgres port arguments allows the standby keycloak-DR
+  # deployment to connect to the patroni-Gold instance via the tsc.
+  #   --set postgres.host="$target_host" \
+  #   --set postgres.port="$target_port" \
+
   upgrade_helm "$namespace" "standby" \
-    --set postgres.host="$target_host" \
-    --set postgres.port="$target_port" \
     --set patroni.standby.enabled=true \
     --set patroni.standby.host="$target_host" \
     --set patroni.standby.port="$target_port" \

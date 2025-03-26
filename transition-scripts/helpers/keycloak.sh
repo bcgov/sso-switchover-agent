@@ -12,7 +12,7 @@ wait_for_keycloak_all_ready() {
 
   namespace="$1"
 
-  replicas=$(kubectl get deployment sso-keycloak -n "$namespace" -o jsonpath='{.spec.replicas}')
+  replicas=$(kubectl get statefulset sso-keycloak -n "$namespace" -o jsonpath='{.spec.replicas}')
 
   count=0
   wait_ready() {

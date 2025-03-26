@@ -37,10 +37,9 @@ jobs:
         with:
           namespace: $NAMESPACE
           oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
-          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-token-gold: ${{ secrets[format('OPENSHIFT_TOKEN_GOLD_{0}', github.event.inputs.project)] }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
-          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
-
+          oc-token-golddr: ${{ secrets[format('OPENSHIFT_TOKEN_GOLDDR_{0}', github.event.inputs.project)] }}
       - name: Set DR to active using main-dr branch
         run: |
           echo "Running on the $NAMESPACE namespace"
@@ -56,9 +55,9 @@ jobs:
         with:
           namespace: $NAMESPACE
           oc-server-gold: ${{ secrets.OPENSHIFT_SERVER_GOLD }}
-          oc-token-gold: ${{ secrets.OPENSHIFT_TOKEN_GOLD }}
+          oc-token-gold: ${{ secrets[format('OPENSHIFT_TOKEN_GOLD_{0}', github.event.inputs.project)] }}
           oc-server-golddr: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
-          oc-token-golddr: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR }}
+          oc-token-golddr: ${{ secrets[format('OPENSHIFT_TOKEN_GOLDDR_{0}', github.event.inputs.project)] }}
 
       - name: Confirm GoldDR Endpoint is passing
         run: |
