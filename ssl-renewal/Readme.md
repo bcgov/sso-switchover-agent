@@ -17,16 +17,17 @@ The form is submitted through the iStore by attaching it to a new ticket. https:
 There will be five secrets uploaded to the namespace:
 
 ```
-L1K-for-certs.txt
-L1K-root-for-certs-G2.txt
+TLSChain.txt
+TLSRoot.txt
+TrustedRoot.txt
 loginproxy.csr
 loginproxy.key
-loginproxy.txt
+<<url>>.txt
 ```
 
 They can be stored locally in the untracked folders `./env/<<namepace>>/`.  Once the certs are generated, they can can be used by the `update_route_credentials.sh` script to update the Route objects.
 
-In certain cases a single cert is used for multiple environments.  In that case a copy of the secrets must be saved in each environment's namespace folder.
+**Note:** In certain cases a single cert is used for multiple environments.  In that case a copy of the secrets must be saved in each environment's namespace folder, and the `<<url>>.txt`, file must be renamed to vanity url used in that environment e.g. dev.loginproxy.gov.bc.ca.txt, test.loginproxy.gov.bc.ca.txt, dev.sandbox.loginproxy.gov.bc.ca.txt,tes.sandbox.loginproxy.gov.bc.ca.txt.
 
 
 ## Run the script to update the cert values

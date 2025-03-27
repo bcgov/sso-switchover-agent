@@ -4,7 +4,7 @@
 ## Generic Functions ##
 #######################
 
-OC_SERVICE_ACCOUNT="oc-sso-deployer"
+OC_SERVICE_ACCOUNT="sso-action-deployer"
 
 get_kube_context() {
   kubectl config current-context
