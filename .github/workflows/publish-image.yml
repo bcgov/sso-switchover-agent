@@ -106,12 +106,6 @@ jobs:
           source: "mirror"
           kam: "latest"
           oc: "4"
-      - name: Install CLI tools from OpenShift Mirror
-        uses: redhat-actions/openshift-tools-installer@v1
-        with:
-          source: "mirror"
-          kam: "latest"
-          oc: "4"
       - name: Authenticate and set sandbox context
         if: (endsWith(github.ref, '/dev') && matrix.license == 'e4ca1d')
         uses: redhat-actions/oc-login@v1
