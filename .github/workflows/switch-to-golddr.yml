@@ -17,7 +17,7 @@ on:
 
 jobs:
   alert-sso-alerts:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - name: Choose RC Notification Color
@@ -40,10 +40,16 @@ jobs:
           data: '{"text": "@jsharman @nithinshekar.kuruba @jlanglois @Marco The switch to Gold DR action was triggered for the ${{ github.event.inputs.project }}-${{ github.event.inputs.environment }} project, confirm if ${{ env.RC_NOTIFICATION_JOB_STATUS }}?", "attachments": [{"color": "${{ env.RC_NOTIFICATION_COLOR }}","title": "Details", "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "text": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "fields": [{"title": "Ref", "value": "${{ github.ref }}", "short": false}, {"title": "Workflow", "value": "${{ github.workflow }}", "short": false}]}]}'
 
   transition-scripts:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Install CLI tools from OpenShift Mirror
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          source: "mirror"
+          kam: "latest"
+          oc: "4"
       - name: Set the deployment namespace
         run: |
           chmod +x ./namespace-setter.sh
