@@ -27,10 +27,16 @@ on:
 
 jobs:
   transition-scripts:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Install CLI tools from OpenShift Mirror
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          source: "mirror"
+          kam: "latest"
+          oc: "4"
       - name: Set the deployment namespace
         run: |
           chmod +x ./namespace-setter.sh
