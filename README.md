@@ -13,7 +13,7 @@ In addition to the disaster recovery (switchover) agent, the keycloak deployment
 
 The Keycloak deployments in Gold and Gold DR are manage by helm, in the `transition-scripts/` directory.  This is where you will find the deployment values.  The helm chart version is set by `KEYCLOAK_HELM_CHART_VERSION` variable in the `transition-scripts/helpers/helm.sh` file.  It will need to be updated for the actions to deploy a new version of the helm chart.
 
-On a fresh deployment to gold the otp-credentials secret will be generated with null values.  One mush update these with the relevant credentials, then re-run helm deployment.  After that the secret's values will be copied to the dr environments when helm sets the app in standby.
+On a fresh deployment to gold the sso-keycloak-otp-credentials secret will be generated with null values.  One must update these with the relevant credentials, then re-run helm deployment.  After that the secret's values will be copied to the dr environments when helm sets the app in standby.
 
 ### Triggering the deployments/transitions locally
 

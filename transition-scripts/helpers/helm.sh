@@ -83,11 +83,11 @@ upgrade_helm_standby() {
   password_appuser1=$(kubectl get secret sso-patroni-appusers -n "$namespace" -o jsonpath='{.data.password-appuser1}' | base64 -d)
 
   # Get the otp credentials from Gold
-  api_token_url=$(kubectl get secret otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_API_TOKEN_URL}' | base64 -d)
-  api_url=$(kubectl get secret otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_API_URL}' | base64 -d)
-  client_id=$(kubectl get secret otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_CLIENT_ID}' | base64 -d)
-  client_secret=$(kubectl get secret otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_CLIENT_SECRET}' | base64 -d)
-  otp_issuer=$(kubectl get secret otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_OTP_ISSUER}' | base64 -d)
+  api_token_url=$(kubectl get secret sso-keycloak-otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_API_TOKEN_URL}' | base64 -d)
+  api_url=$(kubectl get secret sso-keycloak-otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_API_URL}' | base64 -d)
+  client_id=$(kubectl get secret sso-keycloak-otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_CLIENT_ID}' | base64 -d)
+  client_secret=$(kubectl get secret sso-keycloak-otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_CLIENT_SECRET}' | base64 -d)
+  otp_issuer=$(kubectl get secret sso-keycloak-otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_OTP_ISSUER}' | base64 -d)
 
 
   switch_kube_context "$current" "$namespace"
