@@ -2,6 +2,7 @@ replicaCount: 2
 
 image:
   tag: 26.0.7-build.3
+  pullPolicy: Always
 
 additionalServerOptions: >-
   -Djgroups.dns.query=sso-keycloak-ping.e4ca1d-prod.svc.cluster.local
