@@ -1,5 +1,5 @@
 from config import config
-from github import GithubIntegration, Auth
+from github import GithubIntegration, Auth  # type: ignore
 import os
 import base64
 

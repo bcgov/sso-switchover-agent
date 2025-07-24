@@ -6,3 +6,4 @@ pytest
 python-hosts
 requests==2.32.3
 pytz
+pygithub==2.6.1
