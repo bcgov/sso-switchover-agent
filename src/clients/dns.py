@@ -70,7 +70,7 @@ async def dns_lookup(domain_name: str, q: Queue):
                 switchover_waiting = False
                 time_index = 0
             else:
-                logger.debug(f"Switchover paused for {sleep_time*time_index} of {delay_switchover_by_secs} seconds")
+                logger.debug(f"Switchover paused for {sleep_time * time_index} of {delay_switchover_by_secs} seconds")
                 time_index += 1
 
         if not switchover_waiting:
