@@ -34,5 +34,8 @@ config = dict(
     ches_token_endpoint=os.environ.get("CHES_TOKEN_ENDPOINT", ""),
     ches_username=os.environ.get("CHES_USERNAME", ""),
     ches_password=os.environ.get("CHES_PASSWORD", ""),
-    log_email=os.environ.get("LOG_EMAIL", "")
+    log_email=os.environ.get("LOG_EMAIL", ""),
+    gh_app_id=os.environ.get("GH_APP_ID", ""),
+    gh_installation_id=os.environ.get("GH_INSTALLATION_ID", ""),
+    gh_app_private_key=os.getenv("GH_APP_PRIVATE_KEY", "")
 )
