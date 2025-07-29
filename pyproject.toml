@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "sso_switchover_agent"}]
 
 [tool.poetry.dependencies]
-python = "3.12.6"
+python = "3.12.11"
 fastapi = "0.115.0"
 python-dotenv = "^1.0.1"
 asyncio = "^3.4.3"
@@ -15,6 +15,7 @@ requests = "^2.32.3"
 uvicorn = "^0.30.6"
 python-hosts = "^1.0.7"
 pytz = "^2024.2"
+pygithub = "^2.6.1"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.6.0"

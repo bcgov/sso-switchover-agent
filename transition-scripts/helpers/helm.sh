@@ -4,7 +4,7 @@ this="${BASH_SOURCE[0]}"
 pwd=$(dirname "$this")
 values="$pwd/../values"
 
-KEYCLOAK_HELM_CHART_VERSION="v1.16.5"
+KEYCLOAK_HELM_CHART_VERSION="v1.17.0"
 KEYCLOAK_HELM_DEPLOYMENT_NAME="sso-keycloak"
 
 upgrade_helm() {
@@ -82,6 +82,14 @@ upgrade_helm_standby() {
   username_appuser1=$(kubectl get secret sso-patroni-appusers -n "$namespace" -o jsonpath='{.data.username-appuser1}' | base64 -d)
   password_appuser1=$(kubectl get secret sso-patroni-appusers -n "$namespace" -o jsonpath='{.data.password-appuser1}' | base64 -d)
 
+  # Get the otp credentials from Gold
+  api_token_url=$(kubectl get secret sso-keycloak-otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_API_TOKEN_URL}' | base64 -d)
+  api_url=$(kubectl get secret sso-keycloak-otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_API_URL}' | base64 -d)
+  client_id=$(kubectl get secret sso-keycloak-otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_CLIENT_ID}' | base64 -d)
+  client_secret=$(kubectl get secret sso-keycloak-otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_CLIENT_SECRET}' | base64 -d)
+  otp_issuer=$(kubectl get secret sso-keycloak-otp-credentials -n "$namespace" -o jsonpath='{.data.PPID_OTP_ISSUER}' | base64 -d)
+
+
   switch_kube_context "$current" "$namespace"
   check_ocp_cluster "$current"
 
@@ -104,7 +112,13 @@ upgrade_helm_standby() {
     --set patroni.additionalCredentials[0].username="$username_appuser1" \
     --set patroni.additionalCredentials[0].password="$password_appuser1" \
     --set maintenancePage.enabled="$maintenance" \
-    --set maintenancePage.active="$maintenance"
+    --set maintenancePage.active="$maintenance" \
+    --set otpCredentials.apiTokenUrl="$api_token_url" \
+    --set otpCredentials.apiUrl="$api_url" \
+    --set otpCredentials.clientID="$client_id" \
+    --set otpCredentials.clientSecret="$client_secret" \
+    --set otpCredentials.otpIssuer="$otp_issuer" \
+    --set otpCredentials.recreateCredentials=true
 
   connect_route_to_correct_service "$maintenance" "$namespace"
 }

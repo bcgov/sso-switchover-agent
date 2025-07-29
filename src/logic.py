@@ -9,6 +9,8 @@ from clients.dns import check_dns_by_env
 from multiprocessing import Queue
 from config import config
 
+from github_app import get_github_access_token
+
 logger = logging.getLogger(__name__)
 
 
@@ -147,7 +149,7 @@ def dispatch_action_by_id(workflow_id: str):
         environment = config.get('namespace')[7:]
         url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), config.get('gh_repo'), workflow_id)
         data = {'ref': config.get('gh_branch'), 'inputs': {'project': config.get('project'), 'environment': environment}}
-        bearer = 'token %s' % config.get('gh_token')
+        bearer = 'Bearer %s' % get_github_access_token()
         headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': bearer}
         x = requests.post(url, json=data, headers=headers)
         if x.status_code == 204:

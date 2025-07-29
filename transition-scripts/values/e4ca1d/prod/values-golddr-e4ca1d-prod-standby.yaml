@@ -1,6 +1,4 @@
 image:
-  repository: ghcr.io/bcgov/sso
-  tag: dev-rhbk-24
   pullPolicy: Always
 
 additionalServerOptions: >-
