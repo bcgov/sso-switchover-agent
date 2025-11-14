@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "..fullname" . }}-trigger-xlog-action
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "..name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "..chart" . }}
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: {{ include "..name" . }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
+        spec:
+          containers:
+            - name: {{ .Chart.Name }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  curl -X POST \
+                    -H "Accept: application/vnd.github+json" \
+                    -H "Authorization: Bearer $GITHUB_TOKEN" \
+                    https://api.github.com/repos/$OWNER/$REPO/actions/workflows/xlog-cron-compare.yml/dispatches \
+                    -d '{"ref":"dev"}'
+              env:
+                - name: RELEASE_REVISION
+                  value: "{{ .Release.Revision }}"
+                - name: GITHUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: xlog-cron-job-secret
+                      key: github_token
+                - name: REPO
+                  valueFrom:
+                    secretKeyRef:
+                      name: xlog-cron-job-secret
+                      key: repo
+                - name: OWNER
+                  valueFrom:
+                    secretKeyRef:
+                      name: xlog-cron-job-secret
+                      key: owner
+          restartPolicy: Never

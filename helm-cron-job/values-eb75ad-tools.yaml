@@ -1,0 +1,12 @@
+image:
+  repository: curlimages/curl
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: gh-registry-config
+
+nameOverride: kc-dr-cron-job
+fullnameOverride: kc-dr-cron-job
+
+namespace: eb75ad-tools
