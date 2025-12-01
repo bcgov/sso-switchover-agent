@@ -18,7 +18,6 @@ css_repo = config.get('css_repo')
 css_branch = config.get('css_branch')
 css_environment = config.get('css_environment')
 css_maintenance_workflow_id = config.get('css_maintenance_workflow_id')
-css_gh_token = config.get('css_gh_token')
 
 ches_api_endpoint = config.get('ches_api_endpoint')
 ches_token_endpoint = config.get('ches_token_endpoint')
@@ -130,14 +129,14 @@ def action_dispatcher(ip: str, prev_ip: str, active_ip: str, passive_ip: str):
         if css_maintenance_to_active:
             logger.info("active_ip")
             dispatch_css_maintenance_action(False)
-            dispatch_uptime_incident(False)
+            # dispatch_uptime_incident(False)
         else:
             logger.info("Failed to turn off the css maintenance mode")
     elif (ip == passive_ip and prev_ip == active_ip):
         logger.info("passive_ip")
         dispatch_action_by_id(config.get('gh_workflow_id'))
         dispatch_css_maintenance_action(True)
-        dispatch_uptime_incident(True)
+        # dispatch_uptime_incident(True)
 
 
 # This runs a github action in the sso-switchover agent repos currently works with actions with 3 three required inputs
@@ -176,9 +175,7 @@ def dispatch_rocketchat_webhook(maintenance_mode: str):
     if maintenance_mode == 'maintenance_up':
         message = """@all **The Gold Keycloak %s instance is in the process of \
             failing over to the DR cluster** \n* The \
-            [CSS App](%s) is being put in Maintenance mode. Please check our \
-            [Uptime](https://uptime.com/statuspage/bcgov-sso-gold) \
-            before using our service.""" % (env, css_url)
+            [CSS App](%s) is being put in Maintenance mode.""" % (env, css_url)
     elif maintenance_mode == 'keycloak_up':
         message = """@all **The Gold Keycloak %s instance has failed over to the DR \
             cluster** \n* DR deployment is complete, end users continue to login to your \
@@ -231,12 +228,12 @@ def alert_team_to_switch(delay):
 
 def dispatch_css_maintenance_action(maintenance_mode: bool):
 
-    if css_repo == '' or css_branch == '' or css_environment == '' or css_maintenance_workflow_id == '' or css_gh_token == '':
+    if css_repo == '' or css_branch == '' or css_environment == '' or css_maintenance_workflow_id == '':
         logger.info('CSS maintenance mode is not configured for this namespace')
     else:
         url = 'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches' % (config.get('gh_owner'), css_repo, css_maintenance_workflow_id)
         data = {'ref': css_branch, 'inputs': {'environment': css_environment, 'maintenanceEnabled': maintenance_mode}}
-        bearer = 'token %s' % css_gh_token
+        bearer = 'Bearer %s' % get_github_access_token()
         headers = {'Accept': 'application/vnd.github.v3+json', 'Authorization': bearer}
         try:
             logger.info(f'Deploying CSS app in maintenance_mode={maintenance_mode}')
@@ -249,70 +246,70 @@ def dispatch_css_maintenance_action(maintenance_mode: bool):
         else:
             logger.error('GH API error: %s' % x.content)
 
+# # Currently uptime is no longer in use by the team. Restore this logic if that changes
+# def dispatch_uptime_incident(enable_incident: bool):
+#     global incident_id
 
-def dispatch_uptime_incident(enable_incident: bool):
-    global incident_id
+#     url = config.get('uptime_status_api')
+#     uptime_token = config.get('uptime_status_token')
+#     uptime_statuspage_id = config.get('uptime_status_page_id')
+#     namespace = config.get('namespace')
+#     env = namespace[7:]
+#     if uptime_token == "" or uptime_statuspage_id == "":
+#         logger.error('The uptime status page incident creation/closure has not been configured')
+#         return
 
-    url = config.get('uptime_status_api')
-    uptime_token = config.get('uptime_status_token')
-    uptime_statuspage_id = config.get('uptime_status_page_id')
-    namespace = config.get('namespace')
-    env = namespace[7:]
-    if uptime_token == "" or uptime_statuspage_id == "":
-        logger.error('The uptime status page incident creation/closure has not been configured')
-        return
+#     incident_url = f"{url}{uptime_statuspage_id}/incidents/"
+#     bearer = 'token %s' % uptime_token
+#     headers = {'Authorization': bearer}
 
-    incident_url = f"{url}{uptime_statuspage_id}/incidents/"
-    bearer = 'token %s' % uptime_token
-    headers = {'Authorization': bearer}
+#     body = {
+#         "name": f"[{env}] Keycloak is in Disaster Recovery mode",
+#         "include_in_global_metrics": False,
+#         "updates": [
+#             {
+#                 "id": 0,
+#                 "description": f"The switchover to GoldDR was triggered for the {env} environment.",
+#                 "incident_state": "investigating"
+#             }
+#         ],
+#         "incident_type": "INCIDENT",
+#         "update_component_status": True,
+#         "notify_subscribers": True
+#     }
 
-    body = {
-        "name": f"[{env}] Keycloak is in Disaster Recovery mode",
-        "include_in_global_metrics": False,
-        "updates": [
-            {
-                "id": 0,
-                "description": f"The switchover to GoldDR was triggered for the {env} environment.",
-                "incident_state": "investigating"
-            }
-        ],
-        "incident_type": "INCIDENT",
-        "update_component_status": True,
-        "notify_subscribers": True
-    }
+#     if enable_incident:
+#         if incident_id is None:
+#             try:
+#                 x = requests.post(incident_url, json=body, headers=headers)
+#                 if x.status_code == 200:
+#                     incident_id = x.json()["results"]["pk"]
+#                     logger.info(f"Uptime incident {incident_id} was created.")
+#                 else:
+#                     logger.error(f"Uptime incident creation returned code {x.status_code}")
+#                     incident_id = None
+#             except BaseException:
+#                 logger.error("Uptime incident creation failed.")
+#                 incident_id = None
+#         else:
+#             logger.error("An Uptime incident has already been created for this environment")
+#     else:
+#         # close the incident
+#         try:
+#             close_body = body
+#             close_body["ends_at"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+#             close_body["incident_state"] = "resolved"
+#             close_body["updates"] = [{
+#                 "id": 0,
+#                 "description": f"The {env} environement is no longer in disaster recovery mode.",
+#                 "incident_state": "resolved"
+#             }]
+#             x = requests.patch(f"{incident_url}{incident_id}", json=body, headers=headers)
+#             if x.status_code == 200:
+#                 logger.info(f"Uptime incident number {incident_id}, has been closed.")
+#             else:
+#                 logger.error(f"Uptime incident {incident_id} failed to close.")
+#         except BaseException:
+#             logger.error(f"Uptime incident number {incident_id}, failed to close.")
 
-    if enable_incident:
-        if incident_id is None:
-            try:
-                x = requests.post(incident_url, json=body, headers=headers)
-                if x.status_code == 200:
-                    incident_id = x.json()["results"]["pk"]
-                    logger.info(f"Uptime incident {incident_id} was created.")
-                else:
-                    logger.error(f"Uptime incident creation returned code {x.status_code}")
-                    incident_id = None
-            except BaseException:
-                logger.error("Uptime incident creation failed.")
-                incident_id = None
-        else:
-            logger.error("An Uptime incident has already been created for this environment")
-    else:
-        # close the incident
-        try:
-            close_body = body
-            close_body["ends_at"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-            close_body["incident_state"] = "resolved"
-            close_body["updates"] = [{
-                "id": 0,
-                "description": f"The {env} environement is no longer in disaster recovery mode.",
-                "incident_state": "resolved"
-            }]
-            x = requests.patch(f"{incident_url}{incident_id}", json=body, headers=headers)
-            if x.status_code == 200:
-                logger.info(f"Uptime incident number {incident_id}, has been closed.")
-            else:
-                logger.error(f"Uptime incident {incident_id} failed to close.")
-        except BaseException:
-            logger.error(f"Uptime incident number {incident_id}, failed to close.")
-
-        incident_id = None
+#         incident_id = None
