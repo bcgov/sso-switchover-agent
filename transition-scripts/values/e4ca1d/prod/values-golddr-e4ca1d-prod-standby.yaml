@@ -15,6 +15,8 @@ extraEnvs:
     value: 1M
   - name: QUARKUS_LOG_FILE_ROTATION_FILE_SUFFIX
     value: .zip
+  - name: KC_SPI_CONNECTIONS_HTTP_CLIENT_DEFAULT_CONNECTION_TTL_MILLIS
+    value: "900000"
 
 replicaCount: 0
 
