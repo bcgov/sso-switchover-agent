@@ -17,6 +17,8 @@ extraEnvs:
     value: .zip
   - name: KC_SPI_CONNECTIONS_HTTP_CLIENT_DEFAULT_CONNECTION_TTL_MILLIS
     value: "900000"
+  - name: KC_SPI_CONNECTIONS_HTTP_CLIENT_DEFAULT_SOCKET_TIMEOUT_MILLIS
+    value: "60000"
 
 replicaCount: 0
 
