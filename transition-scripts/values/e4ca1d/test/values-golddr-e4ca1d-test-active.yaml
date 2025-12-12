@@ -18,7 +18,7 @@ extraEnvs:
   - name: QUARKUS_LOG_FILE_ROTATION_FILE_SUFFIX
     value: .zip
   - name: KC_SPI_CONNECTIONS_HTTP_CLIENT_DEFAULT_CONNECTION_TTL_MILLIS
-    value: "900000"
+    value: "300000"
   - name: KC_SPI_CONNECTIONS_HTTP_CLIENT_DEFAULT_SOCKET_TIMEOUT_MILLIS
     value: "60000"
   ## If debugging needs to be done without the use of the vanity urls, use the following KC_HOSTNAMES
