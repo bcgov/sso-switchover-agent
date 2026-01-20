@@ -39,6 +39,10 @@ podDisruptionBudget:
 
 patroni:
   replicaCount: 3
+  image:
+    # see https://github.com/zalando/spilo/releases
+    repository: ghcr.io/zalando/spilo-17
+    tag: 4.0-p3
 
   persistentVolume:
     size: 1Gi
