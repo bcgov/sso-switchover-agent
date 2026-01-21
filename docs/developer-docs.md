@@ -21,6 +21,27 @@ Publishing the taged image to the sso-switchover-agent repos requires two steps:
 docker push ghcr.io/bcgov/sso-switchover-agent:testtag
 ```
 
+### Publishing the patroni image to the repos
+
+The patroni spilo image is hosted by `ghcr.io/zalando/spilo-17`, for security resons we host a copy in the bcgov github repo.  To do this pull the spilo image down to the local env:
+
+```
+docker pull ghcr.io/zalando/spilo-17:4.0-p3
+```
+change the tag to our repo
+```
+docker tag ghcr.io/zalando/spilo-17:4.0-p3 ghcr.io/bcgov/sso-spilo-17:4.0-p3
+```
+and push it to the remote repo
+```
+docker push ghcr.io/bcgov/sso-spilo-17:4.0-p3
+```
+
+This can eventually be automated via github actions.
+
+
+
+
 ### Deploying the image to a specific namespace.
 
 This image can be deployed from the local environment using helm. Note you must be logged into the GoldDR cluster for this, not the gold cluster.
