@@ -71,6 +71,9 @@ patroni:
     # Specifies whether Wal-G should be enabled
     enabled: false
 
+  transportServerClaim:
+    interval: 11
+
   resources:
     limits:
       cpu: 500m
