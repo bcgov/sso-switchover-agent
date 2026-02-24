@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/bcgov/sso
-  tag: 26.4.11-build.1
+  tag: 26.4.11-build.2
   pullPolicy: IfNotPresent
 
 tls:
@@ -70,9 +70,6 @@ patroni:
   walG:
     # Specifies whether Wal-G should be enabled
     enabled: false
-
-  transportServerClaim:
-    interval: 11
 
   resources:
     limits:
