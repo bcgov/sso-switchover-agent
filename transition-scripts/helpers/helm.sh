@@ -4,7 +4,7 @@ this="${BASH_SOURCE[0]}"
 pwd=$(dirname "$this")
 values="$pwd/../values"
 
-KEYCLOAK_HELM_CHART_VERSION="v1.17.3"
+KEYCLOAK_HELM_CHART_VERSION="v1.17.4"
 KEYCLOAK_HELM_DEPLOYMENT_NAME="sso-keycloak"
 
 upgrade_helm() {
