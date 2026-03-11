@@ -23,31 +23,22 @@ spec:
             - name: {{ .Chart.Name }}
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
               imagePullPolicy: {{ .Values.image.pullPolicy }}
-              command:
-                - /bin/sh
-                - -c
-                - |
-                  curl -X POST \
-                    -H "Accept: application/vnd.github+json" \
-                    -H "Authorization: Bearer $GITHUB_TOKEN" \
-                    https://api.github.com/repos/$OWNER/$REPO/actions/workflows/xlog-cron-compare.yml/dispatches \
-                    -d '{"ref":"dev"}'
               env:
                 - name: RELEASE_REVISION
                   value: "{{ .Release.Revision }}"
-                - name: GITHUB_TOKEN
+                - name: GH_APP_ID
                   valueFrom:
                     secretKeyRef:
                       name: xlog-cron-job-secret
-                      key: github_token
-                - name: REPO
+                      key: GH_APP_ID
+                - name: GH_INSTALLATION_ID
                   valueFrom:
                     secretKeyRef:
                       name: xlog-cron-job-secret
-                      key: repo
-                - name: OWNER
+                      key: GH_INSTALLATION_ID
+                - name: GH_APP_PRIVATE_KEY
                   valueFrom:
                     secretKeyRef:
                       name: xlog-cron-job-secret
-                      key: owner
+                      key: GH_APP_PRIVATE_KEY
           restartPolicy: Never
