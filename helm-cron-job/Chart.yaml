@@ -1,0 +1,4 @@
+apiVersion: v1
+name: kc-dr-cron-job
+description: 'Helm chart for CronJobs used by keycloak disaster recovery'
+version: 0.0.1

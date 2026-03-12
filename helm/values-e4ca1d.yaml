@@ -3,3 +3,6 @@ replicaCount: 1
 image:
     tag: dev
     pullPolicy: Always
+
+podAnnotations:
+    environment: sandbox

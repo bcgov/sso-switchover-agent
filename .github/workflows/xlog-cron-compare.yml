@@ -2,9 +2,6 @@ name: "Transaction Log Comparison"
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 * * * *"
-
 jobs:
   xlog-cron:
     runs-on: ubuntu-24.04
@@ -40,11 +37,3 @@ jobs:
           method: "POST"
           customHeaders: '{"Content-Type": "application/json"}'
           data: '{"text": "@jsharman @nithinshekar.kuruba @jlanglois @Marco *One of the production xlogs failed to synch*", "attachments": [{"color": "#F5455C","title": "Details", "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "text": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "fields": [{"title": "Ref", "value": "${{ github.ref }}", "short": false}, {"title": "Workflow", "value": "${{ github.workflow }}", "short": false}]}]}'
-  keepalive:
-    name: Keepalive Workflow
-    runs-on: ubuntu-latest
-    permissions:
-      actions: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: gautamkrishnar/keepalive-workflow@6112edb887975f902d74a6a66b688aed71932a70
