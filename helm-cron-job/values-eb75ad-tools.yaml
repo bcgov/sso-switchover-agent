@@ -1,6 +1,6 @@
 image:
-  repository: curlimages/curl
-  tag: latest
+  repository: ghcr.io/bcgov/sso-xlog-trigger
+  tag: production
   pullPolicy: IfNotPresent
 
 imagePullSecrets:
