@@ -1,6 +1,7 @@
 replicaCount: 0
 
 image:
+  tag: dev
   pullPolicy: Always
 
 additionalServerOptions: >-
