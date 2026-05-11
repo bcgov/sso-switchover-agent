@@ -36,4 +36,4 @@ jobs:
           url: ${{ secrets.SSO_ALERTS }}
           method: "POST"
           customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"text": "@jsharman @nithinshekar.kuruba @jlanglois @Marco *One of the production xlogs failed to synch*", "attachments": [{"color": "#F5455C","title": "Details", "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "text": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "fields": [{"title": "Ref", "value": "${{ github.ref }}", "short": false}, {"title": "Workflow", "value": "${{ github.workflow }}", "short": false}]}]}'
+          data: '{"title": "One of the production xlogs failed to synch","severity": "warning", "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
