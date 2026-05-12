@@ -161,8 +161,7 @@ def dispatch_action_by_id(workflow_id: str):
 
 def dispatch_rocketchat_webhook(maintenance_mode: str):
     url = config.get('rc_url')
-    bearer = 'token %s' % config.get('rc_token')
-    headers = {'Accept': 'application/json', 'Authorization': bearer}
+    headers = {'Accept': 'application/json'}
 
     namespace = config.get('namespace')
     env = namespace[7:]
@@ -173,27 +172,27 @@ def dispatch_rocketchat_webhook(maintenance_mode: str):
         css_url = "https://bcgov.github.io/sso-requests"
 
     if maintenance_mode == 'maintenance_up':
-        message = """@all **The Gold Keycloak %s instance is in the process of \
-            failing over to the DR cluster** \n* The \
-            [CSS App](%s) is being put in Maintenance mode.""" % (env, css_url)
+        title = "The Gold Keycloak %s instance is in the process of \
+            failing over to the DR cluster" % (env)
+        message = """The [CSS App](%s) is being put in Maintenance mode.""" % (css_url)
     elif maintenance_mode == 'keycloak_up':
-        message = """@all **The Gold Keycloak %s instance has failed over to the DR \
-            cluster** \n* DR deployment is complete, end users continue to login to your \
-            apps using the Pathfinder SSO Service (standard or custom). \n* Any changes \
+        title = "The Gold Keycloak %s instance has failed over to the DR cluster" % (env)
+        message = """DR deployment is complete, end users continue to login to your \
+            apps using the Pathfinder SSO Service (standard or custom). <br> Any changes \
             made to a project's config using the Pathfinder SSO Service (standard or \
             custom realm) while the app is in its failover state will be lost when the \
             app is restored to the Primary cluster. (aka your config changes will be \
-            lost). \n* The priority of this service is to maximize availability to the \
-            end users and automation.""" % (env)
+            lost). <br> The priority of this service is to maximize availability to the \
+            end users and automation."""
     elif maintenance_mode == 'gold_up':
-        message = """@all **The Gold Keycloak %s instance has been restored to the Primary \
-            cluster (aka back to normal).** \n* We are back to normal operations of \
-            the Pathfinder SSO Service (standard and custom).\n* Changes made to a \
+        title = "The Gold Keycloak %s instance has been restored to the Primary cluster (aka back to normal)." % (env)
+        message = """We are back to normal operations of \
+            the Pathfinder SSO Service (standard and custom). <br> Changes made to a \
             project's config using the Pathfinder SSO Service (standard or custom realm) \
-            during Disaster Recovery will be missing. \n* The priority of this service is \
-            to maximize availability to the end users and automation.""" % (env)
+            during Disaster Recovery will be missing. <br> The priority of this service is \
+            to maximize availability to the end users and automation."""
 
-    data = {"text": message}
+    data = {"title": title, "severity": "info", "body": message}
 
     try:
         x = requests.post(url, json=data, headers=headers)
@@ -210,12 +209,10 @@ def alert_team_to_switch(delay):
     try:
         url = config.get('rc_url_sso_ops')
         namespace = config.get('namespace')
-        bearer = 'token %s' % config.get('rc_token_sso_ops')
-        headers = {'Accept': 'application/json', 'Authorization': bearer}
-        message = """@here **The GSLB has changed the DNS it is pointing to for the %s namespace. \
-            if this persists longer than %s seconds the switchover process may \
-            be triggered.""" % (namespace, delay)
-        data = {"text": message}
+        headers = {'Accept': 'application/json'}
+        title = "The GSLB has changed the DNS it is pointing to for the %s namespace." % (namespace)
+        message = "If this persists longer than %s seconds the switchover process may be triggered." % (delay)
+        data = {"title": title, "severity": "warning", "body": message}
         x = requests.post(url, json=data, headers=headers, timeout=10)
         if x.status_code == 200:
             logger.info('Rocket chat message sent.')
