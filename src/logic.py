@@ -46,10 +46,10 @@ def handle_queues(queue: Queue, processes: list):
 
             elif item['event'] == 'maintenance':
                 dr_maintenance_mode = item['maintenance_mode']
-                dispatch_rocketchat_webhook(dr_maintenance_mode)
+                dispatch_team_webhook(dr_maintenance_mode)
                 logger.debug("The maintenance mode changed")
 
-            elif item['event'] == 'team_rocketchat':
+            elif item['event'] == 'team_webhook':
                 alert_team_to_switch(item['delay'])
                 logger.debug(item['message'])
 
@@ -159,8 +159,8 @@ def dispatch_action_by_id(workflow_id: str):
         logger.error('The dispatch action failed. %s' % ex)
 
 
-def dispatch_rocketchat_webhook(maintenance_mode: str):
-    url = config.get('rc_url')
+def dispatch_team_webhook(maintenance_mode: str):
+    url = config.get('team_webhook')
     headers = {'Accept': 'application/json'}
 
     namespace = config.get('namespace')
@@ -197,9 +197,9 @@ def dispatch_rocketchat_webhook(maintenance_mode: str):
     try:
         x = requests.post(url, json=data, headers=headers)
         if x.status_code == 200:
-            logger.info('Rocket chat message sent.')
+            logger.info('Teams chat message sent.')
         else:
-            logger.error('Rocket chat API error: %s' % x.content)
+            logger.error('Team chat API error: %s' % x.content)
     except Exception as ex:
         logger.error('Unknown error in logic. %s' % ex)
         traceback.print_exc(file=sys.stdout)
@@ -207,7 +207,7 @@ def dispatch_rocketchat_webhook(maintenance_mode: str):
 
 def alert_team_to_switch(delay):
     try:
-        url = config.get('rc_url_sso_ops')
+        url = config.get('team_webhook_sso_ops')
         namespace = config.get('namespace')
         headers = {'Accept': 'application/json'}
         title = "The GSLB has changed the DNS it is pointing to for the %s namespace." % (namespace)
@@ -215,9 +215,9 @@ def alert_team_to_switch(delay):
         data = {"title": title, "severity": "warning", "body": message}
         x = requests.post(url, json=data, headers=headers, timeout=10)
         if x.status_code == 200:
-            logger.info('Rocket chat message sent.')
+            logger.info('Teams chat message sent.')
         else:
-            logger.error('Rocket chat API error: %s' % x.content)
+            logger.error('Teams chat API error: %s' % x.content)
 
     except Exception as ex:
         logger.error('Unknown error in logic. %s' % ex)
