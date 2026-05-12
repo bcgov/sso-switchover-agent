@@ -20,7 +20,7 @@ Is the time in seconds this delay will last.
 
 ## Teams Webhook Integration
 
-To notify teams chat when failover and failback occurs. Create a teams webhook via n8n (already done for SSO-keyacloak). Then add the following values to the secret file. Currently the production alerts are client facing (SSOKeycloak-howto), and the sandbox alerts are intertal (SSOKeycloak-oppereations) channel).
+To notify teams chat when failover and failback occurs. Create a teams webhook via n8n (already done for SSO-keyacloak). Then add the following values to the secret file. Currently the production alerts are client facing (SSOKeycloak-howto), and the sandbox alerts are intertal (SSOKeycloak-operations) channel).
 
 - TEAM_WEBHOOK_URL
 - TEAM_WEBHOOK_URL_SSO_OPS
