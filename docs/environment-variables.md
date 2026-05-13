@@ -18,16 +18,14 @@ There is an optional delay feature on the switchover agent that prevents the age
 
 Is the time in seconds this delay will last.
 
-## Rocket Chat Integration
+## Teams Webhook Integration
 
-To notify rocket chat when failover and failback occurs. Create a rocket chat webhook (already done for SSO-keyacloak). Then add the following values to the secret file. Currently the production alerts are client facing (sso), and the sandbox alerts are intertal (sso-ops channel).
+To notify teams chat when failover and failback occurs. Create a teams webhook via n8n (already done for SSO-keyacloak). Then add the following values to the secret file. Currently the production alerts are client facing (SSOKeycloak-howto), and the sandbox alerts are intertal (SSOKeycloak-operations) channel).
 
-- RC_URL
-- RC_TOKEN
-- RC_URL_SSO_OPS
-- RC_TOKEN_SSO_OPS
+- TEAM_WEBHOOK_URL
+- TEAM_WEBHOOK_URL_SSO_OPS
 
-The `*_SSO_OPPS` environment variables are used to notify the team if the switchover agent detected a DNS change without triggering a failover.
+The `*_SSO_OPPS` environment variable is used to notify the team if the switchover agent detected a DNS change without triggering a failover.
 
 ## CSS App Integration
 

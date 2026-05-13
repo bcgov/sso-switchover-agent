@@ -37,7 +37,7 @@ jobs:
           url: ${{ secrets.SSO_ALERTS }}
           method: "POST"
           customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"text": "@jsharman @nithinshekar.kuruba @jlanglois @Marco The switch to Gold DR action was triggered for the ${{ github.event.inputs.project }}-${{ github.event.inputs.environment }} project, confirm if ${{ env.RC_NOTIFICATION_JOB_STATUS }}?", "attachments": [{"color": "${{ env.RC_NOTIFICATION_COLOR }}","title": "Details", "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "text": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "fields": [{"title": "Ref", "value": "${{ github.ref }}", "short": false}, {"title": "Workflow", "value": "${{ github.workflow }}", "short": false}]}]}'
+          data: '{"title": " The switch to Gold DR action was triggered for the ${{ github.event.inputs.project }}-${{ github.event.inputs.environment }} project, confirm if ${{ env.RC_NOTIFICATION_JOB_STATUS }}?", "severity": "critical","url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
 
   transition-scripts:
     runs-on: ubuntu-24.04
@@ -78,4 +78,4 @@ jobs:
           url: ${{ secrets.SSO_ALERTS }}
           method: "POST"
           customHeaders: '{"Content-Type": "application/json"}'
-          data: '{"text": "@jsharman @nithinshekar.kuruba @jlanglois @Marco The switch to Gold DR for the ${{ github.event.inputs.project }}-${{ github.event.inputs.environment }} project failed", "attachments": [{"color": "#F5455C","title": "Details", "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "text": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "fields": [{"title": "Ref", "value": "${{ github.ref }}", "short": false}, {"title": "Workflow", "value": "${{ github.workflow }}", "short": false}]}]}'
+          data: '{"title": "The switch to Gold DR for the ${{ github.event.inputs.project }}-${{ github.event.inputs.environment }} project failed",  "severity": "critical","url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'

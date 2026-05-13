@@ -59,7 +59,7 @@ async def dns_lookup(domain_name: str, q: Queue):
             switchover_waiting = True
             time_index = 0
             if delay_switchover_by_secs > 0 and last_result != "unknown":
-                q.put({'event': 'team_rocketchat', 'message': 'A change in DNS detected.', 'delay': delay_switchover_by_secs})
+                q.put({'event': 'team_webhook', 'message': 'A change in DNS detected.', 'delay': delay_switchover_by_secs})
         # Unpause if the original state is back
         elif last_result == result and switchover_waiting:
             switchover_waiting = False

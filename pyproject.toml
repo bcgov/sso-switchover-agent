@@ -8,7 +8,7 @@ packages = [{include = "sso_switchover_agent"}]
 
 [tool.poetry.dependencies]
 python = "3.12.11"
-fastapi = "0.115.0"
+fastapi = "^0.135.3"
 python-dotenv = "^1.0.1"
 asyncio = "^3.4.3"
 requests = "^2.32.3"

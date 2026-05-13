@@ -17,15 +17,18 @@ extraEnvs:
     value: https://sso-keycloak-c6af30-dev.apps.golddr.devops.gov.bc.ca/auth/
   - name: KC_HOSTNAME_ADMIN_URL
     value: https://sso-keycloak-c6af30-dev.apps.golddr.devops.gov.bc.ca/auth/
+  - name: PPID_TOKEN_URL
+    value: https://idsit.gov.bc.ca/oauth2/token
+  - name: PPID_API_URL
+    value: https://idsit.gov.bc.ca/iis-apis/v1/ppids
+  - name: PPID_BCSC_ISSUER
+    value: idsit.gov.bc.ca
+  - name: PPID_OTP_ISSUER
+    value: urn:ca:bc:gov:idimwebtests:f2ac23eb-eaa5-4640-93b7-187edbda4b31
 
 resources:
   limits:
     cpu: 4
-
-
-
-
-
 
 podDisruptionBudget:
   enabled: true
