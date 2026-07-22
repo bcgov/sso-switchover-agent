@@ -48,8 +48,7 @@ patroni:
 
   resources:
     limits:
-      cpu: 500m
       memory: 4Gi
     requests:
-      cpu: 50m
+      cpu: 150m
       memory: 2.5Gi
