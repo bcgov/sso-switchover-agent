@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/bcgov/sso
-  tag: 26.6.4-build.1
+  tag: v26.6.8-build.1
   pullPolicy: IfNotPresent
 
 tls:
