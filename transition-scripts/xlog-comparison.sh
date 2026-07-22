@@ -7,7 +7,7 @@ Compare the xlogs between patroni-gold and patroni-dr.  Alert team if they do no
 
 Steps:
     1. Compare xlogs for different namespaces.
-    2. If the job fails or xlog comparison is off, send rocketchat alert
+    2. If the job fails or xlog comparison is off, send teams alert
 
 Usages:
     $0

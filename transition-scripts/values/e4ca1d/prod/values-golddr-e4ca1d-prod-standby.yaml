@@ -19,6 +19,14 @@ extraEnvs:
     value: "300000"
   - name: KC_SPI_CONNECTIONS_HTTP_CLIENT_DEFAULT_SOCKET_TIMEOUT_MILLIS
     value: "60000"
+  - name: PPID_TOKEN_URL
+    value: https://idsit.gov.bc.ca/oauth2/token
+  - name: PPID_API_URL
+    value: https://idsit.gov.bc.ca/iis-apis/v1/ppids
+  - name: PPID_BCSC_ISSUER
+    value: idsit.gov.bc.ca
+  - name: PPID_OTP_ISSUER
+    value: urn:ca:bc:gov:idimwebtests:f2ac23eb-eaa5-4640-93b7-187edbda4b31
 
 replicaCount: 0
 
