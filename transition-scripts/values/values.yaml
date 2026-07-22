@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/bcgov/sso
-  tag: 26.4.11-build.2
+  tag: 26.6.4-build.1
   pullPolicy: IfNotPresent
 
 tls:
@@ -73,10 +73,9 @@ patroni:
 
   resources:
     limits:
-      cpu: 500m
       memory: 1.5Gi
     requests:
-      cpu: 50m
+      cpu: 100m
       memory: 300Mi
 
   podDisruptionBudget:
