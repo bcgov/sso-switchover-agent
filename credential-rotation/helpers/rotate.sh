@@ -164,19 +164,67 @@ get_patroni_leader_pod() {
 # ALTER ROLE must go to the primary), authenticating with the given
 # (current, not-yet-rotated) username/password. Password is passed via
 # PGPASSWORD to the exec'd process rather than as a CLI argument.
+#
+# `dbname` defaults to "postgres" since role-level statements (ALTER ROLE,
+# CREATE ROLE, DROP ROLE) are cluster-wide and don't depend on which database
+# you're connected to. Statements that operate on database-local objects
+# (REASSIGN OWNED BY, DROP OWNED BY) only affect the database you're
+# currently connected to, so callers touching those must pass the actual
+# target database explicitly.
 run_psql() {
   if [ "$#" -lt 4 ]; then exit 1; fi
   namespace="$1"
   username="$2"
   password="$3"
   sql="$4"
+  dbname="${5:-postgres}"
 
   leader=$(get_patroni_leader_pod "$namespace")
 
   kubectl exec -i -n "$namespace" "$leader" -- \
-    env PGPASSWORD="$password" psql -h localhost -U "$username" -d postgres -v ON_ERROR_STOP=1 <<SQL
+    env PGPASSWORD="$password" psql -h localhost -U "$username" -d "$dbname" -v ON_ERROR_STOP=1 <<SQL
 $sql
 SQL
+}
+
+# Runs a single-value/tuples-only SQL query (e.g. SELECT count(*) ...) and
+# returns the raw, unformatted result - no headers/row-count footer to strip.
+run_psql_query() {
+  if [ "$#" -lt 4 ]; then exit 1; fi
+  namespace="$1"
+  username="$2"
+  password="$3"
+  sql="$4"
+  dbname="${5:-postgres}"
+
+  leader=$(get_patroni_leader_pod "$namespace")
+
+  kubectl exec -i -n "$namespace" "$leader" -- \
+    env PGPASSWORD="$password" psql -h localhost -U "$username" -d "$dbname" -v ON_ERROR_STOP=1 -tAc "$sql"
+}
+
+# Postgres roles are cluster-wide, but REASSIGN OWNED BY / DROP OWNED BY only
+# affect the database you're connected to. A role's owned objects (tables,
+# sequences, etc.) and granted privileges can live in any database in the
+# cluster - most commonly, for this app, its own same-named database (e.g.
+# Keycloak's appuser role owns objects in a database also named after it).
+# `pg_shdepend` is a shared, cluster-wide catalog, so this single query
+# (run against any database) finds every database where the role has an
+# ownership or privilege dependency that must be cleaned up before it can be
+# dropped.
+get_databases_with_role_dependencies() {
+  if [ "$#" -lt 3 ]; then exit 1; fi
+  namespace="$1"
+  role_name="$2"
+  superuser_password="$3"
+
+  sql="SELECT DISTINCT d.datname
+FROM pg_shdepend sd
+JOIN pg_database d ON sd.dbid = d.oid
+JOIN pg_roles r ON sd.refobjid = r.oid
+WHERE r.rolname = '$role_name' AND d.datname NOT IN ('template0', 'template1');"
+
+  run_psql_query "$namespace" "$SUPERUSER_ROLE" "$superuser_password" "$sql"
 }
 
 #####################################
@@ -334,20 +382,34 @@ finalize_appuser_rotation() {
   fi
 
   info "Checking for active sessions still using the old appuser role ($old_appuser_username)"
-  active_sessions=$(run_psql "$namespace" "$SUPERUSER_ROLE" "$superuser_password" \
-    "SELECT count(*) FROM pg_stat_activity WHERE usename = '$old_appuser_username';" | tr -d '[:space:]')
+  active_sessions=$(run_psql_query "$namespace" "$SUPERUSER_ROLE" "$superuser_password" \
+    "SELECT count(*) FROM pg_stat_activity WHERE usename = '$old_appuser_username';")
 
   if [[ "$active_sessions" =~ ^[0-9]+$ ]] && [ "$active_sessions" -gt 0 ]; then
     warn "There are still $active_sessions active session(s) using $old_appuser_username; aborting finalize. Re-run once consumers have fully cycled."
     exit 1
   fi
 
-  info "Reassigning ownership from $old_appuser_username to $new_appuser_username and dropping the old role"
-  sql="REASSIGN OWNED BY \"$old_appuser_username\" TO \"$new_appuser_username\";
-DROP OWNED BY \"$old_appuser_username\";
-DROP ROLE \"$old_appuser_username\";"
+  # REASSIGN OWNED BY / DROP OWNED BY only affect the database you're
+  # connected to, but the old role's actual owned objects (e.g. Keycloak's
+  # tables) typically live in a same-named application database, not in
+  # "postgres". Reassign/clean up ownership in every database the role has
+  # a dependency in before dropping the (now cluster-wide) role itself.
+  owned_databases=$(get_databases_with_role_dependencies "$namespace" "$old_appuser_username" "$superuser_password")
 
-  run_psql "$namespace" "$SUPERUSER_ROLE" "$superuser_password" "$sql"
+  if [ -z "$owned_databases" ]; then
+    warn "No databases reported ownership/privilege dependencies for $old_appuser_username; proceeding directly to DROP ROLE"
+  fi
+
+  for db in $owned_databases; do
+    info "Reassigning ownership from $old_appuser_username to $new_appuser_username in database $db"
+    sql="REASSIGN OWNED BY \"$old_appuser_username\" TO \"$new_appuser_username\";
+DROP OWNED BY \"$old_appuser_username\";"
+    run_psql "$namespace" "$SUPERUSER_ROLE" "$superuser_password" "$sql" "$db"
+  done
+
+  info "Dropping the old appuser role $old_appuser_username"
+  run_psql "$namespace" "$SUPERUSER_ROLE" "$superuser_password" "DROP ROLE \"$old_appuser_username\";"
 
   kubectl patch secret "$BACKUP_SECRET" -n "$namespace" --type=json \
     -p='[{"op": "remove", "path": "/data/pending-old-appuser-role"}]' || true
