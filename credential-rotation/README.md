@@ -53,6 +53,10 @@ cd credential-rotation
 ./rotate-credentials.sh <namespace> --no-dry-run --finalize
 ```
 
+For now we will run these locally.  Run in dev, test, prod, then manually update the grafana credentials before running the finalizing step.  Make sure to set DR to standby to ensure replication works.
+
+
+
 ## Rollback
 
 Before making any change, the current `sso-patroni` and
@@ -85,8 +89,9 @@ rotation fails partway through:
   `helpers/rotate.sh` are assumed to be `postgres`, `admin`, and `standby`
   respectively, matching the `sso-patroni` secret's key suffixes. Override via
   environment variables if the real role names differ.
-- **`cycle_backupcontainer_pod`** is a placeholder — the backupcontainer
-  resource name/selector isn't tracked anywhere in this repo. Fill it in once
-  known.
+- **`cycle_backupcontainer_pod`** restarts `deployment/sso-backup-storage-18`
+  (the backupcontainer's pods, deployed via the `sso-backup-18` Helm release).
+  The `-18` suffix is tied to that specific release/chart version — if it's
+  ever bumped or renamed, this resource name will need updating too.
 - **Grafana** may also need its pods cycled to pick up new credentials; a
   commented-out reminder function is left in `helpers/rotate.sh`.

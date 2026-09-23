@@ -434,21 +434,28 @@ cycle_keycloak_pods() {
   wait_for_keycloak_all_ready "$namespace"
 }
 
-# TODO: the backupcontainer resource name/selector isn't tracked anywhere in
-# this repo. Fill this in once it's known (e.g. `kubectl rollout restart
-# deployment/<backupcontainer-name> -n "$namespace"`), gating on a health
-# check if one exists for it.
+# The backupcontainer is deployed via Helm as `sso-backup-18`, but the actual
+# pods run under a separate Deployment named `sso-backup-storage-18`. Note the
+# "-18" suffix is tied to this specific Helm release/chart version - if that
+# release is ever bumped/renamed, this resource name will need updating too.
 cycle_backupcontainer_pod() {
   if [ "$#" -lt 1 ]; then exit 1; fi
   namespace="$1"
   dry_run="${2:-true}"
 
-  warn "cycle_backupcontainer_pod is not yet implemented (unknown resource name) - skipping for $namespace (dry_run=$dry_run)"
+  if [ "$dry_run" = "true" ]; then
+    info "[dry-run] would restart deployment/sso-backup-storage-18 so it picks up the new appuser secret values"
+    return
+  fi
+
+  info "Cycling the backupcontainer pod (deployment/sso-backup-storage-18) so it picks up the new appuser credentials"
+  kubectl rollout restart deployment/sso-backup-storage-18 -n "$namespace"
+  kubectl rollout status deployment/sso-backup-storage-18 -n "$namespace" --timeout=300s
 }
 
 # Grafana may also need its deployed pods cycled to pick up new credentials.
 # Left commented out as a reminder until this is confirmed to be in scope:
-#
+# Currently this depends of a CICD refactor of grafana deployments
 # cycle_grafana_pods() {
 #   namespace="$1"
 #   kubectl rollout restart deployment/grafana -n "$namespace"
