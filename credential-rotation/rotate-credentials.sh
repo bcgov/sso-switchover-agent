@@ -79,7 +79,9 @@ done
 
 pwd="$(dirname "$0")"
 # shellcheck disable=SC1091
+source "$pwd/helpers/rotate.sh"
 source "$pwd/helpers/_all.sh"
+
 
 info "Ensure cluster is gold."
 ensure_kube_context "gold"
