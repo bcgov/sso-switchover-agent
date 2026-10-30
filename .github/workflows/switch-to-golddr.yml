@@ -32,7 +32,7 @@ jobs:
           echo ${{ env.RC_NOTIFICATION_COLOR }}
 
       - name: Rocket.Chat Notification
-        uses: fjogeleit/http-request-action@v1
+        uses: fjogeleit/http-request-action@c0b95d02a088b47c1f2f4db04fd8af8bd19eee54 # v1.16.6
         with:
           url: ${{ secrets.SSO_ALERTS }}
           method: "POST"
@@ -43,9 +43,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Install CLI tools from OpenShift Mirror
-        uses: redhat-actions/openshift-tools-installer@v1
+        uses: redhat-actions/openshift-tools-installer@144527c7d98999f2652264c048c7a9bd103f8a82 # v1.13.1
         with:
           source: "mirror"
           kam: "latest"
@@ -73,7 +73,7 @@ jobs:
 
       - name: Alert on failure
         if: failure()
-        uses: fjogeleit/http-request-action@v1
+        uses: fjogeleit/http-request-action@c0b95d02a088b47c1f2f4db04fd8af8bd19eee54 # v1.16.6
         with:
           url: ${{ secrets.SSO_ALERTS }}
           method: "POST"
