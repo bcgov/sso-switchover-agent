@@ -24,16 +24,16 @@ jobs:
     outputs:
       release_tag: ${{ steps.get-tag.outputs.release_tag }}
     steps:
-      - uses: hmarr/debug-action@v3
-      - uses: actions/checkout@v4
+      - uses: hmarr/debug-action@cd1afbd7852b7ad7b1b7a9a1b03efebd3b0a1820 # v3.0.0
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Install CLI tools from OpenShift Mirror
-        uses: redhat-actions/openshift-tools-installer@v1
+        uses: redhat-actions/openshift-tools-installer@144527c7d98999f2652264c048c7a9bd103f8a82 # v1.13.1
         with:
           source: "mirror"
           kam: "latest"
           oc: "4"
       - name: Log in to the GitHub Container registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ${{ env.GITHUB_REGISTRY }}
           username: ${{ github.actor }}
@@ -41,14 +41,14 @@ jobs:
 
       - name: Extract Tag for Sandbox
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
         with:
           images: ${{ env.GITHUB_REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Create Release and Extract Tag for Production
         if: endsWith(github.ref, '/main')
         id: release
-        uses: rymndhng/release-on-push-action@v0.28.0
+        uses: rymndhng/release-on-push-action@aebba2bbce07a9474bf95e8710e5ee8a9e922fe2 # v0.28.0
         with:
           bump_version_scheme: "patch"
           tag_prefix: "v"
@@ -57,17 +57,17 @@ jobs:
           max_commits: 100 # default is 50
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Cache Docker layers
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: ${{ runner.os }}-buildx-
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
         with:
           context: .
           push: true
@@ -99,16 +99,16 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Install CLI tools from OpenShift Mirror
-        uses: redhat-actions/openshift-tools-installer@v1
+        uses: redhat-actions/openshift-tools-installer@144527c7d98999f2652264c048c7a9bd103f8a82 # v1.13.1
         with:
           source: "mirror"
           kam: "latest"
           oc: "4"
       - name: Authenticate and set sandbox context
         if: (endsWith(github.ref, '/dev') && matrix.license == 'e4ca1d')
-        uses: redhat-actions/oc-login@v1
+        uses: redhat-actions/oc-login@5eb45e848b168b6bf6b8fe7f1561003c12e3c99d # v1.3
         with:
           openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
           openshift_token: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR_SANDBOX }}
@@ -126,7 +126,7 @@ jobs:
 
       - name: Authenticate and set production context
         if: (endsWith(github.ref, '/main') && matrix.license == 'eb75ad')
-        uses: redhat-actions/oc-login@v1
+        uses: redhat-actions/oc-login@5eb45e848b168b6bf6b8fe7f1561003c12e3c99d # v1.3
         with:
           openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
           openshift_token: ${{ secrets.OPENSHIFT_TOKEN_GOLDDR_PRODUCTION }}

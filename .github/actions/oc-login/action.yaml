@@ -20,7 +20,7 @@ runs:
   using: composite
   steps:
     - name: Login Gold
-      uses: redhat-actions/oc-login@v1
+      uses: redhat-actions/oc-login@5eb45e848b168b6bf6b8fe7f1561003c12e3c99d # v1.3
       with:
         openshift_server_url: ${{ inputs.oc-server-gold }}
         openshift_token: ${{ inputs.oc-token-gold }}
@@ -29,7 +29,7 @@ runs:
       continue-on-error: true
 
     - name: Login Golddr
-      uses: redhat-actions/oc-login@v1
+      uses: redhat-actions/oc-login@5eb45e848b168b6bf6b8fe7f1561003c12e3c99d # v1.3
       with:
         openshift_server_url: ${{ inputs.oc-server-golddr }}
         openshift_token: ${{ inputs.oc-token-golddr }}

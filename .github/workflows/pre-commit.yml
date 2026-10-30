@@ -6,22 +6,22 @@ jobs:
   switchover-queu-tests:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Install asdf requirements
         run: |
           sudo apt-get install -y libssl-dev libreadline-dev uuid-dev
 
       - name: Setup asdf
-        uses: asdf-vm/actions/setup@v4
+        uses: asdf-vm/actions/setup@b7bcd026f18772e44fe1026d729e1611cc435d47 # v4.0.1
 
       - name: Cache tools
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: /home/runner/.asdf
           key: ${{ runner.os }}-${{ hashFiles('**/.tool-versions') }}
 
       - name: Install asdf
-        uses: asdf-vm/actions/install@v4
+        uses: asdf-vm/actions/install@b7bcd026f18772e44fe1026d729e1611cc435d47 # v4.0.1
 
       - name: Rerun Pre-Commit Hooks on CI
         run: |
@@ -30,15 +30,15 @@ jobs:
           pre-commit run --color=always --show-diff-on-failure --all-files
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
       - name: Cache Docker layers
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: /tmp/.buildx-dev-cache
           key: ${{ runner.os }}-buildx-dev-${{ github.sha }}
           restore-keys: ${{ runner.os }}-buildx-dev-
       - name: Build Test Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
         with:
           context: .
           push: false
@@ -57,7 +57,7 @@ jobs:
   commitlint:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
-      - uses: wagoid/commitlint-github-action@v5
+      - uses: wagoid/commitlint-github-action@9763196e10f27aef304c9b8b660d31d97fce0f99 # v5.5.1
