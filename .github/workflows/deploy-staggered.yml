@@ -22,12 +22,12 @@ jobs:
     steps:
 
       - name: Check out the main-dr branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: main-dr
 
       - name: Install CLI tools from OpenShift Mirror
-        uses: redhat-actions/openshift-tools-installer@v1
+        uses: redhat-actions/openshift-tools-installer@144527c7d98999f2652264c048c7a9bd103f8a82 # v1.13.1
         with:
           source: "mirror"
           kam: "latest"
@@ -55,7 +55,7 @@ jobs:
         working-directory: transition-scripts
 
       - name: Checkout current branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Login Openshift Gold & Golddr
         uses: ./.github/actions/oc-login
