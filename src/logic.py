@@ -1,3 +1,5 @@
+import os
+import subprocess
 import sys
 import logging
 import traceback
@@ -134,9 +136,30 @@ def action_dispatcher(ip: str, prev_ip: str, active_ip: str, passive_ip: str):
             logger.info("Failed to turn off the css maintenance mode")
     elif (ip == passive_ip and prev_ip == active_ip):
         logger.info("passive_ip")
-        dispatch_action_by_id(config.get('gh_workflow_id'))
+        dispatch_set_dr_active_directly()
         dispatch_css_maintenance_action(True)
         # dispatch_uptime_incident(True)
+
+
+# Sets the Gold DR instance active by running the switch script in this pod, falling back to the github action on failure
+def dispatch_set_dr_active_directly():
+    try:
+        namespace = config.get('namespace')
+        script = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'transition-scripts', 'switch-to-golddr.sh')
+        result = subprocess.run(['bash', script, namespace], capture_output=True, text=True)
+        for line in result.stdout.splitlines():
+            logger.info('switch-to-golddr.sh: %s' % line)
+        for line in result.stderr.splitlines():
+            logger.warning('switch-to-golddr.sh: %s' % line)
+        if result.returncode == 0:
+            logger.info('switch-to-golddr.sh completed successfully')
+            return
+        logger.error('switch-to-golddr.sh exited with code %s' % result.returncode)
+    except Exception as ex:
+        logger.error('Triggering the action via the container failed. %s' % ex)
+
+    logger.info('Falling back to the github workflow dispatch')
+    dispatch_action_by_id(config.get('gh_workflow_id'))
 
 
 # This runs a github action in the sso-switchover agent repos currently works with actions with 3 three required inputs
