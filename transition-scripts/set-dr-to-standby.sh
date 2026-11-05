@@ -26,7 +26,7 @@ Examples:
 EOF
 }
 
-if [ "$#" -lt 1 ]; then
+if [[ "$#" -lt 1 ]]; then
     usage
     exit 1
 fi
@@ -44,7 +44,7 @@ check_ocp_cluster "gold"
 wait_for_patroni_healthy "$namespace"
 patroni_mode=$(check_patroni_cluster_mode "$namespace")
 
-if [ "$patroni_mode" == "active" ]; then
+if [[ "$patroni_mode" == "active" ]]; then
     echo "Patroni-Gold in active mode"
 else
     echo "Patroni-Gold not in active mode"
@@ -56,8 +56,8 @@ switch_kube_context "golddr" "$namespace"
 check_ocp_cluster "golddr"
 
 helm_released=$(check_helm_release "$namespace" "sso-keycloak")
-if [ "$helm_released" == "found" ]; then
-    if [ "$purge" == "true" ]; then
+if [[ "$helm_released" == "found" ]]; then
+    if [[ "$purge" == "true" ]]; then
         uninstall_helm "$namespace"
         cleanup_namespace "$namespace"
     else

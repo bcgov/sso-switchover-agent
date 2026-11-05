@@ -1,14 +1,14 @@
 #!/bin/bash
 
 count_ready_keycloak_pods() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
   namespace="$1"
 
   count_ready_pods "$namespace" -l app.kubernetes.io/name=sso-keycloak
 }
 
 wait_for_keycloak_all_ready() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
 
@@ -19,7 +19,7 @@ wait_for_keycloak_all_ready() {
     ready_count=$(count_ready_keycloak_pods "$namespace")
     info "keycloak ready $ready_count/$replicas"
 
-    if [ "$ready_count" == "$replicas" ]; then return 1; fi
+    if [[ "$ready_count" == "$replicas" ]]; then return 1; fi
 
     # wait for 30mins
     if [[ "$count" -gt 360 ]]; then
@@ -34,7 +34,7 @@ wait_for_keycloak_all_ready() {
 }
 
 get_ocp_keycloak_url() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
 
   cluster="$1"
   namespace="$2"
@@ -45,7 +45,7 @@ get_ocp_keycloak_url() {
 }
 
 check_keycloak_health() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
 
   cluster="$1"
   namespace="$2"
@@ -53,7 +53,7 @@ check_keycloak_health() {
   read -r status_code data < <(curl_http_code \
     "$(get_ocp_keycloak_url "$cluster" "$namespace")/auth/realms/master/.well-known/openid-configuration")
 
-  if [ "$status_code" -ne "200" ] || [ "$data" == null ]; then
+  if [[ "$status_code" -ne "200" ]] || [[ "$data" == null ]]; then
     echo "down"
     return
   fi
@@ -62,7 +62,7 @@ check_keycloak_health() {
 }
 
 wait_for_keycloak_healthy() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
 
   cluster="$1"
   namespace="$2"
@@ -72,7 +72,7 @@ wait_for_keycloak_healthy() {
     status=$(check_keycloak_health "$cluster" "$namespace")
     info "checking keycloak app health - $status"
 
-    if [ "$status" == "up" ]; then return 1; fi
+    if [[ "$status" == "up" ]]; then return 1; fi
 
     if [[ "$count" -gt 240 ]]; then
       warn "keycloak app is not healthy"
@@ -86,7 +86,7 @@ wait_for_keycloak_healthy() {
 }
 
 get_keycloak_admin_token() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
 
   cluster="$1"
   namespace="$2"
@@ -102,7 +102,7 @@ get_keycloak_admin_token() {
     -d "grant_type=password" \
     "$(get_ocp_keycloak_url "$cluster" "$namespace")/auth/realms/master/protocol/openid-connect/token")
 
-  if [ "$status_code" -ne "200" ] || [ "$data" == null ]; then
+  if [[ "$status_code" -ne "200" ]] || [[ "$data" == null ]]; then
     warn "failed to fetch Keycloak admin access token"
     exit 1
   fi
@@ -113,7 +113,7 @@ get_keycloak_admin_token() {
 }
 
 curl_keycloak_api() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
 
   cluster="$1"
   namespace="$2"
@@ -129,7 +129,7 @@ curl_keycloak_api() {
 }
 
 create_keycloak_realm() {
-  if [ "$#" -lt 3 ]; then exit 1; fi
+  if [[ "$#" -lt 3 ]]; then exit 1; fi
 
   cluster="$1"
   namespace="$2"
@@ -140,7 +140,7 @@ create_keycloak_realm() {
     -d '{"realm":'\""$realmname\""'}' \
     "$(get_ocp_keycloak_url "$cluster" "$namespace")/auth/admin/realms")
 
-  if [ "$status_code" -ne "201" ]; then
+  if [[ "$status_code" -ne "201" ]]; then
     error "$status_code: failed to create a new realm"
     error "$data"
     exit 1
@@ -150,7 +150,7 @@ create_keycloak_realm() {
 }
 
 get_keycloak_realm() {
-  if [ "$#" -lt 3 ]; then exit 1; fi
+  if [[ "$#" -lt 3 ]]; then exit 1; fi
 
   cluster="$1"
   namespace="$2"
@@ -160,7 +160,7 @@ get_keycloak_realm() {
   read -r status_code data < <(curl_keycloak_api "$cluster" "$namespace" -X GET \
     "$(get_ocp_keycloak_url "$cluster" "$namespace")/auth/admin/realms/$realmname")
 
-  if [ "$status_code" -ne "200" ]; then
+  if [[ "$status_code" -ne "200" ]]; then
     return
   fi
 
@@ -168,7 +168,7 @@ get_keycloak_realm() {
 }
 
 list_keycloak_realms() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
 
   cluster="$1"
   namespace="$2"
@@ -177,7 +177,7 @@ list_keycloak_realms() {
   read -r status_code data < <(curl_keycloak_api "$cluster" "$namespace" -X GET \
     "$(get_ocp_keycloak_url "$cluster" "$namespace")/auth/admin/realms")
 
-  if [ "$status_code" -ne "200" ]; then
+  if [[ "$status_code" -ne "200" ]]; then
     return
   fi
 
@@ -185,7 +185,7 @@ list_keycloak_realms() {
 }
 
 delete_keycloak_realm() {
-  if [ "$#" -lt 3 ]; then exit 1; fi
+  if [[ "$#" -lt 3 ]]; then exit 1; fi
 
   cluster="$1"
   namespace="$2"
@@ -195,7 +195,7 @@ delete_keycloak_realm() {
   read -r status_code data < <(curl_keycloak_api "$cluster" "$namespace" -X DELETE \
     "$(get_ocp_keycloak_url "$cluster" "$namespace")/auth/admin/realms/$realmname")
 
-  if [ "$status_code" -ne "204" ]; then
+  if [[ "$status_code" -ne "204" ]]; then
     return
   fi
 
@@ -203,7 +203,7 @@ delete_keycloak_realm() {
 }
 
 remove_all_realms() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
 
   cluster="$1"
   namespace="$2"
@@ -215,7 +215,7 @@ remove_all_realms() {
     }
 
     name=$(getrealm '.realm')
-    if [ "$name" != "master" ]; then
+    if [[ "$name" != "master" ]]; then
       delete_keycloak_realm "$cluster" "$namespace" "$name"
     fi
   done

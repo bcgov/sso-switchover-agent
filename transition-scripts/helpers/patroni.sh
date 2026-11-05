@@ -3,14 +3,14 @@
 # see https://patroni.readthedocs.io/en/latest/rest_api.html#patroni-rest-api
 # `GET /health`: returns HTTP status code 200 only when PostgreSQL is up and running.
 check_patroni_health() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
 
   read -r status_code data < <(kube_curl "$namespace" sso-patroni-0 http://localhost:8008/health)
 
   patroni_status=$(echo "$data" | jq -r '.state')
-  if [ "$status_code" -ne "200" ] || [ "$patroni_status" != "running" ]; then
+  if [[ "$status_code" -ne "200" ]] || [[ "$patroni_status" != "running" ]]; then
     echo "down"
     return
   fi
@@ -19,7 +19,7 @@ check_patroni_health() {
 }
 
 wait_for_patroni_healthy() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
 
@@ -28,7 +28,7 @@ wait_for_patroni_healthy() {
     patroni_health=$(check_patroni_health "$namespace")
     info "checking patroni health - $patroni_health"
 
-    if [ "$patroni_health" == "up" ]; then return 1; fi
+    if [[ "$patroni_health" == "up" ]]; then return 1; fi
 
     if [[ "$count" -gt 50 ]]; then
       warn "patroni pods are not healthy"
@@ -42,18 +42,18 @@ wait_for_patroni_healthy() {
 }
 
 check_patroni_cluster_mode() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
 
   read -r status_code data < <(kube_curl "$namespace" sso-patroni-0 http://localhost:8008/config)
-  if [ "$status_code" -ne "200" ]; then
+  if [[ "$status_code" -ne "200" ]]; then
     echo "inactive"
     return
   fi
 
   standby_cluster_config=$(echo "$data" | jq -r '.standby_cluster')
-  if [ "$standby_cluster_config" == null ]; then
+  if [[ "$standby_cluster_config" == null ]]; then
     echo "active"
   else
     echo "standby"
@@ -61,24 +61,24 @@ check_patroni_cluster_mode() {
 }
 
 set_patroni_cluster_active() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
 
   patroni_mode=$(check_patroni_cluster_mode "$namespace")
-  if [ "$patroni_mode" == "active" ]; then
+  if [[ "$patroni_mode" == "active" ]]; then
     echo "success"
     return
   fi
 
   read -r status_code data < <(kube_curl "$namespace" sso-patroni-0 -XPATCH -d '{"standby_cluster":null}' http://localhost:8008/config)
-  if [ "$status_code" -ne "200" ]; then
+  if [[ "$status_code" -ne "200" ]]; then
     echo "failure"
     return
   fi
 
   standby_cluster_config=$(echo "$data" | jq -r '.standby_cluster')
-  if [ "$standby_cluster_config" != null ]; then
+  if [[ "$standby_cluster_config" != null ]]; then
     echo "failure"
     return
   fi
@@ -89,28 +89,28 @@ set_patroni_cluster_active() {
 }
 
 set_patroni_cluster_standby() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
 
   patroni_mode=$(check_patroni_cluster_mode "$namespace")
-  if [ "$patroni_mode" == "standby" ]; then
+  if [[ "$patroni_mode" == "standby" ]]; then
     echo "success"
     return
   fi
 
   target_host=$(get_tsc_target_host "$namespace" "sso-patroni")
   target_port=$(get_tsc_target_port "$namespace" "sso-patroni")
-  if [ -z "$target_port" ]; then exit 1; fi
+  if [[ -z "$target_port" ]]; then exit 1; fi
 
   read -r status_code data < <(kube_curl "$namespace" sso-patroni-0 -XPATCH -d '{"standby_cluster":{"create_replica_methods":["basebackup_fast_xlog"],"host":'\""$target_host\""',"port":'"$target_port"'}}' http://localhost:8008/config)
-  if [ "$status_code" -ne "200" ]; then
+  if [[ "$status_code" -ne "200" ]]; then
     echo "failure"
     return
   fi
 
   standby_cluster_config=$(echo "$data" | jq -r '.standby_cluster')
-  if [ "$standby_cluster_config" == null ]; then
+  if [[ "$standby_cluster_config" == null ]]; then
     echo "failure"
     return
   fi
@@ -121,14 +121,14 @@ set_patroni_cluster_standby() {
 }
 
 count_ready_patroni_pods() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
   namespace="$1"
 
   count_ready_pods "$namespace" -l app.kubernetes.io/name=sso-patroni
 }
 
 wait_for_patroni_all_ready() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
 
@@ -139,7 +139,7 @@ wait_for_patroni_all_ready() {
     ready_count=$(count_ready_patroni_pods "$namespace")
     info "patroni ready $ready_count/$replicas"
 
-    if [ "$ready_count" == "$replicas" ]; then return 1; fi
+    if [[ "$ready_count" == "$replicas" ]]; then return 1; fi
 
     # wait for 10mins
     if [[ "$count" -gt 120 ]]; then
@@ -154,21 +154,21 @@ wait_for_patroni_all_ready() {
 }
 
 get_patroni_xlog() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
   patroni_mode=$(check_patroni_cluster_mode "$namespace")
-  if [ "$patroni_mode" == "active" ]; then
+  if [[ "$patroni_mode" == "active" ]]; then
     leader=$(kubectl -n "$namespace" exec sso-patroni-0 -- patronictl list -f json | jq -r '.[] | select(.Role == "Leader") | .Member')
 
     # get the leader pod's lasted xlog location in the active patroni cluster.
     read -r status_code data < <(kube_curl "$namespace" "$leader" http://localhost:8008/patroni)
-    if [ "$status_code" -ne "200" ]; then exit 1; fi
+    if [[ "$status_code" -ne "200" ]]; then exit 1; fi
     xlog=$(echo "$data" | jq -r '.xlog.location')
   else
     # get any of the replicas' xlog received location in the standby patroni cluster.
     read -r status_code data < <(kube_curl "$namespace" sso-patroni-0 http://localhost:8008/patroni)
-    if [ "$status_code" -ne "200" ]; then exit 1; fi
+    if [[ "$status_code" -ne "200" ]]; then exit 1; fi
     xlog=$(echo "$data" | jq -r '.xlog.received_location')
   fi
 
@@ -176,7 +176,7 @@ get_patroni_xlog() {
 }
 
 compare_patroni_xlog() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
 
@@ -191,7 +191,7 @@ compare_patroni_xlog() {
 
   switch_kube_context "$current" "$namespace" &>/dev/null
 
-  if [ "$xlog1" -eq "$xlog2" ]; then
+  if [[ "$xlog1" -eq "$xlog2" ]]; then
     echo "synced"
   else
     echo "not synced"
@@ -199,7 +199,7 @@ compare_patroni_xlog() {
 }
 
 wait_for_patroni_xlog_synced() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
 
@@ -208,7 +208,7 @@ wait_for_patroni_xlog_synced() {
     sync_status=$(compare_patroni_xlog "$namespace")
     info "patroni xlog is $sync_status"
 
-    if [ "$sync_status" == "synced" ]; then return 1; fi
+    if [[ "$sync_status" == "synced" ]]; then return 1; fi
 
     # wait for 5mins
     if [[ "$count" -gt 60 ]]; then
@@ -223,7 +223,7 @@ wait_for_patroni_xlog_synced() {
 }
 
 patroni_xlog_diffrence() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
 
@@ -238,7 +238,7 @@ patroni_xlog_diffrence() {
 
   switch_kube_context "$current" "$namespace" &>/dev/null
 
-  if [ "$xlog1" -eq "$xlog2" ]; then
+  if [[ "$xlog1" -eq "$xlog2" ]]; then
     echo "synced"
   else
     difference=$((xlog1-xlog2))
@@ -248,7 +248,7 @@ patroni_xlog_diffrence() {
 }
 
 wait_for_patroni_xlog_close() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
 
@@ -257,7 +257,7 @@ wait_for_patroni_xlog_close() {
     synch_status=$(patroni_xlog_diffrence "$namespace")
     max_xlog_lag=200000
 
-    if [ "$synch_status" == "synced" ]; then
+    if [[ "$synch_status" == "synced" ]]; then
       info "patroni xlog in $namespace is $synch_status"
       return 1;
     fi

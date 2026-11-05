@@ -17,7 +17,7 @@ Examples:
 EOF
 }
 
-if [ "$#" -lt 2 ]; then
+if [[ "$#" -lt 2 ]]; then
     usage
     exit 1
 fi
@@ -33,10 +33,10 @@ wait_ready() {
     ipresolved=$(gethostip -d "$url_to_resolve")
     info "The GSLB is resolving the IP: $ipresolved"
 
-    if [ "$cluster" == gold ] && [ "$ipresolved" == "142.34.229.4" ]; then
+    if [[ "$cluster" == gold ]] && [[ "$ipresolved" == "142.34.229.4" ]]; then
         echo "The GSLB is point traffic to gold"
         return 1
-    elif [ "$cluster" == golddr ] && [ "$ipresolved" == "142.34.64.4" ]; then
+    elif [[ "$cluster" == golddr ]] && [[ "$ipresolved" == "142.34.64.4" ]]; then
         echo "The GSLB is point traffic to golddr"
         return 1
     else

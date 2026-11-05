@@ -23,7 +23,7 @@ Examples:
 EOF
 }
 
-if [ "$#" -lt 2 ]; then
+if [[ "$#" -lt 2 ]]; then
     usage
     exit 1
 fi
@@ -36,7 +36,7 @@ source "$pwd/helpers/_all.sh"
 
 # loop on the health endpoint every 20 seconds untill it passes while pointed at keycloak
 wait_for_keycloak_up() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
 
   namespace="$1"
   cluster="$2"
@@ -45,9 +45,9 @@ wait_for_keycloak_up() {
   KEYCLOAK_URL=$(get_vanity_url "$namespace")
 
   # Get the cluster ip address.
-  if [ "$cluster" = "golddr" ]; then
+  if [[ "$cluster" = "golddr" ]]; then
       IP="142.34.64.4"
-  elif [ "$cluster" = "gold" ]; then
+  elif [[ "$cluster" = "gold" ]]; then
       IP="142.34.229.4"
   else
       echo "Cluster must be gold or golddr"
@@ -63,7 +63,7 @@ wait_for_keycloak_up() {
     echo "The status code is"
     status_code="$(echo "$response" | grep 'HTTP/1.1' | awk '{print $2}')"
 
-    if [ "$status_code" = "200" ]; then
+    if [[ "$status_code" = "200" ]]; then
         echo "Status code 200"
         json_response=$(curl --resolve "$KEYCLOAK_URL":443:"$IP" -H \'Host:"$KEYCLOAK_URL"\' \
         https://"$KEYCLOAK_URL"/auth/realms/master/.well-known/openid-configuration)

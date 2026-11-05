@@ -8,14 +8,14 @@ KEYCLOAK_HELM_CHART_VERSION="v1.17.5"
 KEYCLOAK_HELM_DEPLOYMENT_NAME="sso-keycloak"
 
 upgrade_helm() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
 
   namespace="$1"
   cluster_mode="$2" # active | standby
   current=$(get_current_cluster)
 
   # A pre-pulled chart (set in the agent image) avoids needing access to the helm repo
-  if [ -n "$KEYCLOAK_HELM_CHART_PATH" ]; then
+  if [[ -n "$KEYCLOAK_HELM_CHART_PATH" ]]; then
     chart="$KEYCLOAK_HELM_CHART_PATH"
     version_args=()
   else
@@ -35,7 +35,7 @@ upgrade_helm() {
 }
 
 upgrade_helm_active() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
   maintenance="false"
@@ -64,7 +64,7 @@ upgrade_helm_active() {
 }
 
 upgrade_helm_standby() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
   maintenance="false"
@@ -141,14 +141,14 @@ upgrade_helm_standby() {
 }
 
 uninstall_helm() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
   helm uninstall sso-keycloak -n "$namespace" || true
 }
 
 cleanup_namespace() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
   namespace="$1"
 
   kubectl delete configmap -n "$namespace" -l "app.kubernetes.io/name=sso-patroni"
@@ -156,7 +156,7 @@ cleanup_namespace() {
 }
 
 check_helm_release() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
   namespace="$1"
   release="$2"
 
@@ -171,25 +171,25 @@ check_helm_release() {
 }
 
 get_vanity_route_name() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
-  if [ "$namespace" = "e4ca1d-dev" ]
+  if [[ "$namespace" = "e4ca1d-dev" ]]
   then
     KEYCLOAK_ROUTE="sso-dev-sandbox"
-  elif [ "$namespace" = "e4ca1d-test" ]
+  elif [[ "$namespace" = "e4ca1d-test" ]]
   then
     KEYCLOAK_ROUTE="sso-test-sandbox"
-  elif [ "$namespace" = "e4ca1d-prod" ]
+  elif [[ "$namespace" = "e4ca1d-prod" ]]
   then
     KEYCLOAK_ROUTE="sso-prod-sandbox"
-  elif [ "$namespace" = "eb75ad-dev" ]
+  elif [[ "$namespace" = "eb75ad-dev" ]]
   then
     KEYCLOAK_ROUTE="sso-dev"
-  elif [ "$namespace" = "eb75ad-test" ]
+  elif [[ "$namespace" = "eb75ad-test" ]]
   then
     KEYCLOAK_ROUTE="sso-test"
-  elif [ "$namespace" = "eb75ad-prod" ]
+  elif [[ "$namespace" = "eb75ad-prod" ]]
   then
     KEYCLOAK_ROUTE="sso-prod"
   fi
@@ -199,25 +199,25 @@ get_vanity_route_name() {
 }
 
 get_vanity_url() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
-  if [ "$namespace" = "e4ca1d-dev" ]
+  if [[ "$namespace" = "e4ca1d-dev" ]]
   then
     KEYCLOAK_URL="dev.sandbox.loginproxy.gov.bc.ca"
-  elif [ "$namespace" = "e4ca1d-test" ]
+  elif [[ "$namespace" = "e4ca1d-test" ]]
   then
     KEYCLOAK_URL="test.sandbox.loginproxy.gov.bc.ca"
-  elif [ "$namespace" = "e4ca1d-prod" ]
+  elif [[ "$namespace" = "e4ca1d-prod" ]]
   then
     KEYCLOAK_URL="sandbox.loginproxy.gov.bc.ca"
-  elif [ "$namespace" = "eb75ad-dev" ]
+  elif [[ "$namespace" = "eb75ad-dev" ]]
   then
     KEYCLOAK_URL="dev.loginproxy.gov.bc.ca"
-  elif [ "$namespace" = "eb75ad-test" ]
+  elif [[ "$namespace" = "eb75ad-test" ]]
   then
     KEYCLOAK_URL="test.loginproxy.gov.bc.ca"
-  elif [ "$namespace" = "eb75ad-prod" ]
+  elif [[ "$namespace" = "eb75ad-prod" ]]
   then
     KEYCLOAK_URL="loginproxy.gov.bc.ca"
   fi
@@ -227,14 +227,14 @@ get_vanity_url() {
 }
 
 connect_route_to_correct_service() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
 
   maintenance="$1"
   namespace="$2"
 
   KEYCLOAK_ROUTE=$(get_vanity_route_name "$namespace")
 
-  if [ "$maintenance" = "true" ]
+  if [[ "$maintenance" = "true" ]]
   then
     kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
     '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'-maintenance"}}}'
