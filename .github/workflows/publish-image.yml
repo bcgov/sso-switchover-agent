@@ -12,6 +12,8 @@ on:
       - "Dockerfile"
       - "poetry.lock"
       - "pyproject.toml"
+      - "transition-scripts/**"
+      - ".tool-versions"
 
 env:
   GITHUB_REGISTRY: ghcr.io
