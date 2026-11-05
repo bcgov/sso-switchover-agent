@@ -27,7 +27,7 @@ Examples:
 EOF
 }
 
-if [ "$#" -lt 2 ]; then
+if [[ "$#" -lt 2 ]]; then
     usage
     exit 1
 fi
@@ -38,7 +38,7 @@ namespace=$2
 pwd="$(dirname "$0")"
 source "$pwd/helpers/_all.sh"
 
-if [ "$(get_ocp_plate "$namespace")" != "e4ca1d" ]; then
+if [[ "$(get_ocp_plate "$namespace")" != "e4ca1d" ]]; then
     error "must run test scripts in sandbox environments"
     exit 1
 fi
@@ -49,12 +49,12 @@ declare -a realms_gold=()
 declare -a realms_golddr=()
 
 i=0
-while [ $i -ne 5 ]; do
+while [[ $i -ne 5 ]]; do
     i=$((i + 1))
     realms_gold+=("$TEST_REALM_PREFIX-$i")
 done
 
-while [ $i -ne 5 ]; do
+while [[ $i -ne 5 ]]; do
     i=$((i + 1))
     realms_golddr+=("$TEST_REALM_PREFIX-$i")
 done
@@ -78,7 +78,7 @@ wait_for_keycloak_healthy "golddr" "$namespace"
 for realm in "${realms_gold[@]}"; do
     info "checking realm $realm..."
     data=$(get_keycloak_realm "golddr" "$namespace" "$realm")
-    if [ -z "$data" ]; then
+    if [[ -z "$data" ]]; then
         echo "$data"
         exit 1
     fi
@@ -96,7 +96,7 @@ wait_for_keycloak_healthy "gold" "$namespace"
 for realm in "${realms_golddr[@]}"; do
     info "checking realm $realm..."
     data=$(get_keycloak_realm "gold" "$namespace" "$realm")
-    if [ -z "$data" ]; then
+    if [[ -z "$data" ]]; then
         echo "$data"
         exit 1
     fi
