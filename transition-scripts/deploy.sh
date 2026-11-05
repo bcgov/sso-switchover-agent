@@ -22,7 +22,7 @@ Examples:
 EOF
 }
 
-if [ "$#" -lt 1 ]; then
+if [[ "$#" -lt 1 ]]; then
     usage
     exit 1
 fi
@@ -47,8 +47,8 @@ switch_kube_context "gold" "$namespace"
 check_ocp_cluster "gold"
 
 helm_released=$(check_helm_release "$namespace" "sso-keycloak")
-if [ "$helm_released" == "found" ]; then
-    if [ "$purge" == "true" ]; then
+if [[ "$helm_released" == "found" ]]; then
+    if [[ "$purge" == "true" ]]; then
         uninstall_helm "$namespace"
         cleanup_namespace "$namespace"
     else
@@ -66,8 +66,8 @@ switch_kube_context "golddr" "$namespace"
 check_ocp_cluster "golddr"
 
 helm_released=$(check_helm_release "$namespace" "sso-keycloak")
-if [ "$helm_released" == "found" ]; then
-    if [ "$purge" == "true" ]; then
+if [[ "$helm_released" == "found" ]]; then
+    if [[ "$purge" == "true" ]]; then
         uninstall_helm "$namespace"
         cleanup_namespace "$namespace"
     else
