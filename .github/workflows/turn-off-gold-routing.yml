@@ -23,6 +23,9 @@ on:
         - enable
         - disable
 
+permissions:
+  contents: read
+
 jobs:
   enable-disable:
     runs-on: ubuntu-24.04
