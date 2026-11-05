@@ -1,6 +1,8 @@
 import os
+import signal
 import subprocess
 import sys
+import threading
 import logging
 import traceback
 import requests
@@ -28,6 +30,8 @@ ches_password = config.get('ches_password')
 log_email = config.get('log_email')
 
 incident_id = None
+
+SWITCH_SCRIPT_TIMEOUT_SECONDS = 15 * 60
 
 
 def handle_queues(queue: Queue, processes: list):
@@ -148,13 +152,33 @@ def dispatch_set_dr_active_directly():
         namespace = config.get('namespace')
         script = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'transition-scripts', 'switch-to-golddr.sh')
         # stderr is merged into stdout so lines are logged in the order they are produced
-        with subprocess.Popen(['bash', script, namespace], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1) as process:
-            for line in process.stdout:
-                logger.info('switch-to-golddr.sh: %s' % line.rstrip())
-        if process.returncode == 0:
+        # a new session lets us kill the script and its children (oc, helm...), which would otherwise keep the pipe open
+        with subprocess.Popen(['bash', script, namespace], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, start_new_session=True) as process:
+            timed_out = threading.Event()
+
+            def kill_process_group():
+                timed_out.set()
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+
+            timer = threading.Timer(SWITCH_SCRIPT_TIMEOUT_SECONDS, kill_process_group)
+            timer.start()
+            try:
+                for line in process.stdout:
+                    logger.info('switch-to-golddr.sh: %s' % line.rstrip())
+            finally:
+                timer.cancel()
+                if process.poll() is None:
+                    process.kill()
+        if timed_out.is_set():
+            logger.error('switch-to-golddr.sh timed out after %s seconds and was killed' % SWITCH_SCRIPT_TIMEOUT_SECONDS)
+        elif process.returncode == 0:
             logger.info('switch-to-golddr.sh completed successfully')
             return
-        logger.error('switch-to-golddr.sh exited with code %s' % process.returncode)
+        else:
+            logger.error('switch-to-golddr.sh exited with code %s' % process.returncode)
     except Exception as ex:
         logger.error('Triggering the action via the container failed. %s' % ex)
 
