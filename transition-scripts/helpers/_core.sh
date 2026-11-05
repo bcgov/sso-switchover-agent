@@ -27,6 +27,12 @@ check_ocp_cluster() {
 }
 
 get_current_cluster() {
+  # When running inside a cluster (e.g. the switchover agent pod) there are no named contexts
+  if [ -n "$IN_CLUSTER_NAME" ]; then
+    echo "$IN_CLUSTER_NAME"
+    return
+  fi
+
   gold="api-gold-devops-gov-bc-ca"
   golddr="api-golddr-devops-gov-bc-ca"
 

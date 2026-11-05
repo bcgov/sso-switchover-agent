@@ -14,14 +14,22 @@ upgrade_helm() {
   cluster_mode="$2" # active | standby
   current=$(get_current_cluster)
 
-  {
-    helm repo add sso-charts https://bcgov.github.io/sso-helm-charts
-    helm repo update
-  } &>/dev/null
+  # A pre-pulled chart (set in the agent image) avoids needing access to the helm repo
+  if [ -n "$KEYCLOAK_HELM_CHART_PATH" ]; then
+    chart="$KEYCLOAK_HELM_CHART_PATH"
+    version_args=()
+  else
+    {
+      helm repo add sso-charts https://bcgov.github.io/sso-helm-charts
+      helm repo update
+    } &>/dev/null
+    chart="sso-charts/sso-keycloak"
+    version_args=(--version "$KEYCLOAK_HELM_CHART_VERSION")
+  fi
 
   helm upgrade --install "$KEYCLOAK_HELM_DEPLOYMENT_NAME" \
-  sso-charts/sso-keycloak -n "$namespace" \
-  --version "$KEYCLOAK_HELM_CHART_VERSION" \
+  "$chart" -n "$namespace" \
+  "${version_args[@]}" \
   -f "$values/values.yaml" \
   -f "$values/${namespace:0:6}/${namespace:7}/values-$current-$namespace-$cluster_mode.yaml" "${@:3}"
 }
