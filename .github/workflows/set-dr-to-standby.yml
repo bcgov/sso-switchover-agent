@@ -20,6 +20,9 @@ on:
         required: false
         default: false
 
+permissions:
+  contents: read
+
 jobs:
   transition-scripts:
     runs-on: ubuntu-24.04

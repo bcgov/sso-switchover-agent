@@ -2,6 +2,10 @@ name: "Transaction Log Comparison"
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   xlog-cron:
     runs-on: ubuntu-24.04

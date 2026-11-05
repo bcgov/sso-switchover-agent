@@ -17,9 +17,15 @@ env:
   GITHUB_REGISTRY: ghcr.io
   IMAGE_NAME: bcgov/sso-switchover-agent
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+permissions:
+  contents: read
+
 jobs:
   build-and-push-image:
-    permissions: write-all
+    permissions:
+      contents: write
+      packages: write
     runs-on: ubuntu-24.04
     outputs:
       release_tag: ${{ steps.get-tag.outputs.release_tag }}
