@@ -21,6 +21,48 @@ APPUSER_SECRET="sso-patroni-appusers"
 BACKUP_SECRET="sso-patroni-old-creds"
 
 #######################################
+## Retry / resilience helpers        ##
+#######################################
+
+# Connectivity to the cluster API can drop mid-run (transient DNS blips,
+# brief apiserver unavailability, etc.) - see credential-rotation/README.md
+# for why simply re-running the whole action from scratch after that isn't
+# always safe. These are overridable via env vars for testing.
+ROTATE_RETRY_ATTEMPTS="${ROTATE_RETRY_ATTEMPTS:-5}"
+ROTATE_RETRY_DELAY_SECONDS="${ROTATE_RETRY_DELAY_SECONDS:-5}"
+
+# Retries a command a few times with a short delay in between, so a
+# transient connectivity blip doesn't fail an entire rotation step outright.
+# Only the *successful* attempt's stdout is ever emitted - a failed attempt's
+# (possibly partial) stdout is discarded so it can never corrupt a caller
+# capturing this via command substitution. Retry/failure messages go straight
+# to stderr (not the shared info/warn/error helpers, which print to stdout)
+# for the same reason.
+#
+# Usage: with_retry "<description for log messages>" <command> [args...]
+with_retry() {
+  description="$1"
+  shift
+
+  attempt=1
+  while true; do
+    if output=$("$@"); then
+      printf '%s\n' "$output"
+      return 0
+    fi
+
+    if [ "$attempt" -ge "$ROTATE_RETRY_ATTEMPTS" ]; then
+      echo "[retry] $description failed after $ROTATE_RETRY_ATTEMPTS attempts; giving up" >&2
+      return 1
+    fi
+
+    echo "[retry] $description failed (attempt $attempt/$ROTATE_RETRY_ATTEMPTS); retrying in ${ROTATE_RETRY_DELAY_SECONDS}s" >&2
+    sleep "$ROTATE_RETRY_DELAY_SECONDS"
+    attempt=$((attempt + 1))
+  done
+}
+
+#######################################
 ## Generic secret / password helpers ##
 #######################################
 
@@ -44,7 +86,8 @@ get_secret_value() {
   secret="$2"
   key="$3"
 
-  kubectl get secret "$secret" -n "$namespace" -o jsonpath="{.data.$key}" | base64 -d
+  with_retry "getting $secret/$key in $namespace" \
+    kubectl get secret "$secret" -n "$namespace" -o jsonpath="{.data.$key}" | base64 -d
 }
 
 secret_key_exists() {
@@ -53,7 +96,8 @@ secret_key_exists() {
   secret="$2"
   key="$3"
 
-  kubectl get secret "$secret" -n "$namespace" -o jsonpath="{.data.$key}" | grep -q .
+  with_retry "getting $secret/$key in $namespace" \
+    kubectl get secret "$secret" -n "$namespace" -o jsonpath="{.data.$key}" | grep -q .
 }
 
 # Patches one or more keys on an existing secret without touching the rest of
@@ -79,7 +123,34 @@ patch_secret_values() {
   done
   patch+="}}"
 
-  kubectl patch secret "$secret" -n "$namespace" --type=merge -p "$patch"
+  with_retry "patching secret $secret in $namespace" \
+    kubectl patch secret "$secret" -n "$namespace" --type=merge -p "$patch" >/dev/null
+}
+
+# Removes one or more keys from a secret's data (a merge patch can only add/
+# overwrite keys - only a JSON patch "remove" op can delete one). Missing
+# keys make the "remove" op itself fail, so this tolerates that (the key
+# being absent already is the desired end state) rather than treating it as
+# an error worth retrying/failing on.
+remove_secret_keys() {
+  if [ "$#" -lt 2 ]; then exit 1; fi
+  namespace="$1"
+  secret="$2"
+  shift 2
+
+  ops="["
+  first=true
+  for key in "$@"; do
+    if [ "$first" = true ]; then
+      first=false
+    else
+      ops+=","
+    fi
+    ops+="{\"op\":\"remove\",\"path\":\"/data/$key\"}"
+  done
+  ops+="]"
+
+  kubectl patch secret "$secret" -n "$namespace" --type=json -p="$ops" >/dev/null 2>&1 || true
 }
 
 ###############################
@@ -100,25 +171,39 @@ backup_patroni_secrets() {
     return
   fi
 
-  patroni_json=$(kubectl get secret "$PATRONI_SECRET" -n "$namespace" -o json)
-  appuser_json=$(kubectl get secret "$APPUSER_SECRET" -n "$namespace" -o json)
+  patroni_json=$(with_retry "getting $PATRONI_SECRET in $namespace" \
+    kubectl get secret "$PATRONI_SECRET" -n "$namespace" -o json)
+  appuser_json=$(with_retry "getting $APPUSER_SECRET in $namespace" \
+    kubectl get secret "$APPUSER_SECRET" -n "$namespace" -o json)
 
   merged_data=$(jq -n \
     --argjson a "$(echo "$patroni_json" | jq '.data')" \
     --argjson b "$(echo "$appuser_json" | jq '.data')" \
     '$a * $b')
 
+  # --dry-run=client only builds the manifest locally, it doesn't touch the
+  # API server, so it doesn't need retrying. The manifest is written to a
+  # temp file (rather than piped directly) so `kubectl apply` below can be
+  # retried and re-read the same content on every attempt - a pipe's stdin
+  # would otherwise only be readable once.
+  manifest_file=$(mktemp)
   kubectl create secret generic "$BACKUP_SECRET" \
     -n "$namespace" \
     --type=Opaque \
     --dry-run=client \
     -o json \
     --from-literal=placeholder=placeholder |
-    jq --argjson data "$merged_data" '.data = $data | del(.data.placeholder)' |
-    kubectl apply -f -
+    jq --argjson data "$merged_data" '.data = $data | del(.data.placeholder)' \
+    >"$manifest_file"
 
-  kubectl annotate secret "$BACKUP_SECRET" -n "$namespace" \
-    "rotated-at=$timestamp" --overwrite
+  with_retry "creating/updating $BACKUP_SECRET in $namespace" \
+    kubectl apply -f "$manifest_file" >/dev/null
+
+  with_retry "annotating $BACKUP_SECRET in $namespace" \
+    kubectl annotate secret "$BACKUP_SECRET" -n "$namespace" \
+    "rotated-at=$timestamp" --overwrite >/dev/null
+
+  rm -f "$manifest_file"
 }
 
 ###########################################
@@ -149,8 +234,9 @@ get_patroni_leader_pod() {
   namespace="$1"
 
   any_pod=$(get_any_patroni_pod "$namespace")
-  leader=$(kubectl -n "$namespace" exec "$any_pod" -- patronictl list -f json |
-    jq -r '.[] | select(.Role == "Leader" or .Role == "master") | .Member' | head -n 1)
+  raw=$(with_retry "querying patronictl list via $any_pod in $namespace" \
+    kubectl -n "$namespace" exec "$any_pod" -- patronictl list -f json)
+  leader=$(echo "$raw" | jq -r '.[] | select(.Role == "Leader" or .Role == "master") | .Member' | head -n 1)
 
   if [ -z "$leader" ]; then
     error "Unable to determine the current patroni leader pod in $namespace"
@@ -181,14 +267,37 @@ run_psql() {
 
   leader=$(get_patroni_leader_pod "$namespace")
 
-  kubectl exec -i -n "$namespace" "$leader" -- \
-    env PGPASSWORD="$password" psql -h localhost -U "$username" -d "$dbname" -v ON_ERROR_STOP=1 <<SQL
+  # Retries on failure (transient connectivity blips) with its own loop
+  # rather than delegating to with_retry directly, since the SQL is piped in
+  # via heredoc rather than passed as a plain argument, and leadership may
+  # have moved mid-retry (e.g. if a switchover partially completed), so the
+  # leader pod is re-resolved on every attempt rather than reused.
+  attempt=1
+  while true; do
+    if kubectl exec -i -n "$namespace" "$leader" -- \
+      env PGPASSWORD="$password" psql -h localhost -U "$username" -d "$dbname" -v ON_ERROR_STOP=1 <<SQL
 $sql
 SQL
+    then
+      return 0
+    fi
+
+    if [ "$attempt" -ge "$ROTATE_RETRY_ATTEMPTS" ]; then
+      echo "[retry] running psql against $namespace/$leader failed after $ROTATE_RETRY_ATTEMPTS attempts; giving up" >&2
+      return 1
+    fi
+
+    echo "[retry] running psql against $namespace/$leader failed (attempt $attempt/$ROTATE_RETRY_ATTEMPTS); retrying in ${ROTATE_RETRY_DELAY_SECONDS}s" >&2
+    sleep "$ROTATE_RETRY_DELAY_SECONDS"
+    attempt=$((attempt + 1))
+    leader=$(get_patroni_leader_pod "$namespace")
+  done
 }
 
 # Runs a single-value/tuples-only SQL query (e.g. SELECT count(*) ...) and
 # returns the raw, unformatted result - no headers/row-count footer to strip.
+# See run_psql's comment above for why this has its own retry loop instead of
+# using with_retry directly.
 run_psql_query() {
   if [ "$#" -lt 4 ]; then exit 1; fi
   namespace="$1"
@@ -199,8 +308,24 @@ run_psql_query() {
 
   leader=$(get_patroni_leader_pod "$namespace")
 
-  kubectl exec -i -n "$namespace" "$leader" -- \
-    env PGPASSWORD="$password" psql -h localhost -U "$username" -d "$dbname" -v ON_ERROR_STOP=1 -tAc "$sql"
+  attempt=1
+  while true; do
+    if output=$(kubectl exec -i -n "$namespace" "$leader" -- \
+      env PGPASSWORD="$password" psql -h localhost -U "$username" -d "$dbname" -v ON_ERROR_STOP=1 -tAc "$sql"); then
+      printf '%s\n' "$output"
+      return 0
+    fi
+
+    if [ "$attempt" -ge "$ROTATE_RETRY_ATTEMPTS" ]; then
+      echo "[retry] running psql query against $namespace/$leader failed after $ROTATE_RETRY_ATTEMPTS attempts; giving up" >&2
+      return 1
+    fi
+
+    echo "[retry] running psql query against $namespace/$leader failed (attempt $attempt/$ROTATE_RETRY_ATTEMPTS); retrying in ${ROTATE_RETRY_DELAY_SECONDS}s" >&2
+    sleep "$ROTATE_RETRY_DELAY_SECONDS"
+    attempt=$((attempt + 1))
+    leader=$(get_patroni_leader_pod "$namespace")
+  done
 }
 
 # Postgres roles are cluster-wide, but REASSIGN OWNED BY / DROP OWNED BY only
@@ -227,6 +352,33 @@ WHERE r.rolname = '$role_name' AND d.datname NOT IN ('template0', 'template1');"
   run_psql_query "$namespace" "$SUPERUSER_ROLE" "$superuser_password" "$sql"
 }
 
+# `IN ROLE` (used by rotate_appuser_role to create the new role) only grants
+# access via *inherited role membership* - it is not a substitute for the old
+# role's own direct database-level ACL entries (e.g. `GRANT CONNECT, CREATE
+# ON DATABASE ... TO old_role`). REASSIGN OWNED BY / DROP OWNED BY (run later
+# by finalize_appuser_rotation) only move object ownership and revoke
+# privileges *granted to* the old role - they never copy those direct grants
+# onto the new role. So once the old role is dropped, any privilege the new
+# role only had by inheriting through membership in the old role disappears
+# with it. This queries every database's ACL (via aclexplode) for privileges
+# explicitly granted directly to the given role, returning
+# "datname|privilege_type" pairs (one per line) so the caller can replicate
+# them onto the new role with real GRANT statements before the old role is
+# ever dropped.
+get_database_grants_for_role() {
+  if [ "$#" -lt 3 ]; then exit 1; fi
+  namespace="$1"
+  role_name="$2"
+  superuser_password="$3"
+
+  sql="SELECT d.datname || '|' || acl.privilege_type
+FROM pg_database d, aclexplode(d.datacl) acl
+JOIN pg_roles r ON acl.grantee = r.oid
+WHERE r.rolname = '$role_name' AND d.datname NOT IN ('template0', 'template1');"
+
+  run_psql_query "$namespace" "$SUPERUSER_ROLE" "$superuser_password" "$sql"
+}
+
 #####################################
 ## System role password rotation   ##
 #####################################
@@ -238,13 +390,36 @@ rotate_system_role_passwords() {
 
   current_superuser_password=$(get_secret_value "$namespace" "$PATRONI_SECRET" "password-superuser")
 
-  new_admin_password=$(generate_password 32)
-  new_standby_password=$(generate_password 32)
-  new_superuser_password=$(generate_password 32)
-
   if [ "$dry_run" = "true" ]; then
     info "[dry-run] would rotate passwords for roles: $ADMIN_ROLE, $STANDBY_ROLE, $SUPERUSER_ROLE"
     return
+  fi
+
+  # Resume-safe: if a previous attempt already generated and recorded
+  # pending passwords (e.g. it got interrupted after ALTER ROLE succeeded
+  # but before $PATRONI_SECRET was updated to match), reuse those same
+  # values instead of generating brand-new random ones on retry - ALTER ROLE
+  # to the same password twice is a harmless no-op, so this converges
+  # regardless of exactly where the previous attempt failed.
+  pending_admin=$(get_secret_value "$namespace" "$BACKUP_SECRET" "pending-password-admin" 2>/dev/null || true)
+  pending_standby=$(get_secret_value "$namespace" "$BACKUP_SECRET" "pending-password-standby" 2>/dev/null || true)
+  pending_superuser=$(get_secret_value "$namespace" "$BACKUP_SECRET" "pending-password-superuser" 2>/dev/null || true)
+
+  if [ -n "$pending_admin" ] && [ -n "$pending_standby" ] && [ -n "$pending_superuser" ]; then
+    info "Resuming an in-progress system-role password rotation from previously recorded pending values"
+    new_admin_password="$pending_admin"
+    new_standby_password="$pending_standby"
+    new_superuser_password="$pending_superuser"
+  else
+    new_admin_password=$(generate_password 32)
+    new_standby_password=$(generate_password 32)
+    new_superuser_password=$(generate_password 32)
+
+    info "Recording planned admin/standby/superuser passwords before mutating, so a retry can resume safely"
+    patch_secret_values "$namespace" "$BACKUP_SECRET" \
+      "pending-password-admin=$new_admin_password" \
+      "pending-password-standby=$new_standby_password" \
+      "pending-password-superuser=$new_superuser_password"
   fi
 
   info "Rotating admin/standby/superuser passwords in Postgres"
@@ -255,13 +430,30 @@ rotate_system_role_passwords() {
 ALTER ROLE \"$STANDBY_ROLE\" WITH PASSWORD '$new_standby_password';
 ALTER ROLE \"$SUPERUSER_ROLE\" WITH PASSWORD '$new_superuser_password';"
 
-  run_psql "$namespace" "$SUPERUSER_ROLE" "$current_superuser_password" "$sql"
+  # If a previous attempt got far enough to actually change the superuser's
+  # own password before failing, $current_superuser_password (read from the
+  # not-yet-updated secret) will no longer authenticate. Fall back to the
+  # pending (already-generated) superuser password in that case rather than
+  # failing outright.
+  if ! run_psql "$namespace" "$SUPERUSER_ROLE" "$current_superuser_password" "$sql"; then
+    if [ -n "$pending_superuser" ] && [ "$pending_superuser" != "$current_superuser_password" ]; then
+      warn "Could not authenticate with the current superuser password; a previous attempt may have already rotated it - retrying with the pending password"
+      run_psql "$namespace" "$SUPERUSER_ROLE" "$pending_superuser" "$sql"
+    else
+      error "Failed to rotate system role passwords in $namespace"
+      exit 1
+    fi
+  fi
 
   info "Updating $PATRONI_SECRET with the new passwords"
   patch_secret_values "$namespace" "$PATRONI_SECRET" \
     "password-admin=$new_admin_password" \
     "password-standby=$new_standby_password" \
     "password-superuser=$new_superuser_password"
+
+  info "Clearing resumable rotation state now that the passwords are live"
+  remove_secret_keys "$namespace" "$BACKUP_SECRET" \
+    "pending-password-admin" "pending-password-standby" "pending-password-superuser"
 }
 
 ########################################################
@@ -272,7 +464,8 @@ get_patroni_pod_names() {
   if [ "$#" -lt 1 ]; then exit 1; fi
   namespace="$1"
 
-  kubectl get pods -n "$namespace" -l app.kubernetes.io/name=sso-patroni -o jsonpath='{.items[*].metadata.name}'
+  with_retry "listing patroni pods in $namespace" \
+    kubectl get pods -n "$namespace" -l app.kubernetes.io/name=sso-patroni -o jsonpath='{.items[*].metadata.name}'
 }
 
 restart_patroni_pod() {
@@ -281,7 +474,11 @@ restart_patroni_pod() {
   pod="$2"
 
   info "Restarting patroni pod $pod"
-  kubectl delete pod "$pod" -n "$namespace"
+  # --ignore-not-found makes this safe to retry: if the delete already
+  # succeeded but the confirmation was lost to a network blip, retrying
+  # against an already-gone pod is a no-op instead of an error.
+  with_retry "deleting pod $pod in $namespace" \
+    kubectl delete pod "$pod" -n "$namespace" --ignore-not-found >/dev/null
   wait_for_patroni_healthy "$namespace"
 }
 
@@ -314,8 +511,9 @@ cycle_patroni_pods_zero_downtime() {
   candidate=$(echo "$replicas" | awk '{print $1}')
   if [ -n "$candidate" ]; then
     info "Switching patroni leadership from $leader to $candidate before restarting $leader"
-    kubectl -n "$namespace" exec "$leader" -- \
-      patronictl switchover --leader "$leader" --candidate "$candidate" --force
+    with_retry "patronictl switchover $leader -> $candidate in $namespace" \
+      kubectl -n "$namespace" exec "$leader" -- \
+      patronictl switchover --leader "$leader" --candidate "$candidate" --force >/dev/null
     wait_for_patroni_healthy "$namespace"
   fi
 
@@ -332,21 +530,88 @@ rotate_appuser_role() {
   namespace="$1"
   dry_run="${2:-true}"
 
-  old_appuser_username=$(get_secret_value "$namespace" "$APPUSER_SECRET" "username-appuser1")
-  new_appuser_username="appuser1-$(generate_rotation_suffix)"
-  new_appuser_password=$(generate_password 32)
-
   if [ "$dry_run" = "true" ]; then
+    old_appuser_username=$(get_secret_value "$namespace" "$APPUSER_SECRET" "username-appuser1")
+    new_appuser_username="appuser1-$(generate_rotation_suffix)"
     info "[dry-run] would create new appuser role '$new_appuser_username' inheriting privileges from '$old_appuser_username'"
     return
   fi
 
-  info "Creating new appuser role $new_appuser_username (inherits $old_appuser_username's privileges)"
-
   superuser_password=$(get_secret_value "$namespace" "$PATRONI_SECRET" "password-superuser")
 
-  sql="CREATE ROLE \"$new_appuser_username\" WITH LOGIN PASSWORD '$new_appuser_password' IN ROLE \"$old_appuser_username\";"
+  # Resume-safe: if a previous attempt already recorded a planned old/new
+  # appuser pair (e.g. it got interrupted after CREATE ROLE succeeded but
+  # before $APPUSER_SECRET was updated to point at it), reuse that same
+  # identity instead of generating a brand-new one on retry - otherwise every
+  # retry would create and then abandon (orphan) yet another role. A stale
+  # pending pair left over from an already-fully-completed rotation (i.e. the
+  # "new" role is already the one live in $APPUSER_SECRET) is detected and
+  # cleared instead of being reused, so a genuinely new rotation run doesn't
+  # silently no-op by "resuming" old finished state.
+  current_appuser_username=$(get_secret_value "$namespace" "$APPUSER_SECRET" "username-appuser1")
+  pending_old=$(get_secret_value "$namespace" "$BACKUP_SECRET" "pending-new-appuser-old-username" 2>/dev/null || true)
+  pending_new=$(get_secret_value "$namespace" "$BACKUP_SECRET" "pending-new-appuser-username" 2>/dev/null || true)
+  pending_password=$(get_secret_value "$namespace" "$BACKUP_SECRET" "pending-new-appuser-password" 2>/dev/null || true)
+
+  if [ -n "$pending_new" ] && [ "$pending_new" = "$current_appuser_username" ]; then
+    info "Clearing stale pending appuser rotation state left over from an already-completed run"
+    remove_secret_keys "$namespace" "$BACKUP_SECRET" \
+      "pending-new-appuser-old-username" "pending-new-appuser-username" "pending-new-appuser-password"
+    pending_new=""
+  fi
+
+  if [ -n "$pending_new" ]; then
+    info "Resuming an in-progress appuser rotation ($pending_old -> $pending_new)"
+    old_appuser_username="$pending_old"
+    new_appuser_username="$pending_new"
+    new_appuser_password="$pending_password"
+  else
+    old_appuser_username="$current_appuser_username"
+    new_appuser_username="appuser1-$(generate_rotation_suffix)"
+    new_appuser_password=$(generate_password 32)
+
+    info "Recording planned appuser rotation ($old_appuser_username -> $new_appuser_username) before mutating, so a retry can resume safely"
+    patch_secret_values "$namespace" "$BACKUP_SECRET" \
+      "pending-new-appuser-old-username=$old_appuser_username" \
+      "pending-new-appuser-username=$new_appuser_username" \
+      "pending-new-appuser-password=$new_appuser_password"
+  fi
+
+  info "Creating new appuser role $new_appuser_username (inherits $old_appuser_username's privileges)"
+
+  # CREATE-OR-ALTER (rather than plain CREATE ROLE): safe to re-run if a
+  # previous attempt already created the role but failed before later steps
+  # completed. GRANT membership is reasserted unconditionally too - also a
+  # harmless no-op if it's already in place.
+  sql="DO \$rotate_appuser\$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '$new_appuser_username') THEN
+    CREATE ROLE \"$new_appuser_username\" WITH LOGIN PASSWORD '$new_appuser_password' IN ROLE \"$old_appuser_username\";
+  ELSE
+    ALTER ROLE \"$new_appuser_username\" WITH PASSWORD '$new_appuser_password';
+  END IF;
+END
+\$rotate_appuser\$;
+GRANT \"$old_appuser_username\" TO \"$new_appuser_username\";"
   run_psql "$namespace" "$SUPERUSER_ROLE" "$superuser_password" "$sql"
+
+  # `IN ROLE` only gives the new role access via *inherited membership* in
+  # the old role. That's fine while both roles co-exist, but
+  # finalize_appuser_rotation() later drops the old role outright, which
+  # would silently take any database-level privilege (e.g. CONNECT/CREATE)
+  # the new role only had *through that membership* down with it. Mirror the
+  # old role's own direct database-level grants onto the new role now, as
+  # real independent GRANTs, so its access doesn't depend on the old role
+  # continuing to exist.
+  database_grants=$(get_database_grants_for_role "$namespace" "$old_appuser_username" "$superuser_password")
+  if [ -n "$database_grants" ]; then
+    info "Mirroring $old_appuser_username's direct database-level grants onto $new_appuser_username"
+    while IFS='|' read -r dbname privilege; do
+      [ -z "$dbname" ] && continue
+      run_psql "$namespace" "$SUPERUSER_ROLE" "$superuser_password" \
+        "GRANT $privilege ON DATABASE \"$dbname\" TO \"$new_appuser_username\";"
+    done <<< "$database_grants"
+  fi
 
   info "Verifying the new appuser role can authenticate"
   run_psql "$namespace" "$new_appuser_username" "$new_appuser_password" "SELECT 1;"
@@ -356,10 +621,18 @@ rotate_appuser_role() {
     "username-appuser1=$new_appuser_username" \
     "password-appuser1=$new_appuser_password"
 
-  # Remember the old role name so `finalize_appuser_rotation` (a separate,
-  # explicitly-triggered later run) knows which role to retire.
-  patch_secret_values "$namespace" "$BACKUP_SECRET" \
-    "pending-old-appuser-role=$old_appuser_username"
+  # Record the old role name so `finalize_appuser_rotation` (a separate,
+  # explicitly-triggered later run) knows which role to retire, and clear the
+  # now-resolved pending-new-* resume state in the same call so there's no
+  # window where a retry could misinterpret it as still in-flight.
+  old_appuser_b64=$(printf '%s' "$old_appuser_username" | base64 | tr -d '\n')
+  with_retry "recording old appuser role + clearing pending rotation state in $namespace" \
+    kubectl patch secret "$BACKUP_SECRET" -n "$namespace" --type=json -p="[
+      {\"op\":\"add\",\"path\":\"/data/pending-old-appuser-role\",\"value\":\"$old_appuser_b64\"},
+      {\"op\":\"remove\",\"path\":\"/data/pending-new-appuser-old-username\"},
+      {\"op\":\"remove\",\"path\":\"/data/pending-new-appuser-username\"},
+      {\"op\":\"remove\",\"path\":\"/data/pending-new-appuser-password\"}
+    ]" >/dev/null
 }
 
 finalize_appuser_rotation() {
@@ -409,10 +682,9 @@ DROP OWNED BY \"$old_appuser_username\";"
   done
 
   info "Dropping the old appuser role $old_appuser_username"
-  run_psql "$namespace" "$SUPERUSER_ROLE" "$superuser_password" "DROP ROLE \"$old_appuser_username\";"
+  run_psql "$namespace" "$SUPERUSER_ROLE" "$superuser_password" "DROP ROLE IF EXISTS \"$old_appuser_username\";"
 
-  kubectl patch secret "$BACKUP_SECRET" -n "$namespace" --type=json \
-    -p='[{"op": "remove", "path": "/data/pending-old-appuser-role"}]' || true
+  remove_secret_keys "$namespace" "$BACKUP_SECRET" "pending-old-appuser-role"
 }
 
 #####################################
@@ -430,7 +702,8 @@ cycle_keycloak_pods() {
   fi
 
   info "Cycling Keycloak pods so they pick up the new appuser credentials"
-  kubectl rollout restart statefulset/sso-keycloak -n "$namespace"
+  with_retry "rollout restart statefulset/sso-keycloak in $namespace" \
+    kubectl rollout restart statefulset/sso-keycloak -n "$namespace" >/dev/null
   wait_for_keycloak_all_ready "$namespace"
 }
 
@@ -449,8 +722,10 @@ cycle_backupcontainer_pod() {
   fi
 
   info "Cycling the backupcontainer pod (deployment/sso-backup-storage-18) so it picks up the new appuser credentials"
-  kubectl rollout restart deployment/sso-backup-storage-18 -n "$namespace"
-  kubectl rollout status deployment/sso-backup-storage-18 -n "$namespace" --timeout=300s
+  with_retry "rollout restart deployment/sso-backup-storage-18 in $namespace" \
+    kubectl rollout restart deployment/sso-backup-storage-18 -n "$namespace" >/dev/null
+  with_retry "rollout status deployment/sso-backup-storage-18 in $namespace" \
+    kubectl rollout status deployment/sso-backup-storage-18 -n "$namespace" --timeout=300s >/dev/null
 }
 
 # Grafana may also need its deployed pods cycled to pick up new credentials.
