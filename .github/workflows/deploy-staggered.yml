@@ -15,6 +15,9 @@ on:
         options: ["dev","test","prod"]
         default: "dev"
 
+permissions:
+  contents: read
+
 jobs:
   transition-scripts:
     runs-on: ubuntu-24.04
