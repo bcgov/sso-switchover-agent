@@ -23,7 +23,14 @@ The switchover agent only evalutes changes in the returned IP address.  To deter
 |   |        ||  Gold(active) | GoldDR(passive)  | 'undefined'  |
 |---|---     |---|---|---|---|
 |   | Gold(active)   || Internal Alert <br /> Gold Restored  | Alert Clients <br />Gold Restored <br /> CSS Active  | Internal Alert <br /> agent restart  |
-|   | GoldDR(passive) || Failover Triggered  <br /> Alert clients <br /> of DR status <br /> CSS Maintenance |  Internal Alert <br /> GoldDR restored  | Internal Alert <br /> agent restart  |
+|   | GoldDR(passive) || Failover Triggered <br /> (`switch-to-golddr.sh` run directly by the agent) <br /> Alert clients <br /> of DR status <br /> CSS Maintenance |  Internal Alert <br /> GoldDR restored  | Internal Alert <br /> agent restart  |
 |   | Error  || Internal Alert <br />Gold Down  | Internal Alert <br />GoldDR Down  | Internal Alert <br /> agent restart  |
+
+When a failover is triggered, the agent runs `transition-scripts/switch-to-golddr.sh` directly in its own pod rather than dispatching a github action. If the direct run fails, it falls back to the `switch-to-golddr.yml` github action. The same script can also be run proactively from the agent's command line:
+
+```sh
+cd transition-scripts
+./switch-to-golddr.sh <namespace>
+```
 
 None of the internal alerts are created yet.  The tests will need to be updated when they are.
