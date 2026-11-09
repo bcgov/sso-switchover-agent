@@ -37,7 +37,7 @@ Notes:
 EOF
 }
 
-if [ "$#" -lt 1 ]; then
+if [[ "$#" -lt 1 ]]; then
     usage
     exit 1
 fi
@@ -51,13 +51,13 @@ source "$pwd/helpers/_all.sh"
 switch_kube_context "golddr" "$namespace"
 
 patroni_health=$(check_patroni_health "$namespace")
-if [ "$patroni_health" != "up" ]; then
+if [[ "$patroni_health" != "up" ]]; then
     warn "the patroni pods are not healthy in Golddr"
     exit 1
 fi
 
 patroni_mode=$(check_patroni_cluster_mode "$namespace")
-if [ "$patroni_mode" != "active" ]; then
+if [[ "$patroni_mode" != "active" ]]; then
     warn "the patroni pods are not in active mode in Golddr"
     exit 1
 fi
@@ -66,7 +66,7 @@ fi
 switch_kube_context "gold" "$namespace"
 
 patroni_mode=$(check_patroni_cluster_mode "$namespace")
-if [ "$patroni_mode" != "standby" ]; then
+if [[ "$patroni_mode" != "standby" ]]; then
     info "the patroni pods are not running in standby mode ($patroni_mode)"
     info "setting patroni mode to standby mode to sync up data with Golddr database"
 
@@ -80,13 +80,13 @@ wait_for_patroni_xlog_synced "$namespace"
 info "starting to convert patroni cluster type to active in $namespace"
 
 cluster_update=$(set_patroni_cluster_active "$namespace")
-if [ "$cluster_update" != "success" ]; then
+if [[ "$cluster_update" != "success" ]]; then
     error "failed to convert patroni cluster type to active"
     exit 1
 fi
 
 patroni_mode=$(check_patroni_cluster_mode "$namespace")
-if [ "$patroni_mode" != "active" ]; then
+if [[ "$patroni_mode" != "active" ]]; then
     error "the patroni pods are not running in active mode ($patroni_mode)"
     exit 1
 fi
@@ -105,7 +105,7 @@ upgrade_helm_active "$namespace"
 switch_kube_context "golddr" "$namespace"
 
 cluster_update=$(set_patroni_cluster_standby "$namespace")
-if [ "$cluster_update" != "success" ]; then
+if [[ "$cluster_update" != "success" ]]; then
     error "failed to convert patroni cluster type to standby"
     exit 1
 fi
