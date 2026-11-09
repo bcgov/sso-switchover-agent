@@ -28,7 +28,7 @@ Examples:
 EOF
 }
 
-if [ "$#" -lt 1 ]; then
+if [[ "$#" -lt 1 ]]; then
     usage
     exit 1
 fi
@@ -49,7 +49,7 @@ switch_kube_context "golddr" "$namespace"
 
 patroni_health=$(check_patroni_health "$namespace")
 info "The patroni gold dr health is: $patroni_health"
-if [ "$patroni_health" != "up" ]; then
+if [[ "$patroni_health" != "up" ]]; then
     warn "the patroni pods are not healthy in Golddr"
 fi
 
@@ -60,7 +60,7 @@ switch_kube_context "gold" "$namespace"
 patroni_health=$(check_patroni_health "$namespace")
 
 info "The patroni gold health is: $patroni_health"
-if [ "$patroni_health" != "up" ]; then
+if [[ "$patroni_health" != "up" ]]; then
     warn "the patroni pods are not healthy in Gold"
 fi
 
@@ -70,6 +70,6 @@ switch_kube_context "golddr" "$namespace"
 patroni_health=$(check_patroni_health "$namespace")
 
 info "The patroni golddr health is: $patroni_health"
-if [ "$patroni_health" != "up" ]; then
+if [[ "$patroni_health" != "up" ]]; then
     warn "the patroni pods are not healthy in Gold"
 fi
