@@ -6,6 +6,49 @@
 
 OC_SERVICE_ACCOUNT="sso-action-deployer"
 
+KUBE_RETRY_ATTEMPTS="${KUBE_RETRY_ATTEMPTS:-5}"
+KUBE_RETRY_DELAY="${KUBE_RETRY_DELAY:-3}"
+KUBE_CONNECTION_ERROR_REGEX="connection refused|connection reset|i/o timeout|TLS handshake timeout|unexpected EOF|unable to connect to the server|no route to host|network is unreachable|Client.Timeout|context deadline exceeded|Service Unavailable|Gateway Time-?out|Bad Gateway"
+
+# Runs a command, retrying (fixed delay) only when its stderr shows a connection-type error.
+# Other failures are returned immediately. stdout is passed through; stderr is replayed.
+retry_on_connection_error() {
+  local attempt=1 rc errfile
+  errfile=$(mktemp)
+
+  while true; do
+    "$@" 2>"$errfile"
+    rc=$?
+    cat "$errfile" >&2
+
+    if [[ "$rc" -eq 0 ]]; then
+      rm -f "$errfile"
+      return 0
+    fi
+
+    if [[ "$attempt" -ge "$KUBE_RETRY_ATTEMPTS" ]] || ! grep -qiE "$KUBE_CONNECTION_ERROR_REGEX" "$errfile"; then
+      rm -f "$errfile"
+      return "$rc"
+    fi
+
+    echo "$1 connection error (attempt $attempt/$KUBE_RETRY_ATTEMPTS), retrying in ${KUBE_RETRY_DELAY}s..." >&2
+    attempt=$((attempt + 1))
+    sleep "$KUBE_RETRY_DELAY"
+  done
+}
+
+kubectl_with_retry() {
+  retry_on_connection_error kubectl "$@"
+}
+
+helm_with_retry() {
+  retry_on_connection_error helm "$@"
+}
+
+oc_with_retry() {
+  retry_on_connection_error oc "$@"
+}
+
 get_kube_context() {
   kubectl config current-context
 }
@@ -106,7 +149,7 @@ kube_curl() {
   namespace="$1"
   pod_name="$2"
 
-  response=$(kubectl -n "$namespace" exec "$pod_name" -- curl -s -w "%{http_code}" "${@:3}")
+  response=$(kubectl_with_retry -n "$namespace" exec "$pod_name" -- curl -s -w "%{http_code}" "${@:3}")
   if [[ "${#response}" -lt 3 ]]; then
     echo "500" ""
     return
@@ -142,7 +185,7 @@ get_tsc_target_port() {
   prefix="$2"
 
   target=$(get_target_cluster)
-  target_port=$(kubectl get svc "$prefix-$target" -n "$namespace" -o jsonpath='{.spec.ports[].targetPort}')
+  target_port=$(kubectl_with_retry get svc "$prefix-$target" -n "$namespace" -o jsonpath='{.spec.ports[].targetPort}')
   echo "$target_port"
 }
 
@@ -150,7 +193,7 @@ count_ready_pods() {
   if [[ "$#" -lt 1 ]]; then exit 1; fi
   namespace="$1"
 
-  kubectl -n "$namespace" get pods -o custom-columns=ready:status.containerStatuses[*].ready "${@:2}" | grep true -c
+  kubectl_with_retry -n "$namespace" get pods -o custom-columns=ready:status.containerStatuses[*].ready "${@:2}" | grep true -c
 }
 
 get_ocp_default_route_url() {

@@ -20,14 +20,14 @@ upgrade_helm() {
     version_args=()
   else
     {
-      helm repo add sso-charts https://bcgov.github.io/sso-helm-charts
-      helm repo update
+      helm_with_retry repo add sso-charts https://bcgov.github.io/sso-helm-charts
+      helm_with_retry repo update
     } &>/dev/null
     chart="sso-charts/sso-keycloak"
     version_args=(--version "$KEYCLOAK_HELM_CHART_VERSION")
   fi
 
-  helm upgrade --install "$KEYCLOAK_HELM_DEPLOYMENT_NAME" \
+  helm_with_retry upgrade --install "$KEYCLOAK_HELM_DEPLOYMENT_NAME" \
   "$chart" -n "$namespace" \
   "${version_args[@]}" \
   -f "$values/values.yaml" \
@@ -83,12 +83,12 @@ upgrade_helm_standby() {
   switch_kube_context "$target" "$namespace"
   check_ocp_cluster "$target"
 
-  password_superuser=$(kubectl get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-superuser}' | base64 -d)
-  password_admin=$(kubectl get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-admin}' | base64 -d)
-  password_standby=$(kubectl get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-standby}' | base64 -d)
+  password_superuser=$(kubectl_with_retry get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-superuser}' | base64 -d)
+  password_admin=$(kubectl_with_retry get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-admin}' | base64 -d)
+  password_standby=$(kubectl_with_retry get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-standby}' | base64 -d)
 
-  username_appuser1=$(kubectl get secret sso-patroni-appusers -n "$namespace" -o jsonpath='{.data.username-appuser1}' | base64 -d)
-  password_appuser1=$(kubectl get secret sso-patroni-appusers -n "$namespace" -o jsonpath='{.data.password-appuser1}' | base64 -d)
+  username_appuser1=$(kubectl_with_retry get secret sso-patroni-appusers -n "$namespace" -o jsonpath='{.data.username-appuser1}' | base64 -d)
+  password_appuser1=$(kubectl_with_retry get secret sso-patroni-appusers -n "$namespace" -o jsonpath='{.data.password-appuser1}' | base64 -d)
 
   switch_kube_context "$current" "$namespace"
   check_ocp_cluster "$current"
@@ -121,15 +121,15 @@ uninstall_helm() {
   if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
-  helm uninstall sso-keycloak -n "$namespace" || true
+  helm_with_retry uninstall sso-keycloak -n "$namespace" || true
 }
 
 cleanup_namespace() {
   if [[ "$#" -lt 1 ]]; then exit 1; fi
   namespace="$1"
 
-  kubectl delete configmap -n "$namespace" -l "app.kubernetes.io/name=sso-patroni"
-  kubectl delete pvc -n "$namespace" -l "app.kubernetes.io/name=sso-patroni"
+  kubectl_with_retry delete configmap -n "$namespace" -l "app.kubernetes.io/name=sso-patroni"
+  kubectl_with_retry delete pvc -n "$namespace" -l "app.kubernetes.io/name=sso-patroni"
 }
 
 check_helm_release() {
@@ -137,7 +137,7 @@ check_helm_release() {
   namespace="$1"
   release="$2"
 
-  status=$(helm status "$release" -n "$namespace" 2>&1)
+  status=$(helm_with_retry status "$release" -n "$namespace" 2>&1)
   error_msg="Error: release: not found"
 
   if [[ "$status" == *"$error_msg"* ]]; then
@@ -213,10 +213,10 @@ connect_route_to_correct_service() {
 
   if [[ "$maintenance" = "true" ]]
   then
-    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
+    kubectl_with_retry -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
     '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'-maintenance"}}}'
   else
-    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
+    kubectl_with_retry -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
     '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'"}}}'
   fi
 
