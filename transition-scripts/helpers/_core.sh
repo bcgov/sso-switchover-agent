@@ -11,29 +11,29 @@ KUBE_RETRY_DELAY="${KUBE_RETRY_DELAY:-3}"
 KUBE_CONNECTION_ERROR_REGEX="connection refused|connection reset|i/o timeout|TLS handshake timeout|unexpected EOF|unable to connect to the server|no route to host|network is unreachable|Client.Timeout|context deadline exceeded|Service Unavailable|Gateway Time-?out|Bad Gateway"
 
 # Runs a command, retrying (fixed delay) only when its stderr shows a connection-type error.
-# Other failures are returned immediately. stdout is passed through; stderr is replayed.
+# kubectl can log an API discovery timeout and still exit 0 with empty/partial output, so a
+# connection error in stderr triggers a retry even when the exit code is 0.
+# Output of each attempt is buffered; only the final attempt's stdout/stderr is emitted.
 retry_on_connection_error() {
-  local attempt=1 rc errfile
+  local attempt=1 rc outfile errfile
+  outfile=$(mktemp)
   errfile=$(mktemp)
 
   while true; do
-    "$@" 2>"$errfile"
+    "$@" >"$outfile" 2>"$errfile"
     rc=$?
+
+    if [[ "$attempt" -lt "$KUBE_RETRY_ATTEMPTS" ]] && grep -qiE "$KUBE_CONNECTION_ERROR_REGEX" "$errfile"; then
+      echo "$1 connection error (attempt $attempt/$KUBE_RETRY_ATTEMPTS), retrying in ${KUBE_RETRY_DELAY}s..." >&2
+      attempt=$((attempt + 1))
+      sleep "$KUBE_RETRY_DELAY"
+      continue
+    fi
+
+    cat "$outfile"
     cat "$errfile" >&2
-
-    if [[ "$rc" -eq 0 ]]; then
-      rm -f "$errfile"
-      return 0
-    fi
-
-    if [[ "$attempt" -ge "$KUBE_RETRY_ATTEMPTS" ]] || ! grep -qiE "$KUBE_CONNECTION_ERROR_REGEX" "$errfile"; then
-      rm -f "$errfile"
-      return "$rc"
-    fi
-
-    echo "$1 connection error (attempt $attempt/$KUBE_RETRY_ATTEMPTS), retrying in ${KUBE_RETRY_DELAY}s..." >&2
-    attempt=$((attempt + 1))
-    sleep "$KUBE_RETRY_DELAY"
+    rm -f "$outfile" "$errfile"
+    return "$rc"
   done
 }
 
