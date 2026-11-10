@@ -12,7 +12,7 @@ wait_for_keycloak_all_ready() {
 
   namespace="$1"
 
-  replicas=$(kubectl get statefulset sso-keycloak -n "$namespace" -o jsonpath='{.spec.replicas}')
+  replicas=$(kubectl_with_retry get statefulset sso-keycloak -n "$namespace" -o jsonpath='{.spec.replicas}')
 
   count=0
   wait_ready() {
@@ -92,8 +92,8 @@ get_keycloak_admin_token() {
   namespace="$2"
   ensure_kube_context "$cluster"
 
-  username=$(kubectl get secret sso-keycloak-admin -n "$namespace" -o jsonpath='{.data.username}' | base64 -d)
-  password=$(kubectl get secret sso-keycloak-admin -n "$namespace" -o jsonpath='{.data.password}' | base64 -d)
+  username=$(kubectl_with_retry get secret sso-keycloak-admin -n "$namespace" -o jsonpath='{.data.username}' | base64 -d)
+  password=$(kubectl_with_retry get secret sso-keycloak-admin -n "$namespace" -o jsonpath='{.data.password}' | base64 -d)
 
   read -r status_code data < <(curl_http_code \
     -d "client_id=admin-cli" \

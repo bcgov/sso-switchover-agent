@@ -41,8 +41,8 @@ source "$pwd/helpers/_all.sh"
 set -o allexport
 source .env
 set +o allexport
-oc login --token="$GOLD_TOKEN" --server=https://api.gold.devops.gov.bc.ca:6443
-oc login --token="$GOLDDR_TOKEN" --server=https://api.golddr.devops.gov.bc.ca:6443
+oc_with_retry login --token="$GOLD_TOKEN" --server=https://api.gold.devops.gov.bc.ca:6443
+oc_with_retry login --token="$GOLDDR_TOKEN" --server=https://api.golddr.devops.gov.bc.ca:6443
 
 # Golddr status check
 switch_kube_context "golddr" "$namespace"

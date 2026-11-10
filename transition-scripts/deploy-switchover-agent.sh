@@ -57,14 +57,14 @@ if [[ "$#" -eq 3 ]]; then
     validate_time_regex "$time_start"
     validate_time_regex "$time_end"
 
-    kubectl -n "$namespace" patch secret "$secret_name" \
+    kubectl_with_retry -n "$namespace" patch secret "$secret_name" \
     --patch='{"stringData": { "PREEMPTIVE_FAILOVER_START_TIME": "'"$time_start"'", "PREEMPTIVE_FAILOVER_END_TIME": "'"$time_end"'" }}'
 elif [[ "$#" -eq 1 ]]; then
 
-    kubectl -n "$namespace" patch secret "$secret_name" \
+    kubectl_with_retry -n "$namespace" patch secret "$secret_name" \
     --patch='{"stringData": { "PREEMPTIVE_FAILOVER_START_TIME": "", "PREEMPTIVE_FAILOVER_END_TIME": "" }}'
 fi
 
 # Redeploy the agent.
 
-kubectl -n "$namespace" rollout restart deployment/switch-agent-switchover-agent
+kubectl_with_retry -n "$namespace" rollout restart deployment/switch-agent-switchover-agent
