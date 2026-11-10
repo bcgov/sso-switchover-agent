@@ -7,7 +7,7 @@
 OC_SERVICE_ACCOUNT="sso-action-deployer"
 
 KUBE_RETRY_ATTEMPTS="${KUBE_RETRY_ATTEMPTS:-5}"
-KUBE_RETRY_DELAY="${KUBE_RETRY_DELAY:-3}"
+KUBE_RETRY_DELAY="${KUBE_RETRY_DELAY:-5}"
 KUBE_CONNECTION_ERROR_REGEX="connection refused|connection reset|i/o timeout|TLS handshake timeout|unexpected EOF|unable to connect to the server|no route to host|network is unreachable|Client.Timeout|context deadline exceeded|Service Unavailable|Gateway Time-?out|Bad Gateway"
 
 # Runs a command, retrying (fixed delay) only when its stderr shows a connection-type error.
