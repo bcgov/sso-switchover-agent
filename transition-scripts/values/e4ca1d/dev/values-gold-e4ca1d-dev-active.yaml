@@ -5,6 +5,8 @@ image:
 
 additionalServerOptions: >-
   -Djgroups.dns.query=sso-keycloak-ping.e4ca1d-dev.svc.cluster.local
+  -XX:UseAVX=2
+# https://access.redhat.com/security/vulnerabilities/RHSB-2026-018#section--Mitigation
 
 extraEnvs:
   - name: KC_HOSTNAME
