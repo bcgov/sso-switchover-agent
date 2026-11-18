@@ -26,7 +26,7 @@ runs:
         openshift_token: ${{ inputs.oc-token-gold }}
         namespace: ${{ inputs.namespace }}
         insecure_skip_tls_verify: true
-      continue-on-error: true
+      continue-on-error: false
 
     - name: Login Golddr
       uses: redhat-actions/oc-login@5eb45e848b168b6bf6b8fe7f1561003c12e3c99d # v1.3
@@ -35,4 +35,4 @@ runs:
         openshift_token: ${{ inputs.oc-token-golddr }}
         namespace: ${{ inputs.namespace }}
         insecure_skip_tls_verify: true
-      continue-on-error: true
+      continue-on-error: false

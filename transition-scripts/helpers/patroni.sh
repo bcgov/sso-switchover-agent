@@ -132,7 +132,7 @@ wait_for_patroni_all_ready() {
 
   namespace="$1"
 
-  replicas=$(kubectl get statefulset sso-patroni -n "$namespace" -o jsonpath='{.spec.replicas}')
+  replicas=$(kubectl_with_retry get statefulset sso-patroni -n "$namespace" -o jsonpath='{.spec.replicas}')
 
   count=0
   wait_ready() {
@@ -159,7 +159,7 @@ get_patroni_xlog() {
   namespace="$1"
   patroni_mode=$(check_patroni_cluster_mode "$namespace")
   if [[ "$patroni_mode" == "active" ]]; then
-    leader=$(kubectl -n "$namespace" exec sso-patroni-0 -- patronictl list -f json | jq -r '.[] | select(.Role == "Leader") | .Member')
+    leader=$(kubectl_with_retry -n "$namespace" exec sso-patroni-0 -- patronictl list -f json | jq -r '.[] | select(.Role == "Leader") | .Member')
 
     # get the leader pod's lasted xlog location in the active patroni cluster.
     read -r status_code data < <(kube_curl "$namespace" "$leader" http://localhost:8008/patroni)

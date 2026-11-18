@@ -17,9 +17,13 @@ a **role swap** instead:
 1. **Rotate** (default mode) creates a brand-new login role (new username
    *and* password) that is granted membership in the old role
    (`GRANT <old_role> TO <new_role>`), so both the old and new roles remain
-   valid simultaneously. `sso-patroni-appusers` is updated to point at the new
-   role, and Keycloak (and, once wired up, backupcontainer) are cycled to pick
-   it up. The old role is **not** touched.
+   valid simultaneously. It also mirrors any direct database-level grants
+   (e.g. `CONNECT`/`CREATE`/`TEMPORARY`) the old role holds onto the new role
+   as independent `GRANT`s — membership in the old role alone isn't enough,
+   since that access would otherwise disappear the moment finalize drops the
+   old role. `sso-patroni-appusers` is updated to point at the new role, and
+   Keycloak (and, once wired up, backupcontainer) are cycled to pick it up.
+   The old role is **not** touched.
 2. **Finalize** (`finalize_appuser_rotation: true`, run later as a separate
    workflow run once the team has confirmed the new credential is in use
    everywhere) checks that no active Postgres sessions still use the old
@@ -30,6 +34,29 @@ The admin/standby/superuser passwords don't need this two-phase treatment —
 they're only used internally by Patroni itself, so a straight password change
 followed by a rolling pod restart (replicas first, graceful `patronictl
 switchover`, old leader last) is sufficient for zero downtime.
+
+## Resilience to connectivity failures
+
+Cluster API connectivity can drop mid-run (DNS resolution blips, brief
+apiserver unavailability, etc.). This script is designed so re-running it
+after a failure is always safe, rather than risking orphaned/mismatched
+credentials:
+
+- Every `kubectl`/`psql` call made against the cluster is retried a few times
+  with a short backoff before the step is considered failed (5 attempts / 5s
+  by default — override with `ROTATE_RETRY_ATTEMPTS` /
+  `ROTATE_RETRY_DELAY_SECONDS` env vars).
+- Before generating new admin/standby/superuser passwords or a new appuser
+  role, the *planned* values are first recorded as `pending-*` keys on
+  `sso-patroni-old-creds`. If the script is re-run after failing partway
+  through, it reuses those same pending values instead of generating fresh
+  ones — so a retry converges onto the same role/passwords rather than
+  creating and abandoning (orphaning) a new one on every attempt. The
+  pending keys are cleared once the corresponding secret has been updated to
+  match.
+- `DROP ROLE` (in finalize) and pod deletes use `IF EXISTS`/
+  `--ignore-not-found`, so re-running a step that already fully completed is
+  a no-op rather than an error.
 
 ## Running it
 

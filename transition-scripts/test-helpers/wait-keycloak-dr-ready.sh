@@ -24,7 +24,7 @@ wait_for_keycloak_all_ready_with_replicas() {
 
   count_kc=0
   wait_kc_ready() {
-    replicas=$(kubectl get statefulset sso-keycloak -n "$namespace" -o jsonpath='{.spec.replicas}')
+    replicas=$(kubectl_with_retry get statefulset sso-keycloak -n "$namespace" -o jsonpath='{.spec.replicas}')
     ready_count=$(count_ready_keycloak_pods "$namespace")
     info "keycloak ready $ready_count/$replicas"
 
@@ -63,7 +63,7 @@ info "Keycloak pods are ready in $namespace"
 
 count=0
 wait_for_route_to_direct_to_keycloak() {
-    routeservicename=$(oc -n "$namespace" get route sso-keycloak -o jsonpath='{.spec.to.name}')
+    routeservicename=$(oc_with_retry -n "$namespace" get route sso-keycloak -o jsonpath='{.spec.to.name}')
     info "The route is directing traffic to the $routeservicename service."
 
     if [[ "$routeservicename" == "sso-keycloak" ]]; then

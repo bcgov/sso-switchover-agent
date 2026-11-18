@@ -79,4 +79,4 @@ upgrade_helm_standby "$namespace" --maintenance-on
 
 wait_for_patroni_healthy "$namespace"
 wait_for_patroni_all_ready "$namespace"
-wait_for_patroni_xlog_synced "$namespace"
+wait_for_patroni_xlog_close "$namespace"
