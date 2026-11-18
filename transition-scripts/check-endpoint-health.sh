@@ -61,7 +61,7 @@ wait_for_keycloak_up() {
     https://"$KEYCLOAK_URL"/auth/realms/master/.well-known/openid-configuration)
 
     echo "The status code is"
-    status_code="$(echo "$response" | grep 'HTTP/1.1' | awk '{print $2}')"
+    status_code="$(echo "$response" | grep -m1 '^HTTP/' | awk '{print $2}' | tr -d '\r')"
 
     if [[ "$status_code" = "200" ]]; then
         echo "Status code 200"
