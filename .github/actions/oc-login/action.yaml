@@ -20,19 +20,37 @@ runs:
   using: composite
   steps:
     - name: Login Gold
-      uses: redhat-actions/oc-login@5eb45e848b168b6bf6b8fe7f1561003c12e3c99d # v1.3
-      with:
-        openshift_server_url: ${{ inputs.oc-server-gold }}
-        openshift_token: ${{ inputs.oc-token-gold }}
-        namespace: ${{ inputs.namespace }}
-        insecure_skip_tls_verify: true
-      continue-on-error: false
+      shell: bash
+      env:
+        OC_SERVER: ${{ inputs.oc-server-gold }}
+        OC_TOKEN: ${{ inputs.oc-token-gold }}
+        OC_NAMESPACE: ${{ inputs.namespace }}
+      run: |
+        echo "::add-mask::$OC_TOKEN"
+        for attempt in 1 2 3 4 5; do
+          if oc login --token="$OC_TOKEN" --server="$OC_SERVER" --insecure-skip-tls-verify=true && oc project "$OC_NAMESPACE"; then
+            exit 0
+          fi
+          echo "Gold login attempt $attempt/5 failed"
+          [ "$attempt" -lt 5 ] && sleep 5
+        done
+        echo "Gold login failed after 5 attempts"
+        exit 1
 
     - name: Login Golddr
-      uses: redhat-actions/oc-login@5eb45e848b168b6bf6b8fe7f1561003c12e3c99d # v1.3
-      with:
-        openshift_server_url: ${{ inputs.oc-server-golddr }}
-        openshift_token: ${{ inputs.oc-token-golddr }}
-        namespace: ${{ inputs.namespace }}
-        insecure_skip_tls_verify: true
-      continue-on-error: false
+      shell: bash
+      env:
+        OC_SERVER: ${{ inputs.oc-server-golddr }}
+        OC_TOKEN: ${{ inputs.oc-token-golddr }}
+        OC_NAMESPACE: ${{ inputs.namespace }}
+      run: |
+        echo "::add-mask::$OC_TOKEN"
+        for attempt in 1 2 3 4 5; do
+          if oc login --token="$OC_TOKEN" --server="$OC_SERVER" --insecure-skip-tls-verify=true && oc project "$OC_NAMESPACE"; then
+            exit 0
+          fi
+          echo "Golddr login attempt $attempt/5 failed"
+          [ "$attempt" -lt 5 ] && sleep 5
+        done
+        echo "Golddr login failed after 5 attempts"
+        exit 1
