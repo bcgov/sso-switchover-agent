@@ -28,7 +28,7 @@ Examples:
 EOF
 }
 
-if [ "$#" -lt 1 ]; then
+if [[ "$#" -lt 1 ]]; then
     usage
     exit 1
 fi
@@ -45,7 +45,7 @@ check_ocp_cluster "golddr"
 wait_for_patroni_healthy "$namespace"
 patroni_mode=$(check_patroni_cluster_mode "$namespace")
 
-if [ "$patroni_mode" == "active" ]; then
+if [[ "$patroni_mode" == "active" ]]; then
     echo "Patroni DR in active mode"
 else
     echo "Patroni DR not in active mode"

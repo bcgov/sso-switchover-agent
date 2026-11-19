@@ -2,4 +2,6 @@ python 3.12.11
 poetry 1.8.3
 helm 3.10.2
 shellcheck 0.8.0
-oc 4.7.5
+oc 4.16.0
+kubectl 1.29.0
+jq 1.7.1

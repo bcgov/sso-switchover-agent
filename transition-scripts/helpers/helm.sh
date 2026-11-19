@@ -8,26 +8,34 @@ KEYCLOAK_HELM_CHART_VERSION="v1.17.5"
 KEYCLOAK_HELM_DEPLOYMENT_NAME="sso-keycloak"
 
 upgrade_helm() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
 
   namespace="$1"
   cluster_mode="$2" # active | standby
   current=$(get_current_cluster)
 
-  {
-    helm repo add sso-charts https://bcgov.github.io/sso-helm-charts
-    helm repo update
-  } &>/dev/null
+  # A pre-pulled chart (set in the agent image) avoids needing access to the helm repo
+  if [[ -n "$KEYCLOAK_HELM_CHART_PATH" ]]; then
+    chart="$KEYCLOAK_HELM_CHART_PATH"
+    version_args=()
+  else
+    {
+      helm_with_retry repo add sso-charts https://bcgov.github.io/sso-helm-charts
+      helm_with_retry repo update
+    } &>/dev/null
+    chart="sso-charts/sso-keycloak"
+    version_args=(--version "$KEYCLOAK_HELM_CHART_VERSION")
+  fi
 
-  helm upgrade --install "$KEYCLOAK_HELM_DEPLOYMENT_NAME" \
-  sso-charts/sso-keycloak -n "$namespace" \
-  --version "$KEYCLOAK_HELM_CHART_VERSION" \
+  helm_with_retry upgrade --install "$KEYCLOAK_HELM_DEPLOYMENT_NAME" \
+  "$chart" -n "$namespace" \
+  "${version_args[@]}" \
   -f "$values/values.yaml" \
   -f "$values/${namespace:0:6}/${namespace:7}/values-$current-$namespace-$cluster_mode.yaml" "${@:3}"
 }
 
 upgrade_helm_active() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
   maintenance="false"
@@ -56,7 +64,7 @@ upgrade_helm_active() {
 }
 
 upgrade_helm_standby() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
   maintenance="false"
@@ -75,25 +83,12 @@ upgrade_helm_standby() {
   switch_kube_context "$target" "$namespace"
   check_ocp_cluster "$target"
 
-  password_superuser=$(kubectl get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-superuser}' | base64 -d)
-  password_admin=$(kubectl get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-admin}' | base64 -d)
-  password_standby=$(kubectl get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-standby}' | base64 -d)
+  password_superuser=$(kubectl_with_retry get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-superuser}' | base64 -d)
+  password_admin=$(kubectl_with_retry get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-admin}' | base64 -d)
+  password_standby=$(kubectl_with_retry get secret sso-patroni -n "$namespace" -o jsonpath='{.data.password-standby}' | base64 -d)
 
-  username_appuser1=$(kubectl get secret sso-patroni-appusers -n "$namespace" -o jsonpath='{.data.username-appuser1}' | base64 -d)
-  password_appuser1=$(kubectl get secret sso-patroni-appusers -n "$namespace" -o jsonpath='{.data.password-appuser1}' | base64 -d)
-
-  # Get the keycloak app secrets from Gold
-  ppid_token_url=$(kubectl get secret sso-keycloak-app-secrets -n "$namespace" -o jsonpath='{.data.PPID_TOKEN_URL}' | base64 -d)
-  ppid_api_url=$(kubectl get secret sso-keycloak-app-secrets -n "$namespace" -o jsonpath='{.data.PPID_API_URL}' | base64 -d)
-  ppid_client_id=$(kubectl get secret sso-keycloak-app-secrets -n "$namespace" -o jsonpath='{.data.PPID_CLIENT_ID}' | base64 -d)
-  ppid_client_secret=$(kubectl get secret sso-keycloak-app-secrets -n "$namespace" -o jsonpath='{.data.PPID_CLIENT_SECRET}' | base64 -d)
-  ppid_issuer=$(kubectl get secret sso-keycloak-app-secrets -n "$namespace" -o jsonpath='{.data.PPID_ISSUER}' | base64 -d)
-
-  rba_token_url=$(kubectl get secret sso-keycloak-app-secrets -n "$namespace" -o jsonpath='{.data.RBA_TOKEN_URL}' | base64 -d)
-  rba_api_url=$(kubectl get secret sso-keycloak-app-secrets -n "$namespace" -o jsonpath='{.data.RBA_API_URL}' | base64 -d)
-  rba_client_id=$(kubectl get secret sso-keycloak-app-secrets -n "$namespace" -o jsonpath='{.data.RBA_CLIENT_ID}' | base64 -d)
-  rba_client_secret=$(kubectl get secret sso-keycloak-app-secrets -n "$namespace" -o jsonpath='{.data.RBA_CLIENT_SECRET}' | base64 -d)
-
+  username_appuser1=$(kubectl_with_retry get secret sso-patroni-appusers -n "$namespace" -o jsonpath='{.data.username-appuser1}' | base64 -d)
+  password_appuser1=$(kubectl_with_retry get secret sso-patroni-appusers -n "$namespace" -o jsonpath='{.data.password-appuser1}' | base64 -d)
 
   switch_kube_context "$current" "$namespace"
   check_ocp_cluster "$current"
@@ -117,42 +112,32 @@ upgrade_helm_standby() {
     --set patroni.additionalCredentials[0].username="$username_appuser1" \
     --set patroni.additionalCredentials[0].password="$password_appuser1" \
     --set maintenancePage.enabled="$maintenance" \
-    --set maintenancePage.active="$maintenance" \
-    --set appSecrets.ppidTokenUrl="$ppid_token_url" \
-    --set appSecrets.ppidApiUrl="$ppid_api_url" \
-    --set appSecrets.ppidClientID="$ppid_client_id" \
-    --set appSecrets.ppidClientSecret="$ppid_client_secret" \
-    --set appSecrets.ppidIssuer="$ppid_issuer" \
-    --set appSecrets.rbaTokenUrl="$rba_token_url" \
-    --set appSecrets.rbaApiUrl="$rba_api_url" \
-    --set appSecrets.rbaClientID="$rba_client_id" \
-    --set appSecrets.rbaClientSecret="$rba_client_secret" \
-    --set appSecrets.recreateCredentials=true
+    --set maintenancePage.active="$maintenance"
 
   connect_route_to_correct_service "$maintenance" "$namespace"
 }
 
 uninstall_helm() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
-  helm uninstall sso-keycloak -n "$namespace" || true
+  helm_with_retry uninstall sso-keycloak -n "$namespace" || true
 }
 
 cleanup_namespace() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
   namespace="$1"
 
-  kubectl delete configmap -n "$namespace" -l "app.kubernetes.io/name=sso-patroni"
-  kubectl delete pvc -n "$namespace" -l "app.kubernetes.io/name=sso-patroni"
+  kubectl_with_retry delete configmap -n "$namespace" -l "app.kubernetes.io/name=sso-patroni"
+  kubectl_with_retry delete pvc -n "$namespace" -l "app.kubernetes.io/name=sso-patroni"
 }
 
 check_helm_release() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
   namespace="$1"
   release="$2"
 
-  status=$(helm status "$release" -n "$namespace" 2>&1)
+  status=$(helm_with_retry status "$release" -n "$namespace" 2>&1)
   error_msg="Error: release: not found"
 
   if [[ "$status" == *"$error_msg"* ]]; then
@@ -163,25 +148,25 @@ check_helm_release() {
 }
 
 get_vanity_route_name() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
-  if [ "$namespace" = "e4ca1d-dev" ]
+  if [[ "$namespace" = "e4ca1d-dev" ]]
   then
     KEYCLOAK_ROUTE="sso-dev-sandbox"
-  elif [ "$namespace" = "e4ca1d-test" ]
+  elif [[ "$namespace" = "e4ca1d-test" ]]
   then
     KEYCLOAK_ROUTE="sso-test-sandbox"
-  elif [ "$namespace" = "e4ca1d-prod" ]
+  elif [[ "$namespace" = "e4ca1d-prod" ]]
   then
     KEYCLOAK_ROUTE="sso-prod-sandbox"
-  elif [ "$namespace" = "eb75ad-dev" ]
+  elif [[ "$namespace" = "eb75ad-dev" ]]
   then
     KEYCLOAK_ROUTE="sso-dev"
-  elif [ "$namespace" = "eb75ad-test" ]
+  elif [[ "$namespace" = "eb75ad-test" ]]
   then
     KEYCLOAK_ROUTE="sso-test"
-  elif [ "$namespace" = "eb75ad-prod" ]
+  elif [[ "$namespace" = "eb75ad-prod" ]]
   then
     KEYCLOAK_ROUTE="sso-prod"
   fi
@@ -191,25 +176,25 @@ get_vanity_route_name() {
 }
 
 get_vanity_url() {
-  if [ "$#" -lt 1 ]; then exit 1; fi
+  if [[ "$#" -lt 1 ]]; then exit 1; fi
 
   namespace="$1"
-  if [ "$namespace" = "e4ca1d-dev" ]
+  if [[ "$namespace" = "e4ca1d-dev" ]]
   then
     KEYCLOAK_URL="dev.sandbox.loginproxy.gov.bc.ca"
-  elif [ "$namespace" = "e4ca1d-test" ]
+  elif [[ "$namespace" = "e4ca1d-test" ]]
   then
     KEYCLOAK_URL="test.sandbox.loginproxy.gov.bc.ca"
-  elif [ "$namespace" = "e4ca1d-prod" ]
+  elif [[ "$namespace" = "e4ca1d-prod" ]]
   then
     KEYCLOAK_URL="sandbox.loginproxy.gov.bc.ca"
-  elif [ "$namespace" = "eb75ad-dev" ]
+  elif [[ "$namespace" = "eb75ad-dev" ]]
   then
     KEYCLOAK_URL="dev.loginproxy.gov.bc.ca"
-  elif [ "$namespace" = "eb75ad-test" ]
+  elif [[ "$namespace" = "eb75ad-test" ]]
   then
     KEYCLOAK_URL="test.loginproxy.gov.bc.ca"
-  elif [ "$namespace" = "eb75ad-prod" ]
+  elif [[ "$namespace" = "eb75ad-prod" ]]
   then
     KEYCLOAK_URL="loginproxy.gov.bc.ca"
   fi
@@ -219,19 +204,19 @@ get_vanity_url() {
 }
 
 connect_route_to_correct_service() {
-  if [ "$#" -lt 2 ]; then exit 1; fi
+  if [[ "$#" -lt 2 ]]; then exit 1; fi
 
   maintenance="$1"
   namespace="$2"
 
   KEYCLOAK_ROUTE=$(get_vanity_route_name "$namespace")
 
-  if [ "$maintenance" = "true" ]
+  if [[ "$maintenance" = "true" ]]
   then
-    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
+    kubectl_with_retry -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
     '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'-maintenance"}}}'
   else
-    kubectl -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
+    kubectl_with_retry -n "$namespace" patch route "$KEYCLOAK_ROUTE" -p \
     '{"spec":{"to":{"name":"'"$KEYCLOAK_HELM_DEPLOYMENT_NAME"'"}}}'
   fi
 

@@ -28,7 +28,7 @@ Examples:
 EOF
 }
 
-if [ "$#" -lt 1 ]; then
+if [[ "$#" -lt 1 ]]; then
     usage
     exit 1
 fi
@@ -41,15 +41,15 @@ source "$pwd/helpers/_all.sh"
 set -o allexport
 source .env
 set +o allexport
-oc login --token="$GOLD_TOKEN" --server=https://api.gold.devops.gov.bc.ca:6443
-oc login --token="$GOLDDR_TOKEN" --server=https://api.golddr.devops.gov.bc.ca:6443
+oc_with_retry login --token="$GOLD_TOKEN" --server=https://api.gold.devops.gov.bc.ca:6443
+oc_with_retry login --token="$GOLDDR_TOKEN" --server=https://api.golddr.devops.gov.bc.ca:6443
 
 # Golddr status check
 switch_kube_context "golddr" "$namespace"
 
 patroni_health=$(check_patroni_health "$namespace")
 info "The patroni gold dr health is: $patroni_health"
-if [ "$patroni_health" != "up" ]; then
+if [[ "$patroni_health" != "up" ]]; then
     warn "the patroni pods are not healthy in Golddr"
 fi
 
@@ -60,7 +60,7 @@ switch_kube_context "gold" "$namespace"
 patroni_health=$(check_patroni_health "$namespace")
 
 info "The patroni gold health is: $patroni_health"
-if [ "$patroni_health" != "up" ]; then
+if [[ "$patroni_health" != "up" ]]; then
     warn "the patroni pods are not healthy in Gold"
 fi
 
@@ -70,6 +70,6 @@ switch_kube_context "golddr" "$namespace"
 patroni_health=$(check_patroni_health "$namespace")
 
 info "The patroni golddr health is: $patroni_health"
-if [ "$patroni_health" != "up" ]; then
+if [[ "$patroni_health" != "up" ]]; then
     warn "the patroni pods are not healthy in Gold"
 fi

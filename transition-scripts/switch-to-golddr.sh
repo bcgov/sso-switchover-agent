@@ -36,7 +36,7 @@ Considerations:
 EOF
 }
 
-if [ "$#" -lt 1 ]; then
+if [[ "$#" -lt 1 ]]; then
     usage
     exit 1
 fi
@@ -51,7 +51,7 @@ echo "Ensure cluster is golddr."
 ensure_kube_context "golddr"
 
 patroni_mode=$(check_patroni_cluster_mode "$namespace")
-if [ "$patroni_mode" != "standby" ]; then
+if [[ "$patroni_mode" != "standby" ]]; then
     error "the patroni pods are not running in standby mode ($patroni_mode)"
     exit 1
 fi
@@ -59,13 +59,13 @@ fi
 info "starting to convert patroni cluster type to active in $namespace"
 
 cluster_update=$(set_patroni_cluster_active "$namespace")
-if [ "$cluster_update" != "success" ]; then
+if [[ "$cluster_update" != "success" ]]; then
     error "failed to convert patroni cluster type to active"
     exit 1
 fi
 
 patroni_mode=$(check_patroni_cluster_mode "$namespace")
-if [ "$patroni_mode" != "active" ]; then
+if [[ "$patroni_mode" != "active" ]]; then
     error "the patroni pods are not running in active mode ($patroni_mode)"
     exit 1
 fi

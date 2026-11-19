@@ -58,7 +58,7 @@ This does not block the team from manually triggering a failover through GitHub 
 
 The DNS rerouting is handled by the a golobal server load balancer (GSLB) that monitors the keycloak health endpoint `https://loginproxy.gov.bc.ca/auth/realms/master/.well-known/openid-configuration` and, if it is not accessible, the GSLB will redirect traffic to the Gold DR cluster app.
 
-The Switchover agent monitors the keycloak app url (loginproxy.gov.bc.ca for production) and checks  every 5 seconds if the DNS record has changed. If it has, that indicates GSLB is redirecting to DR and the 'switch to dr' github action is triggered.
+The Switchover agent monitors the keycloak app url (loginproxy.gov.bc.ca for production) and checks  every 5 seconds if the DNS record has changed. If it has, that indicates GSLB is redirecting to DR and the agent runs `switch-to-golddr.sh` directly (in the agent's own pod), rather than going through a github action. If the direct run fails, the agent falls back to triggering the 'switch to dr' github action.
 
 ### The GSLB
 
@@ -96,9 +96,16 @@ This script will login and attempt to switch context between Gold and GoldDR.  I
 
 ### When gold goes down
 
-When and outage occurs, and the switchover agent is on, the `switch-to-golddr.sh` script will trigger.  Setting gold-dr database to `Active` and spinning up the keycloak-dr instance.  It will take about 10 to 15 minutes for keycloak to be back up and running.
+When an outage occurs, and the switchover agent is on, the agent triggers the `switch-to-golddr.sh` script directly (not via a github action).  Setting gold-dr database to `Active` and spinning up the keycloak-dr instance.  It will take less than 5 minutes for keycloak to be back up and running.
 
-If this script does not trigger you will have to do it manually either through github actions or your local development environment. Whether you trigger the scripts locally or through actions, the workflow is the same. The action is `Set the dr deployment to active`, the script is documented [below](#switch-to-golddr.sh).
+The same script can also be triggered proactively from the switchover agent's command line:
+
+```sh
+cd transition-scripts
+./switch-to-golddr.sh <<NAMESPACE>>
+```
+
+If this script does not trigger you will have to do it manually either through github actions, the switchover agent's command line, or your local development environment. Whether you trigger the scripts locally or through actions, the workflow is the same. The action is `Set the dr deployment to active`, the script is documented [below](#switch-to-golddr.sh).
 
 ### When gold is restored
 
@@ -171,11 +178,11 @@ destroy.sh <namespace>
 
 ### switch-to-golddr.sh
 
-It sets the target namespace of the Golddr cluster active, can be automatically trigered by the switchover agent.
+It sets the target namespace of the Golddr cluster active, is triggered directly by the switchover agent during a failover event, and can be run proactively from the switchover agent's command line.
 
 ```sh
 cd transition-scripts
-switch-to-golddr.sh <namespace>
+./switch-to-golddr.sh <namespace>
 ```
 
 ### set-dr-to-standby.sh

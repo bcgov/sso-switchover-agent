@@ -22,7 +22,7 @@ Examples:
 EOF
 }
 
-if [ "$#" -lt 2 ]; then
+if [[ "$#" -lt 2 ]]; then
     usage
     exit 1
 fi
@@ -39,7 +39,7 @@ switch_kube_context "$cluster" "$namespace"
 check_ocp_cluster "$cluster"
 
 helm_released=$(check_helm_release "$namespace" "sso-keycloak")
-if [ "$helm_released" == "found" ]; then
+if [[ "$helm_released" == "found" ]]; then
     set_patroni_cluster_active "$namespace"
 fi
 

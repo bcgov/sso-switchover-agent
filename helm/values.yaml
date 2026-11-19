@@ -18,6 +18,10 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+rbac:
+  # Grant the agent namespace-scoped permissions needed by the transition scripts
+  create: true
+
 podAnnotations: {}
 
 podSecurityContext: {}
