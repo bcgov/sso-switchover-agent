@@ -2,7 +2,6 @@ replicaCount: 3
 
 additionalServerOptions: >-
   -Djgroups.dns.query=sso-keycloak-ping.eb75ad-test.svc.cluster.local
-  -XX:UseAVX=2
 
 extraEnvs:
   - name: KC_HOSTNAME
