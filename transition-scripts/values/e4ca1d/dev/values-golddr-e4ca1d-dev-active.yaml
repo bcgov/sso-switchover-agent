@@ -30,6 +30,8 @@ extraEnvs:
     value: idsit.gov.bc.ca
   - name: PPID_OTP_ISSUER
     value: urn:ca:bc:gov:idimwebtests:f2ac23eb-eaa5-4640-93b7-187edbda4b31
+  - name: KC_SPI_ADMIN__AUDIENCE_CHECK_ENABLED=
+    value: "false"
 
 resources:
   requests:
