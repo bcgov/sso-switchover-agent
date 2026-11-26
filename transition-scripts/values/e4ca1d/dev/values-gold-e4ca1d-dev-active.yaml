@@ -5,7 +5,6 @@ image:
 
 additionalServerOptions: >-
   -Djgroups.dns.query=sso-keycloak-ping.e4ca1d-dev.svc.cluster.local
-  -XX:UseAVX=2
 
 extraEnvs:
   - name: KC_HOSTNAME
@@ -30,6 +29,7 @@ extraEnvs:
     value: idsit.gov.bc.ca
   - name: PPID_OTP_ISSUER
     value: urn:ca:bc:gov:idimwebtests:f2ac23eb-eaa5-4640-93b7-187edbda4b31
+
 
 resources:
   requests:
