@@ -1,0 +1,64 @@
+name: Deploy Switch Agent by image tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: "The target project"
+        type: choice
+        required: true
+        options: ["SANDBOX", "PRODUCTION", "OLD-SANDBOX"]
+        default: "SANDBOX"
+      environment:
+        description: "env to deploy"
+        type: choice
+        options: ["dev", "test", "prod"]
+        default: "dev"
+      tag:
+        description: "The image tag to deploy"
+        type: string
+        required: true
+        default: "dev"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-switch-agent:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      PROJECT: ${{ github.event.inputs.project }}
+      ENVIRONMENT: ${{ github.event.inputs.environment }}
+      IMAGE_TAG: ${{ github.event.inputs.tag }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Install CLI tools from OpenShift Mirror
+        uses: redhat-actions/openshift-tools-installer@144527c7d98999f2652264c048c7a9bd103f8a82 # v1.13.1
+        with:
+          source: "mirror"
+          kam: "latest"
+          oc: "4"
+
+      - name: Set the deployment namespace
+        run: |
+          chmod +x ./namespace-setter.sh
+          ./namespace-setter.sh "$PROJECT" "$ENVIRONMENT"
+        working-directory: .github/helpers
+
+      - name: Login Openshift Golddr
+        uses: redhat-actions/oc-login@5eb45e848b168b6bf6b8fe7f1561003c12e3c99d # v1.3
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_GOLDDR }}
+          openshift_token: ${{ secrets[format('OPENSHIFT_TOKEN_GOLDDR_{0}', github.event.inputs.project)] }}
+          namespace: ${{ env.NAMESPACE }}
+          insecure_skip_tls_verify: true
+
+      - name: Deploy switch agent with Helm chart
+        run: |
+          license="${NAMESPACE%%-*}"
+          helm dep up
+          helm upgrade --install --atomic switch-agent . -n "$NAMESPACE" \
+            -f values.yaml -f "values-${license}.yaml" --set image.tag="$IMAGE_TAG"
+        working-directory: ./helm
